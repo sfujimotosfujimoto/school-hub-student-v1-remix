@@ -1,0 +1,10 @@
+.menu > li > button.active {
+  background-color: theme("colors.sfgreen.300");
+  color: inherit;
+}
+
+/* side bar hover */
+.menu > li > a:hover {
+  color: theme("colors.sfred.200");
+  background-color: inherit;
+}

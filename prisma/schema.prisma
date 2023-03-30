@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int         @id @default(sequence())
+  last       String
+  first      String
+  email      String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  Credential Credential?
+}
+
+model Credential {
+  id          Int    @id @default(sequence())
+  accessToken String
+  scope       String
+  tokenType   String
+  expiryDate  BigInt
+  idToken     String
+  user        User   @relation(fields: [userId], references: [id])
+  userId      Int    @unique
+}
