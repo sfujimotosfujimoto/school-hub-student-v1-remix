@@ -9,6 +9,7 @@ function getFolderId(folderUrl: string): string | null {
   return output
 }
 
+// Sidebar
 export default function Sidebar({
   studentData,
 }: {
