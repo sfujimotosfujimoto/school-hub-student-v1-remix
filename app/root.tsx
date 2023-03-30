@@ -5,7 +5,7 @@ import type {
   ErrorBoundaryComponent,
   LinksFunction,
   LoaderArgs,
-  MetaFunction,
+  V2_MetaFunction,
 } from "@remix-run/node"
 import {
   Link,
@@ -22,11 +22,13 @@ import Navigation from "./components/Navigation"
 import Error from "./components/util/Error"
 import { getUserFromSession } from "./data/auth.server"
 
-export const meta: MetaFunction = () => ({
-  charset: "utf-8",
-  title: "SCHOOL HUB",
-  viewport: "width=device-width,initial-scale=1",
-})
+export const meta: V2_MetaFunction = () => {
+  return [
+    {
+      title: "SCHOOL HUB",
+    },
+  ]
+}
 
 export const links: LinksFunction = () => {
   return [
@@ -36,6 +38,23 @@ export const links: LinksFunction = () => {
       rel: "apple-touch-icon",
       sizes: "180x180",
       href: "/apple-touch-icon.png",
+    },
+    {
+      rel: "icon",
+      href: "/favicon.svg",
+      type: "image/x-icon",
+    },
+    {
+      rel: "preconnect",
+      href: "https://fonts.googleapis.com",
+    },
+    {
+      rel: "preconnect",
+      href: "https://fonts.gstatic.com",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400;500;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap",
     },
   ]
 }
@@ -58,21 +77,9 @@ function Document({
   return (
     <html lang='en'>
       <head>
-        <title>{title}</title>
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Meta />
-        <link rel='icon' type='image/x-icon' href='/favicon.svg'></link>
-        {/* <link
-          rel='apple-touch-icon'
-          sizes='180x180'
-          href='/apple-touch-icon.png'
-        /> */}
-        <link rel='preconnect' href='https://fonts.googleapis.com' />
-        <link rel='preconnect' href='https://fonts.gstatic.com' />
-        <link
-          href='https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400;500;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap'
-          rel='stylesheet'
-        />
-
         <Links />
       </head>
       <body>

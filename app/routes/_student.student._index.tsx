@@ -1,4 +1,19 @@
+import type { V2_MetaFunction } from "@remix-run/node"
+
 import GakunenButtons from "../components/_student.student._index/GakunenButtons"
+
+export const meta: V2_MetaFunction = () => {
+  return [
+    {
+      title: `Students | SCHOOL HUB`,
+    },
+  ]
+}
+
+// export const meta: V2_MetaFunction = ({ matches }) => {
+//   let parentMeta = matches.map((match) => match.meta[0] ?? [])
+//   return [...parentMeta, { title: "Projects" }]
+// }
 
 export default function StudentPage() {
   return (

@@ -1,4 +1,4 @@
-import { type LoaderArgs, json } from "@remix-run/node"
+import { type LoaderArgs, json, V2_MetaFunction } from "@remix-run/node"
 import { Link, useLoaderData } from "@remix-run/react"
 
 import invariant from "tiny-invariant"
@@ -15,7 +15,7 @@ import {
 import LeftArrow from "~/components/icons/LeftArrow"
 import StudentCards from "~/components/_student.student.$studentFolderId/StudentCards"
 import StudentHeader from "~/components/_student.student.$studentFolderId/StudentHeader"
-import type { UserWithCredential } from "~/types"
+import type { StudentData, UserWithCredential } from "~/types"
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserSession(request)
@@ -81,6 +81,22 @@ export async function loader({ request, params }: LoaderArgs) {
     rows,
     student,
   }
+}
+
+export const meta: V2_MetaFunction = ({
+  data,
+}: {
+  data: { rows: any; student: StudentData }
+}) => {
+  const title =
+    `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
+    ""
+
+  return [
+    {
+      title: `${title} | SCHOOL HUB`,
+    },
+  ]
 }
 
 export default function StudentFolderPage() {
