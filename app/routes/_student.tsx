@@ -3,7 +3,7 @@ import MenuIcon from "~/components/icons/MenuIcon"
 import { type LoaderArgs, json } from "@remix-run/node"
 import { Outlet, useLoaderData } from "@remix-run/react"
 
-import Sidebar from "./Sidebar"
+import Sidebar from "~/components/_student/Sidebar"
 import { getEmailFromSession, requireUserSession } from "~/data/auth.server"
 import { prisma } from "~/data/database.server"
 import { getStudentDataResponse } from "~/data/google.server"
@@ -54,7 +54,7 @@ export default function StudentLayout() {
             {/* <!-- Sidebar Layout --> */}
             <label
               htmlFor='my-drawer'
-              className='btn-success drawer-button btn-sm btn absolute top-16 left-1 z-10 shadow-lg hover:bg-sfgreen-400 lg:hidden'
+              className='btn-success drawer-button btn-sm btn absolute top-11 sm:top-16 left-1 z-10 shadow-lg hover:bg-sfgreen-400 lg:hidden'
             >
               <MenuIcon className='h-3 w-3' />
             </label>
