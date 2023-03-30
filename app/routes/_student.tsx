@@ -4,35 +4,17 @@ import { type LoaderArgs, json } from "@remix-run/node"
 import { Outlet, useLoaderData } from "@remix-run/react"
 
 import Sidebar from "~/components/_student/Sidebar"
-import { getEmailFromSession, requireUserSession } from "~/data/auth.server"
-import { prisma } from "~/data/database.server"
+import { requireUserSession } from "~/data/session.server"
 import { getStudentDataResponse } from "~/data/google.server"
+import { getUserWithCredential } from "~/data/user.server"
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserSession(request)
-  const email = await getEmailFromSession(request)
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-      first: true,
-      last: true,
-
-      email: true,
-      Credential: {
-        select: {
-          accessToken: true,
-          idToken: true,
-          expiryDate: true,
-        },
-      },
-    },
-  })
-
-  if (!user || !user.Credential) {
+  try {
+    const user = await getUserWithCredential(request)
+    return getStudentDataResponse(user)
+  } catch (error) {
     return json(
       { errorMessage: "User Data not found" },
       {
@@ -40,8 +22,6 @@ export async function loader({ request }: LoaderArgs) {
       }
     )
   }
-
-  return getStudentDataResponse(user)
 }
 
 export default function StudentLayout() {

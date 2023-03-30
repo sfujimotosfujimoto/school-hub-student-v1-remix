@@ -1,14 +1,14 @@
 import { google } from "googleapis"
 import * as jose from "jose"
 import invariant from "tiny-invariant"
-import type { IdToken, Tokens, User } from "~/types"
+import type { IdToken, Tokens, UserBase } from "~/types"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
 
-import { prisma } from "./database.server"
+import { prisma } from "./db.server"
+import { getUserInfo, getUserWithCredential } from "./user.server"
 
 const SESSION_SECRET = process.env.SESSION_SECRET
-
 if (!SESSION_SECRET) throw Error("session secret is not set")
 
 const sessionStorage = createCookieSessionStorage({
@@ -60,24 +60,51 @@ export async function requireUserSession(request: Request) {
   const userToken = await getUserTokenFromSession(request)
 
   if (!userToken) {
-    throw redirect("/")
+    throw redirect("/?login=false")
+  }
+  const token = jose.decodeJwt(userToken) as { email: string; exp: number }
+  const exp = token.exp * 1000
+
+  if (isExpired(exp)) {
+    throw redirect("/?expired=true")
   }
 
   return userToken
 }
 
-export async function getEmailFromSession(request: Request) {
-  const userToken = await getUserTokenFromSession(request)
+export async function requireUserWithExpiry(request: Request) {
+  const user = await getUserWithCredential(request)
 
-  invariant(userToken, "no user token jwt")
+  if (!user) {
+    throw redirect("/?login=false")
+  }
 
-  const payload = jose.decodeJwt(userToken) as { email: string }
-  return payload.email
+  if (isExpired(Number(user.Credential.expiryDate))) {
+    throw redirect("/?expired=true")
+  }
+
+  return user
 }
 
-export async function getUserFromSession(
+function isExpired(expire: number): boolean {
+  const exp = new Date(expire)
+
+  if (expire < 10000000000 && expire > 0)
+    throw Error(`expire is incorrect: ${expire}`)
+
+  const now = new Date(Date.now())
+
+  // check for expired!!
+  if (exp < now) {
+    return true
+  } else {
+    return false
+  }
+}
+
+export async function getUserBaseFromSession(
   request: Request
-): Promise<User | null> {
+): Promise<UserBase | null> {
   const userToken = await getUserTokenFromSession(request)
 
   if (!userToken) return null
@@ -90,42 +117,6 @@ export async function getUserFromSession(
   invariant(user, "Could not find user")
 
   return user
-}
-
-export async function getUserInfo(email: string): Promise<User | null> {
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-      first: true,
-      last: true,
-
-      email: true,
-      Credential: {
-        select: {
-          accessToken: true,
-          idToken: true,
-          expiryDate: true,
-        },
-      },
-    },
-  })
-
-  if (!user || !user.Credential) {
-    return null
-  }
-
-  const idToken = jose.decodeJwt(user.Credential.idToken) as IdToken
-
-  return {
-    last: idToken.family_name,
-    first: idToken.given_name,
-    email: idToken.email,
-    picture: idToken.picture,
-    exp: idToken.exp,
-  }
 }
 
 export async function signin({ code }: { code: string }) {

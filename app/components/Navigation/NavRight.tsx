@@ -1,11 +1,11 @@
-import type { User } from "~/types"
+import type { UserBase } from "~/types"
 
 import { Form, NavLink, useLoaderData } from "@remix-run/react"
 
 import ImageIcon from "../util/ImageIcon"
 
 export default function NavRight() {
-  const user = useLoaderData<User>()
+  const user = useLoaderData<UserBase>()
 
   return (
     <div className='flex'>

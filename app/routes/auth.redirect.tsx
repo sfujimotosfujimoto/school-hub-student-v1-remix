@@ -1,5 +1,5 @@
 import { json, redirect, type LoaderArgs } from "@remix-run/node"
-import { signin } from "~/data/auth.server"
+import { signin } from "~/data/session.server"
 
 export async function loader({ request }: LoaderArgs) {
   if (request.method !== "GET") {

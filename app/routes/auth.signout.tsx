@@ -1,4 +1,4 @@
-import { destroyUserSession } from "~/data/auth.server"
+import { destroyUserSession } from "~/data/session.server"
 
 import { type ActionArgs, json } from "@remix-run/node"
 

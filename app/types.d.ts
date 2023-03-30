@@ -28,7 +28,7 @@ export type IdToken = {
 
 export type LoadingStatus = "idle" | "loading" | "success" | "error"
 
-export type User = {
+export type UserBase = {
   last: string
   first: string
   email: string
@@ -45,7 +45,7 @@ export interface UserWithCredential {
     accessToken: string
     idToken: string
     expiryDate: bigint
-  } | null
+  }
 }
 
 export type RowType = {

@@ -20,7 +20,7 @@ import {
 
 import Navigation from "./components/Navigation"
 import Error from "./components/util/Error"
-import { getUserFromSession } from "./data/auth.server"
+import { getUserBaseFromSession } from "./data/session.server"
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -61,7 +61,7 @@ export const links: LinksFunction = () => {
 
 export function loader({ request }: LoaderArgs) {
   try {
-    return getUserFromSession(request)
+    return getUserBaseFromSession(request)
   } catch (error) {
     return null
   }

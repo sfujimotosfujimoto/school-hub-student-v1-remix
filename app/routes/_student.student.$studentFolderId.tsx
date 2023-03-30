@@ -1,10 +1,10 @@
-import { type LoaderArgs, json, V2_MetaFunction } from "@remix-run/node"
-import { Link, useLoaderData } from "@remix-run/react"
-
 import invariant from "tiny-invariant"
 
-import { getEmailFromSession, requireUserSession } from "~/data/auth.server"
-import { prisma } from "~/data/database.server"
+import { type LoaderArgs, json, type V2_MetaFunction } from "@remix-run/node"
+import { Link, useLoaderData } from "@remix-run/react"
+
+import { requireUserSession } from "~/data/session.server"
+import { prisma } from "~/data/db.server"
 import {
   callDriveAPI,
   getDrive,
@@ -15,7 +15,8 @@ import {
 import LeftArrow from "~/components/icons/LeftArrow"
 import StudentCards from "~/components/_student.student.$studentFolderId/StudentCards"
 import StudentHeader from "~/components/_student.student.$studentFolderId/StudentHeader"
-import type { StudentData, UserWithCredential } from "~/types"
+import type { StudentData } from "~/types"
+import { getUserWithCredential } from "~/data/user.server"
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserSession(request)
@@ -24,62 +25,43 @@ export async function loader({ request, params }: LoaderArgs) {
 
   invariant(studentFolderId, "studentFolder in params is required")
 
-  const email = await getEmailFromSession(request)
+  let user
+  try {
+    user = await getUserWithCredential(request)
 
-  const user: UserWithCredential | null = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-      first: true,
-      last: true,
+    // get drive instance
+    const drive = await getDrive(user.Credential.accessToken)
 
-      email: true,
-      Credential: {
-        select: {
-          accessToken: true,
-          idToken: true,
-          expiryDate: true,
-        },
-      },
-    },
-  })
+    if (!drive) {
+      return json(
+        { errorMessage: "Unauthorized Google Account" },
+        {
+          status: 500,
+        }
+      )
+    }
 
-  if (!user || !user.Credential) {
+    // call drive
+    const rows = await callDriveAPI(
+      drive,
+      `trashed=false and '${studentFolderId}' in parents`
+    )
+
+    const studentData = await getStudentData(user)
+
+    const student = getStudentByFolderId(studentFolderId, studentData)
+
+    return {
+      rows,
+      student,
+    }
+  } catch (error) {
     return json(
       { errorMessage: "User Data not found" },
       {
         status: 401,
       }
     )
-  }
-
-  // get drive instance
-  const drive = await getDrive(user.Credential.accessToken)
-
-  if (!drive) {
-    return json(
-      { errorMessage: "Unauthorized Google Account" },
-      {
-        status: 500,
-      }
-    )
-  }
-
-  // call drive
-  const rows = await callDriveAPI(
-    drive,
-    `trashed=false and '${studentFolderId}' in parents`
-  )
-
-  const studentData = await getStudentData(user)
-
-  const student = getStudentByFolderId(studentFolderId, studentData)
-
-  return {
-    rows,
-    student,
   }
 }
 
