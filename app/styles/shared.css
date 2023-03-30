@@ -1,3 +1,7 @@
+:root {
+  background-color: theme("colors.slate.100");
+}
+
 .menu > li > button.active {
   background-color: theme("colors.sfgreen.300");
   color: inherit;
