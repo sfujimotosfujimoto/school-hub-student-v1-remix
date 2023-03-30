@@ -43,8 +43,8 @@ export default function StudentCard({ rowData }: { rowData: any }) {
                   // TODO: check hardcoded: "https://lh"
                   // rowData.thumbnailLink.startsWith("https://lh") && (
                   <img
-                    className='max-w-3/4 max-h-64 object-contain'
-                    src={rowData.thumbnailLink}
+                    className='object-contain'
+                    src={rowData.thumbnailLink.split("=")[0]}
                     alt={rowData.name}
                   />
                 )}
