@@ -32,6 +32,11 @@ export const links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: tailwindStyles },
     { rel: "stylesheet", href: sharedStyles },
+    {
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: "/apple-touch-icon.png",
+    },
   ]
 }
 
@@ -56,7 +61,11 @@ function Document({
         <title>{title}</title>
         <Meta />
         <link rel='icon' type='image/x-icon' href='/favicon.svg'></link>
-        <link rel='apple-icon' href='/apple-icon.png' />
+        {/* <link
+          rel='apple-touch-icon'
+          sizes='180x180'
+          href='/apple-touch-icon.png'
+        /> */}
         <link rel='preconnect' href='https://fonts.googleapis.com' />
         <link rel='preconnect' href='https://fonts.gstatic.com' />
         <link
