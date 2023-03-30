@@ -39,15 +39,15 @@ export default function StudentCard({ rowData }: { rowData: any }) {
             </div>
             {rowData && (
               <figure className='!rounded-2xl'>
-                {rowData.hasThumbnail &&
+                {rowData.hasThumbnail && (
                   // TODO: check hardcoded: "https://lh"
-                  rowData.thumbnailLink.startsWith("https://lh") && (
-                    <img
-                      className='max-w-3/4 max-h-64 object-contain'
-                      src={rowData.thumbnailLink}
-                      alt={rowData.name}
-                    />
-                  )}
+                  // rowData.thumbnailLink.startsWith("https://lh") && (
+                  <img
+                    className='max-w-3/4 max-h-64 object-contain'
+                    src={rowData.thumbnailLink}
+                    alt={rowData.name}
+                  />
+                )}
               </figure>
             )}
           </div>
