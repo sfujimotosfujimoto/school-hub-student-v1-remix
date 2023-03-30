@@ -12,16 +12,23 @@ function getFolderId(folderUrl: string): string | null {
 // Sidebar
 export default function Sidebar({
   studentData,
+  drawerRef,
 }: {
   studentData: StudentData[]
+  drawerRef: React.RefObject<HTMLInputElement>
 }) {
+  function close() {
+    if (drawerRef.current) {
+      drawerRef.current.checked = false
+    }
+  }
   return (
     <div className='drawer-side rounded-md shadow-md'>
       <label htmlFor='my-drawer' className='drawer-overlay' />
       {studentData ? (
         <ul className='menu w-[240px] items-start bg-sfgreen-200 p-2 pt-20 sm:pt-10 text-base-content'>
           {studentData.map((d: any) => (
-            <li key={d.gakuseki}>
+            <li key={d.gakuseki} onClick={close}>
               {d.folderLink ? (
                 <StudentNameLink
                   studentData={d}

@@ -7,6 +7,7 @@ import Sidebar from "~/components/_student/Sidebar"
 import { requireUserSession } from "~/data/session.server"
 import { getStudentDataResponse } from "~/data/google.server"
 import { getUserWithCredential } from "~/data/user.server"
+import { useRef } from "react"
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserSession(request)
@@ -26,6 +27,9 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function StudentLayout() {
   const { studentData } = useLoaderData()
+
+  const drawerRef = useRef<HTMLInputElement>(null)
+
   return (
     <>
       <section className='mx-auto h-screen'>
@@ -42,6 +46,7 @@ export default function StudentLayout() {
               {/* <!-- hidden input checkbox --> */}
               <label htmlFor='my-drawer'></label>
               <input
+                ref={drawerRef}
                 id='my-drawer'
                 name='my-drawer'
                 type='checkbox'
@@ -56,7 +61,7 @@ export default function StudentLayout() {
               {/* <!-- end of Right Content --> */}
 
               {/* <!-- SideBar --> */}
-              <Sidebar studentData={studentData} />
+              <Sidebar studentData={studentData} drawerRef={drawerRef} />
               {/* <!-- end of SideBar --> */}
             </div>
           </div>
