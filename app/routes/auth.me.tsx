@@ -8,14 +8,13 @@ import {
   destroyUserSession,
   getUserBaseFromSession,
 } from "~/data/session.server"
-import * as jose from "jose"
-import type { IdToken } from "~/types"
 import { prisma } from "~/data/db.server"
 import invariant from "tiny-invariant"
+import { errorResponse } from "~/data/utils.server"
 
 export async function loader({ request }: LoaderArgs) {
   if (request.method !== "GET") {
-    throw json({ message: "Invalid request method" }, { status: 400 })
+    throw errorResponse("Invalid request method", 400)
   }
 
   return redirect("/")
@@ -33,12 +32,11 @@ export async function action({ request }: ActionArgs) {
       id: true,
       first: true,
       last: true,
-
+      picture: true,
       email: true,
       Credential: {
         select: {
           accessToken: true,
-          idToken: true,
           expiryDate: true,
         },
       },
@@ -71,22 +69,15 @@ export async function action({ request }: ActionArgs) {
     return destroyUserSession(request)
   }
 
-  if (user.Credential?.expiryDate)
-    if (!user.Credential?.idToken) {
-      return json(
-        { errorMessage: "User Data not found" },
-        {
-          status: 401,
-        }
-      )
-    }
-  const idToken = jose.decodeJwt(user.Credential.idToken) as IdToken
+  if (user.Credential?.expiryDate) {
+    throw errorResponse("User Data not found", 401)
+  }
 
   return {
-    last: idToken.family_name,
-    first: idToken.given_name,
-    email: idToken.email,
-    picture: idToken.picture,
-    exp: idToken.exp,
+    last: user.last,
+    first: user.first,
+    email: user.email,
+    picture: user.picture,
+    exp: user.Credential.expiryDate,
   }
 }

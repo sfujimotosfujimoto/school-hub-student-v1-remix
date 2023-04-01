@@ -1,4 +1,5 @@
 import { type LoaderArgs, json, redirect } from "@remix-run/node"
+import { Link } from "@remix-run/react"
 import { google } from "googleapis"
 
 export async function loader({ request }: LoaderArgs) {
@@ -18,6 +19,8 @@ export async function loader({ request }: LoaderArgs) {
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/contacts",
     "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
   ]
 
   // get authorization URL from created client
@@ -30,10 +33,25 @@ export async function loader({ request }: LoaderArgs) {
   return redirect(authUrl)
 }
 
-/*
+export default function Signin() {
+  return (
+    <div>
+      <Link
+        to='/'
+        className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
+      >
+        Back to Home
+      </Link>
+    </div>
+  )
+}
 
+/*
   if (request.method !== "POST") {
     throw json({ message: "Invalid request method" }, { status: 400 })
   }
-
-  */
+    throw new Response("ERRROR IN LOADER!!", {
+    status: 403,
+    statusText: "You are not authorized!!",
+  })
+*/

@@ -10,11 +10,6 @@ export const meta: V2_MetaFunction = () => {
   ]
 }
 
-// export const meta: V2_MetaFunction = ({ matches }) => {
-//   let parentMeta = matches.map((match) => match.meta[0] ?? [])
-//   return [...parentMeta, { title: "Projects" }]
-// }
-
 export default function StudentPage() {
   return (
     <div className='rounded-2xl border-2 border-sfgreen-400 p-10 shadow-lg'>

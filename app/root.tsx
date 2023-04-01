@@ -2,7 +2,6 @@ import sharedStyles from "~/styles/shared.css"
 import tailwindStyles from "~/styles/tailwind.css"
 
 import type {
-  ErrorBoundaryComponent,
   LinksFunction,
   LoaderArgs,
   V2_MetaFunction,
@@ -15,11 +14,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
+  isRouteErrorResponse,
+  useRouteError,
 } from "@remix-run/react"
 
 import Navigation from "./components/Navigation"
-import Error from "./components/util/Error"
+import ErrorDocument from "./components/util/ErrorDocument"
 import { getUserBaseFromSession } from "./data/session.server"
 
 export const meta: V2_MetaFunction = () => {
@@ -41,7 +41,7 @@ export const links: LinksFunction = () => {
     },
     {
       rel: "icon",
-      href: "/favicon.svg",
+      href: "/favicon.ico",
       type: "image/x-icon",
     },
     {
@@ -67,13 +67,7 @@ export function loader({ request }: LoaderArgs) {
   }
 }
 
-function Document({
-  title = "",
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
+function Document({ children }: { children: React.ReactNode }) {
   return (
     <html lang='en'>
       <head>
@@ -95,50 +89,102 @@ function Document({
 
 export default function App() {
   return (
-    <Document title='SCHOOL HUB'>
+    <Document>
       <Outlet />
     </Document>
   )
 }
 
-export function CatchBoundary() {
-  const caughtResponse = useCatch()
-  return (
-    <Document title={caughtResponse.statusText}>
-      <main>
-        <Error>
-          <h2 className='text-xl'>
-            {caughtResponse.data?.message ||
-              "Something went wrong. Please try again later."}
-          </h2>
-          <Link
-            to='/'
-            className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
-          >
-            <span className=''>Home</span>
-          </Link>
-        </Error>
-      </main>
-    </Document>
-  )
-}
+export function ErrorBoundary() {
+  console.log("🚀 app/root.tsx ~ 	🙂 in ErrorBoundary")
+  let error = useRouteError()
 
-export const ErrorBoundary: ErrorBoundaryComponent = ({ error }) => {
-  return (
-    <Document title='An error occurred.'>
-      <main>
-        <Error>
-          <p className='text-2xl'>
-            {error.message || "Something went wrong. Please try again later."}
-          </p>
-          <Link
-            to='/'
-            className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
-          >
-            Back to Home
-          </Link>
-        </Error>
-      </main>
-    </Document>
-  )
+  if (isRouteErrorResponse(error)) {
+    let errorMessage = "An error occurred."
+    console.log("🚀 app/root.tsx ~ 	🌈 error ✨ ", error, typeof error.status)
+
+    switch (error.status) {
+      case 401: {
+        errorMessage = "You are not authorized."
+        break
+      }
+      case 403: {
+        errorMessage = "You are not authenticated."
+        break
+      }
+      case 500: {
+        errorMessage = "Something went wrong in the server."
+        break
+      }
+      default: {
+        errorMessage = "Something went wrong. (default)"
+      }
+    }
+
+    return (
+      <Document>
+        <main>
+          <ErrorDocument>
+            <h1 className='text-xl'>
+              {`${errorMessage} : Route` ||
+                "Something went wrong. Please try again later."}
+            </h1>
+            <p className='text-lg text-center'>{error.statusText}</p>
+
+            <p className='text-lg'>
+              Contact:
+              <a
+                href='mailto:s-fujimoto@seig-boys.jp'
+                className='font-semibold ml-2 hover:text-sfred-200 underline '
+              >
+                s-fujimoto[at]seig-boys.jp
+              </a>
+            </p>
+            <Link
+              to='/'
+              className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
+            >
+              Back to Home
+            </Link>
+          </ErrorDocument>
+        </main>
+      </Document>
+    )
+  } else if (error instanceof Error) {
+    console.log("🚀 app/root.tsx ~ 	🌈 error ✨ ", error)
+    return (
+      <Document>
+        <main>
+          <ErrorDocument>
+            <p className='text-2xl'>
+              {`${error.message} : Error` ||
+                "Something went wrong. Please try again later."}
+            </p>
+            <Link
+              to='/'
+              className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
+            >
+              Back to Home
+            </Link>
+          </ErrorDocument>
+        </main>
+      </Document>
+    )
+  } else {
+    return (
+      <Document>
+        <main>
+          <ErrorDocument>
+            <h1 className='text-2xl'>Unknown Error</h1>
+            <Link
+              to='/'
+              className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
+            >
+              Back to Home
+            </Link>
+          </ErrorDocument>
+        </main>
+      </Document>
+    )
+  }
 }

@@ -1,11 +1,11 @@
 import { google } from "googleapis"
 import * as jose from "jose"
-import type { IdToken, Tokens } from "~/types"
-
-import { redirect } from "@remix-run/node"
+import type { Tokens } from "~/types"
 
 import { prisma } from "./db.server"
+import { getUserInfoFromPeople } from "./google.server"
 import { createUserSession } from "./session.server"
+import { errorResponse } from "./utils.server"
 
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -22,15 +22,25 @@ export async function signin({ code }: { code: string }) {
   const output = await oauth2Client.getToken(code)
 
   const tokens = output.tokens as Tokens
-  if (!tokens.id_token) {
-    return redirect("/")
+  if (!tokens.access_token) {
+    throw errorResponse(
+      "You are not authorized. Get permission from admin s-fujimoto@seig-boys.jp.",
+      401
+    )
   }
 
-  const idToken = jose.decodeJwt(tokens.id_token) as IdToken
+  const userInfo = await getUserInfoFromPeople(tokens.access_token)
+
+  if (!userInfo) {
+    throw errorResponse(
+      "You are not authorized. Get permission from admin s-fujimoto@seig-boys.jp.",
+      401
+    )
+  }
 
   let user = await prisma.user.findUnique({
     where: {
-      email: idToken.email,
+      email: userInfo.email,
     },
   })
 
@@ -38,9 +48,10 @@ export async function signin({ code }: { code: string }) {
   if (!user) {
     user = await prisma.user.create({
       data: {
-        first: idToken.given_name,
-        last: idToken.family_name,
-        email: idToken.email,
+        first: userInfo.givenName,
+        last: userInfo.familyName,
+        email: userInfo.email,
+        picture: userInfo.pictureUrl,
       },
     })
   }
@@ -59,7 +70,6 @@ export async function signin({ code }: { code: string }) {
         scope: tokens.scope,
         tokenType: tokens.token_type,
         expiryDate: tokens.expiry_date,
-        idToken: JSON.stringify(tokens.id_token),
         userId: user.id,
       },
     })
@@ -73,16 +83,11 @@ export async function signin({ code }: { code: string }) {
         scope: tokens.scope,
         tokenType: tokens.token_type,
         expiryDate: tokens.expiry_date,
-        idToken: JSON.stringify(tokens.id_token),
       },
     })
   }
 
   const secret = process.env.SESSION_SECRET
-
-  if (!secret) {
-    return redirect("/")
-  }
 
   const secretEncoded = new TextEncoder().encode(secret)
 

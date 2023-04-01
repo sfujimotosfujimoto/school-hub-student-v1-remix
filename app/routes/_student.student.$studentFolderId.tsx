@@ -4,7 +4,7 @@ import { type LoaderArgs, json, type V2_MetaFunction } from "@remix-run/node"
 import { Link, useLoaderData } from "@remix-run/react"
 
 import { requireUserSession } from "~/data/session.server"
-import { prisma } from "~/data/db.server"
+
 import {
   callDriveAPI,
   getDrive,

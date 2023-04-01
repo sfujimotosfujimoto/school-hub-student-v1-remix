@@ -25,7 +25,6 @@ export async function loader({ request }: LoaderArgs) {
       Credential: {
         select: {
           accessToken: true,
-          idToken: true,
           expiryDate: true,
         },
       },

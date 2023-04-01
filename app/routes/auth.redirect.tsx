@@ -1,5 +1,5 @@
-import { json, redirect, type LoaderArgs } from "@remix-run/node"
-import { signin } from "~/data/session.server"
+import { json, type LoaderArgs } from "@remix-run/node"
+import { signin } from "~/data/signin.server"
 
 export async function loader({ request }: LoaderArgs) {
   if (request.method !== "GET") {
@@ -10,7 +10,16 @@ export async function loader({ request }: LoaderArgs) {
   const code = parsedUrl.searchParams.get("code")
 
   // if no "code" , do not touch and resolve
-  if (!code) return redirect("/")
+  if (!code)
+    throw new Response("You are not authorized", {
+      status: 401,
+      statusText:
+        "You are not authorized. Get permission from admin s-fujimoto@seig-boys.jp.",
+    })
 
   return signin({ code })
+}
+
+export default function Redirect() {
+  return <div>Redirect</div>
 }

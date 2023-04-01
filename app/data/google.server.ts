@@ -37,6 +37,42 @@ export async function getDrive(
   }
   return null
 }
+
+async function getPeople(accessToken: string) {
+  const client = await getClient(accessToken)
+
+  if (!client) return null
+
+  const people = google.people({
+    version: "v1",
+    auth: client,
+  })
+
+  if (!people) return null
+  else return people
+}
+
+export async function getUserInfoFromPeople(accessToken: string) {
+  const people = await getPeople(accessToken)
+
+  if (!people) return null
+
+  const resp = await people.people.get({
+    resourceName: "people/me",
+    personFields: "emailAddresses,names,photos,coverPhotos,metadata",
+  })
+
+  const givenName = resp.data.names?.at(0)?.givenName
+  const familyName = resp.data.names?.at(0)?.familyName
+  const pictureUrl = resp.data.photos?.at(0)?.url || ""
+
+  const email = resp.data.emailAddresses?.at(0)?.value
+
+  if (!email || !givenName || !familyName) return null
+
+  return { email, givenName, familyName, pictureUrl }
+}
+
 /*********************************************************
  * # getDrive()
  * - gets Drive instance
@@ -93,7 +129,7 @@ export function createQuery({
 type UserWithCredentials = {
   Credential: {
     accessToken: string
-    idToken: string
+    // idToken: string
     expiryDate: bigint
   } | null
   email: string
@@ -107,12 +143,10 @@ export async function getStudentDataResponse(user: UserWithCredentials) {
     const studentData = await getStudentData(user)
     return json({ studentData })
   } catch (error) {
-    return json(
-      { errorMessage: "Unauthorized google account" },
-      {
-        status: 500,
-      }
-    )
+    throw new Response("Unauthorized google account", {
+      status: 403,
+      statusText: `You are not authorized to the spreadsheet.`,
+    })
   }
 }
 
@@ -133,7 +167,10 @@ export async function getStudentData(user: UserWithCredentials) {
     })
 
     const data = resp.data.values
-    invariant(data, "Could not get data")
+
+    if (!data || data.length === 0) {
+      throw new Error(`Could not get data"`)
+    }
 
     const studentData: StudentData[] = data.map((d) => {
       return {

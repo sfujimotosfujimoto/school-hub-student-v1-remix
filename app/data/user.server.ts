@@ -1,6 +1,5 @@
-import * as jose from "jose"
 import invariant from "tiny-invariant"
-import type { IdToken, UserBase, UserWithCredential } from "~/types"
+import type { UserBase, UserWithCredential } from "~/types"
 
 import { prisma } from "./db.server"
 import { getUserBaseFromSession } from "./session.server"
@@ -14,12 +13,11 @@ export async function getUserInfo(email: string): Promise<UserBase | null> {
       id: true,
       first: true,
       last: true,
-
+      picture: true,
       email: true,
       Credential: {
         select: {
           accessToken: true,
-          idToken: true,
           expiryDate: true,
         },
       },
@@ -30,16 +28,15 @@ export async function getUserInfo(email: string): Promise<UserBase | null> {
     return null
   }
 
-  const idToken = jose.decodeJwt(user.Credential.idToken) as IdToken
-
   return {
-    last: idToken.family_name,
-    first: idToken.given_name,
-    email: idToken.email,
-    picture: idToken.picture,
-    exp: idToken.exp,
+    last: user.last,
+    first: user.first,
+    email: user.email,
+    picture: user.picture,
+    exp: Number(user.Credential.expiryDate),
   }
 }
+
 export async function getUserWithCredential(
   request: Request
 ): Promise<UserWithCredential> {
@@ -59,7 +56,6 @@ export async function getUserWithCredential(
       Credential: {
         select: {
           accessToken: true,
-          idToken: true,
           expiryDate: true,
         },
       },
