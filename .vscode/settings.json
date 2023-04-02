@@ -1,18 +1,18 @@
 {
     "files.exclude": {
-        "node_modules": false,
-        "build": false,
-        ".vscode": false,
-        ".git": false,
-        ".cache": false,
-        ".eslintrc.js": false,
-        "pnpm-lock.yaml": false,
-        "package.json": false,
-        ".gitignore": false,
-        "tsconfig.json": false,
-        "remix.config.js": false,
-        ".env": false,
-        "README.md": false
+        "node_modules": true,
+        "build": true,
+        ".vscode": true,
+        ".git": true,
+        ".cache": true,
+        ".eslintrc.js": true,
+        "pnpm-lock.yaml": true,
+        "package.json": true,
+        ".gitignore": true,
+        "tsconfig.json": true,
+        "remix.config.js": true,
+        ".env": true,
+        "README.md": true
     },
-    "workspace.isHidden": false
+    "workspace.isHidden": true
 }
