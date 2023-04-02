@@ -4,7 +4,11 @@
 
 
 .menu > li > button.active,
-.menu > li > button:focus  {
+.menu > li > button:focus,
+.menu > li > button:hover,
+.menu > li > button:active
+{
+
   background-color: theme("colors.sfgreen.300");
   color: inherit;
 }
