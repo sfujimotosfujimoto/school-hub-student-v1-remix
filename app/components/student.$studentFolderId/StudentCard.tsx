@@ -1,5 +1,7 @@
+import { useParams } from "@remix-run/react"
 import Renew from "~/components/icons/Renew"
 import Time from "~/components/icons/Time"
+import type { RowType } from "~/types"
 
 export function dateFormat(dateString: string) {
   const date = new Date(dateString)
@@ -16,35 +18,38 @@ export function dateFormat(dateString: string) {
   return output
 }
 
-export default function StudentCard({ rowData }: { rowData: any }) {
+export default function StudentCard({ rowData }: { rowData: RowType }) {
+  const { studentFolderId } = useParams()
+
   return (
     <>
-      <a href={`${rowData.link}`}>
-        <div className='card  bg-sfgreen-200 shadow-lg transition-all duration-500 lg:card-side hover:-translate-y-1 hover:bg-sfred-50'>
-          <div className='card-body'>
-            <h2 className='card-title'>{rowData.name}</h2>
-            <div className='flex justify-center items-center gap-2'>
-              <img src={rowData.iconLink} alt='icon' className='h-5 w-5' />
+      {/* <a id="_StudentCard" href={`${rowData.link}`}> */}
+      <a id="_StudentCard" href={`/student/${studentFolderId}/${rowData.id}`}>
+        <div className="card  bg-sfgreen-200 shadow-lg transition-all duration-500 lg:card-side hover:-translate-y-1 hover:bg-sfred-50">
+          <div className="card-body">
+            <h2 className="card-title">{rowData.name}</h2>
+            <div className="flex items-center justify-center gap-2">
+              <img src={rowData.iconLink} alt="icon" className="h-5 w-5" />
               <p>{rowData.mimeType}</p>
             </div>
-            <div className='flex gap-4'>
-              <div className='flex items-center gap-1'>
-                <Time className='h-3 w-4' />
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1">
+                <Time className="h-3 w-4" />
                 <span>{dateFormat(rowData.createdTime || "") || ""}</span>
               </div>
-              <div className='flex items-center gap-1'>
-                <Renew className='h-3 w-3' />
+              <div className="flex items-center gap-1">
+                <Renew className="h-3 w-3" />
                 <span>{dateFormat(rowData.modifiedTime || "") || ""}</span>
               </div>
             </div>
             {rowData && (
-              <figure className='!rounded-2xl'>
+              <figure className="!rounded-2xl">
                 {rowData.hasThumbnail && (
                   // TODO: check hardcoded: "https://lh"
                   // rowData.thumbnailLink.startsWith("https://lh") && (
                   <img
-                    className='object-contain'
-                    src={rowData.thumbnailLink.split("=")[0]}
+                    className="object-contain"
+                    src={rowData.thumbnailLink?.split("=")[0]}
                     alt={rowData.name}
                   />
                 )}

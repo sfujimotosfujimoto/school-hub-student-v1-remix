@@ -8,30 +8,30 @@ export default function NavRight() {
   const user = useLoaderData<UserBase>()
 
   return (
-    <div className='flex'>
-      <div className='flex flex-grow items-center gap-1 text-xs sm:gap-2 sm:text-base'>
+    <div className="flex">
+      <div className="flex flex-grow items-center gap-1 text-xs sm:gap-2 sm:text-base">
         <NavLink
-          to='/'
+          to="/"
           className={`btn-success btn-xs btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
         >
-          <span className=''>Home</span>
+          <span className="">Home</span>
         </NavLink>
         {!user && (
-          <a href='/auth/signin' className={`btn-success btn-xs btn shadow-md`}>
-            <span className=''>Sign in</span>
+          <a href="/auth/signin" className={`btn-success btn-xs btn shadow-md`}>
+            <span className="">Sign in</span>
           </a>
         )}
         {user && (
           <>
             <NavLink
-              to='/student'
+              to="/student"
               className={`btn-success btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
             >
-              <span className=''>Students </span>
+              <span className="">Students </span>
             </NavLink>
-            <Form method='post' action='/auth/signout'>
+            <Form method="post" action="/auth/signout">
               <button
-                type='submit'
+                type="submit"
                 className={`btn-error btn-xs btn  border-0 shadow-md hover:bg-opacity-70`}
               >
                 Sign out
@@ -40,7 +40,7 @@ export default function NavRight() {
 
             <ImageIcon
               src={user.picture}
-              alt='user icon'
+              alt="user icon"
               width={24}
               height={24}
             />

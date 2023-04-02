@@ -1,7 +1,7 @@
 import invariant from "tiny-invariant"
 
 import { type LoaderArgs, json, type V2_MetaFunction } from "@remix-run/node"
-import { Link, useLoaderData } from "@remix-run/react"
+import { Link, Outlet, useLoaderData } from "@remix-run/react"
 
 import { requireUserSession } from "~/data/session.server"
 
@@ -33,7 +33,7 @@ export async function loader({ request, params }: LoaderArgs) {
     const drive = await getDrive(user.Credential.accessToken)
 
     if (!drive) {
-      return json(
+      throw json(
         { errorMessage: "Unauthorized Google Account" },
         {
           status: 500,
@@ -56,7 +56,7 @@ export async function loader({ request, params }: LoaderArgs) {
       student,
     }
   } catch (error) {
-    return json(
+    throw json(
       { errorMessage: "User Data not found" },
       {
         status: 401,
@@ -82,26 +82,14 @@ export const meta: V2_MetaFunction = ({
 }
 
 export default function StudentFolderPage() {
-  const { rows, student } = useLoaderData()
+  const { student } = useLoaderData<typeof loader>()
 
   return (
-    <div className='container mx-auto h-screen p-8 pt-14 sm:pt-8'>
-      <div className='mb-4 space-y-4'>
+    <div className="container mx-auto h-screen p-8 pt-14 sm:pt-8">
+      <div className="mb-4 space-y-4">
         {student && <StudentHeader student={student} />}
-        <div className='flex gap-4'>
-          <Link
-            to='/student'
-            className='btn-success btn shadow-md hover:bg-sfgreen-400'
-          >
-            <LeftArrow className='mr-2 h-5 w-5' />
-            Back
-          </Link>
-        </div>
       </div>
-
-      <div className='mt-4 mb-12 overflow-x-auto '>
-        <StudentCards rows={rows} />
-      </div>
+      <Outlet />
     </div>
   )
 }
