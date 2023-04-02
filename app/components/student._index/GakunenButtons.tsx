@@ -1,16 +1,21 @@
-import { useState } from "react"
+import type { Gakunen } from "~/types"
 
-export default function GakunenButtons() {
-  const [gakunen, setGakunen] = useState<string>("J1")
+export default function GakunenButtons({
+  gakunen,
+  setGakunen,
+}: {
+  gakunen: Gakunen
+  setGakunen: React.Dispatch<React.SetStateAction<Gakunen>>
+}) {
   return (
     <ul
-      className={`menu rounded-box menu-compact menu-horizontal mt-6 bg-warning font-bold sm:menu-normal`}
+      className={`menu rounded-box menu-compact menu-horizontal  bg-warning font-bold sm:menu-normal`}
     >
       <li>
         <button
           className={gakunen === "J1" ? "active" : undefined}
           onClick={() => {
-            setGakunen("J1")
+            setGakunen((prev) => (prev === "J1" ? "ALL" : "J1"))
           }}
         >
           J1
@@ -20,7 +25,7 @@ export default function GakunenButtons() {
         <button
           className={gakunen === "J2" ? "active" : undefined}
           onClick={() => {
-            setGakunen("J2")
+            setGakunen((prev) => (prev === "J2" ? "ALL" : "J2"))
           }}
         >
           J2
@@ -30,7 +35,7 @@ export default function GakunenButtons() {
         <button
           className={gakunen === "J3" ? "active" : undefined}
           onClick={() => {
-            setGakunen("J3")
+            setGakunen((prev) => (prev === "J3" ? "ALL" : "J3"))
           }}
         >
           J3
@@ -40,7 +45,7 @@ export default function GakunenButtons() {
         <button
           className={gakunen === "H1" ? "active" : undefined}
           onClick={() => {
-            setGakunen("H1")
+            setGakunen((prev) => (prev === "H1" ? "ALL" : "H1"))
           }}
         >
           H1
@@ -50,7 +55,7 @@ export default function GakunenButtons() {
         <button
           className={gakunen === "H2" ? "active" : undefined}
           onClick={() => {
-            setGakunen("H2")
+            setGakunen((prev) => (prev === "H2" ? "ALL" : "H2"))
           }}
         >
           H2
@@ -60,7 +65,7 @@ export default function GakunenButtons() {
         <button
           className={gakunen === "H3" ? "active" : undefined}
           onClick={() => {
-            setGakunen("H3")
+            setGakunen((prev) => (prev === "H3" ? "ALL" : "H3"))
           }}
         >
           H3

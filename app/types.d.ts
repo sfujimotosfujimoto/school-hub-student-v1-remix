@@ -36,6 +36,9 @@ export type UserBase = {
   exp: number
 }
 
+export type Gakunen = "ALL" | "J1" | "J2" | "J3" | "H1" | "H2" | "H3"
+export type Hr = "ALL" | "A" | "B" | "C" | "D" | "E"
+
 export interface UserWithCredential {
   id: number
   first: string

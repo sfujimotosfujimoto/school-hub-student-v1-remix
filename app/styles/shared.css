@@ -2,7 +2,9 @@
   background-color: theme("colors.slate.100");
 }
 
-.menu > li > button.active {
+
+.menu > li > button.active,
+.menu > li > button:focus  {
   background-color: theme("colors.sfgreen.300");
   color: inherit;
 }

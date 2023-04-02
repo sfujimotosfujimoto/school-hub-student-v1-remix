@@ -13,8 +13,8 @@ import {
 } from "~/data/google.server"
 
 import LeftArrow from "~/components/icons/LeftArrow"
-import StudentCards from "~/components/_student.student.$studentFolderId/StudentCards"
-import StudentHeader from "~/components/_student.student.$studentFolderId/StudentHeader"
+import StudentCards from "~/components/student.$studentFolderId/StudentCards"
+import StudentHeader from "~/components/student.$studentFolderId/StudentHeader"
 import type { StudentData } from "~/types"
 import { getUserWithCredential } from "~/data/user.server"
 

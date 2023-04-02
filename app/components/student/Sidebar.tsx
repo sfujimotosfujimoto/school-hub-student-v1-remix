@@ -1,6 +1,6 @@
-import StudentNameLink from "~/components/_student/StudentNameLink"
 import Spinner from "~/components/icons/Spinner"
-import type { StudentData } from "~/types"
+import StudentNameLink from "~/components/student/StudentNameLink"
+import type { Gakunen, StudentData } from "~/types"
 
 function getFolderId(folderUrl: string): string | null {
   if (!folderUrl) return null
@@ -23,10 +23,15 @@ export default function Sidebar({
     }
   }
   return (
-    <div className='drawer-side rounded-md shadow-md'>
+    <div id='__Sidebar' className='drawer-side rounded-md shadow-md'>
       <label htmlFor='my-drawer' className='drawer-overlay' />
       {studentData ? (
         <ul className='menu w-[240px] items-start bg-sfgreen-200 p-2 pt-20 sm:pt-10 text-base-content'>
+          {studentData.length === 0 && (
+            <li className='h-full flex flex-col justify-center items-center'>
+              <h1 className='text-3xl font-bold mx-auto'>No Data</h1>
+            </li>
+          )}
           {studentData.map((d: any) => (
             <li key={d.gakuseki} onClick={close}>
               {d.folderLink ? (
