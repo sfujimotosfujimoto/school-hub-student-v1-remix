@@ -23,7 +23,6 @@ export default function StudentCard({ rowData }: { rowData: RowType }) {
 
   return (
     <>
-      {/* <a id="_StudentCard" href={`${rowData.link}`}> */}
       <a id="_StudentCard" href={`/student/${studentFolderId}/${rowData.id}`}>
         <div className="card  bg-sfgreen-200 shadow-lg transition-all duration-500 lg:card-side hover:-translate-y-1 hover:bg-sfred-50">
           <div className="card-body">
