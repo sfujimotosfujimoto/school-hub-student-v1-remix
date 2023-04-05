@@ -98,10 +98,11 @@ export default function StudentFolderPage() {
     "routes/student.$studentFolderId"
   ) as ReturnType<() => { rows: RowType[]; student: StudentData }>
 
-  console.log(
-    "🚀 routes/student.$studentFolderId.$fileId.tsx ~ 	🌈 permissions ✨ ",
-    permissions
-  )
+  // console.log(
+  //   "🚀 routes/student.$studentFolderId.$fileId.tsx ~ 	🌈 permissions ✨ ",
+
+  //   permissions
+  // )
 
   const row = rows.find((r) => r.id === fileId)
 
