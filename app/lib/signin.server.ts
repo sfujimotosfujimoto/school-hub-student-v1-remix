@@ -88,7 +88,10 @@ export async function signin({ code }: { code: string }) {
   }
 
   // TODO: delete me
-  console.log('🚀 data/signin.server.ts ~ 	🌈 access_token ✨ ', tokens.access_token)
+  console.log(
+    "🚀 data/signin.server.ts ~ 	🌈 access_token ✨ ",
+    tokens.access_token
+  )
 
   const secret = process.env.SESSION_SECRET
 

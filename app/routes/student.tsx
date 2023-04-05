@@ -4,12 +4,12 @@ import { type LoaderArgs, json } from "@remix-run/node"
 import { Outlet, useLoaderData, useOutletContext } from "@remix-run/react"
 
 import Sidebar from "~/components/student/Sidebar"
-import { requireUserSession } from "~/data/session.server"
-import { getStudentDataResponse } from "~/data/google.server"
-import { getUserWithCredential } from "~/data/user.server"
+import { requireUserSession } from "~/lib/session.server"
+import { getStudentDataResponse } from "~/lib/google.server"
+import { getUserWithCredential } from "~/lib/user.server"
 import { useEffect, useRef, useState } from "react"
 import type { Gakunen, Hr } from "~/types"
-import { filterStudentDataByGakunen } from "~/data/utils"
+import { filterStudentDataByGakunen } from "~/lib/utils"
 
 /**
  * loader function
@@ -20,12 +20,10 @@ export async function loader({ request }: LoaderArgs) {
   try {
     const user = await getUserWithCredential(request)
 
-
-    // TO:
-    // get StudentData
+    // get StudentData[]
     return getStudentDataResponse(user)
   } catch (error) {
-    return json(
+    throw json(
       { errorMessage: "User Data not found" },
       {
         status: 401,
@@ -42,7 +40,6 @@ type ContextType = {
   setHr: React.Dispatch<React.SetStateAction<Hr>>
 }
 
-// TODO: should document this Outlet context pattern!
 export function useGakunen() {
   return useOutletContext<ContextType>()
 }
@@ -74,37 +71,36 @@ export default function StudentLayout() {
 
   return (
     <>
-      <section id='_student' className='mx-auto h-screen'>
-        <div className=' overflow-x-auto'>
-          <div className='wrapper'>
-            {/* <!-- Sidebar Layout --> */}
-            <label
-              htmlFor='my-drawer'
-              className='btn-success drawer-button btn-sm btn absolute top-11 sm:top-16 left-1 z-10 shadow-lg hover:bg-sfgreen-400 lg:hidden'
+      <section id="_student" className="mx-auto h-screen">
+        <div data-name="__overflow-wrapper" className=" overflow-x-auto">
+          {/* <!-- Sidebar Layout --> */}
+          <label
+            data-name="__hamburger-wrapper"
+            htmlFor="my-drawer"
+            className="drawer-button btn-success btn-sm  btn absolute left-1 top-11 z-10 shadow-lg hover:bg-sfgreen-400 sm:top-16 lg:hidden"
+          >
+            <MenuIcon className="h-3 w-3" />
+          </label>
+          <div className="drawer-mobile drawer">
+            {/* <!-- hidden input checkbox --> */}
+            <input
+              ref={drawerRef}
+              id="my-drawer"
+              name="my-drawer"
+              type="checkbox"
+              className="drawer-toggle"
+            />
+
+            {/* <!-- Right Content --> */}
+            <div
+              data-name="__rightside-content"
+              className="drawer-content flex flex-col items-center justify-start"
             >
-              <MenuIcon className='h-3 w-3' />
-            </label>
-            <div className='drawer-mobile drawer'>
-              {/* <!-- hidden input checkbox --> */}
-              <input
-                ref={drawerRef}
-                id='my-drawer'
-                name='my-drawer'
-                type='checkbox'
-                className='drawer-toggle'
-              />
-
-              {/* <!-- Right Content --> */}
-              <div className='drawer-content flex flex-col items-center justify-start'>
-                <Outlet context={{ setGakunen, gakunen, hr, setHr }} />
-              </div>
-
-              {/* <!-- SideBar --> */}
-              <Sidebar
-                studentData={filteredStudentData}
-                drawerRef={drawerRef}
-              />
+              <Outlet context={{ setGakunen, gakunen, hr, setHr }} />
             </div>
+
+            {/* <!-- SideBar --> */}
+            <Sidebar studentData={filteredStudentData} drawerRef={drawerRef} />
           </div>
         </div>
       </section>

@@ -8,15 +8,17 @@ import {
   useRouteLoaderData,
 } from "@remix-run/react"
 
-import { requireUserSession } from "~/data/session.server"
+import { requireUserSession } from "~/lib/session.server"
 
-import { getDrive } from "~/data/google.server"
+import { getDrive } from "~/lib/google.server"
 
 import LeftArrow from "~/components/icons/LeftArrow"
 import type { Permission, RowType, StudentData } from "~/types"
-import { getUserWithCredential } from "~/data/user.server"
+import { getUserWithCredential } from "~/lib/user.server"
 import { type drive_v3 } from "googleapis"
+import StudentCard from "~/components/student.$studentFolderId/StudentCard"
 
+import { loader as studentLoader } from "~/routes/student.$studentFolderId"
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserSession(request)
 
@@ -41,8 +43,6 @@ export async function loader({ request, params }: LoaderArgs) {
         }
       )
     }
-    // TODO: temporary for testing
-    const fileId = "1REcOw43A014Tx43d5m546_g7Is-2pOlY"
 
     // call drive
     const permissions = await callPermissions(drive, fileId)
@@ -93,7 +93,7 @@ export async function callPermissions(
 
 export default function StudentFolderPage() {
   const { permissions } = useLoaderData<typeof loader>()
-  const { studentFolderId } = useParams()
+  const { studentFolderId, fileId } = useParams()
   const { rows, student } = useRouteLoaderData(
     "routes/student.$studentFolderId"
   ) as ReturnType<() => { rows: RowType[]; student: StudentData }>
@@ -102,6 +102,8 @@ export default function StudentFolderPage() {
     "🚀 routes/student.$studentFolderId.$fileId.tsx ~ 	🌈 permissions ✨ ",
     permissions
   )
+
+  const row = rows.find((r) => r.id === fileId)
 
   return (
     <>
@@ -114,15 +116,125 @@ export default function StudentFolderPage() {
           Back
         </Link>
       </div>
-
+      <div className="mt-4">{row && <StudentCard rowData={row} />}</div>
       <div className="mt-4">
+        <PermissionTags permissions={permissions} />
+      </div>
+    </>
+  )
+}
+
+function PermissionTags({ permissions }: { permissions: Permission[] }) {
+  const owner = permissions.find((p) => p.role === "owner")
+  const student = permissions.find((p) => getStudentEmail(p.emailAddress))
+  const others = permissions.filter(
+    (p) => p.id !== owner?.id && p.id !== student?.id
+  )
+
+  const h2Style = `mt-4 text-sm font-semibold sm:text-lg`
+  const gridStyle = `grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3`
+
+  return (
+    <>
+      <h2 className={` ${h2Style}`}>生徒</h2>
+      <div className={`${gridStyle} gap-4`}>
+        {student && (
+          <PermissionTag permission={student} classes="bg-sfgreen-100" />
+        )}
+      </div>
+      <h2 className={`mt-4 ${h2Style}`}>オーナー</h2>
+      <div className={`${gridStyle} gap-4`}>
+        {owner && (
+          <PermissionTag permission={owner} classes="bg-sfyellow-100" />
+        )}
+      </div>
+      <h2 className={`mt-4 ${h2Style}`}>共有</h2>
+      <div className={`${gridStyle} gap-4`}>
         {permissions &&
-          permissions.map((p) => (
-            <div key={p.id}>
-              <pre>{JSON.stringify(p, null, 2)}</pre>
-            </div>
+          others.map((p) => (
+            <PermissionTag
+              key={p.id}
+              permission={p}
+              classes={"bg-sfyellow-100"}
+            />
           ))}
       </div>
     </>
   )
+}
+
+function PermissionTag({
+  permission,
+  classes,
+}: {
+  permission: Permission
+  classes: string
+}) {
+  const textStyle = `text-sm sm:text-base truncate`
+  return (
+    <div className={`rounded p-4 ${classes} relative`}>
+      <div className="flex flex-col place-content-center">
+        <span className={`font-semibold ${textStyle}`}>
+          {permission.displayName}
+        </span>
+        <span className={`${textStyle}`}>{permission.emailAddress}</span>
+        <RoleTag role={permission.role} />
+      </div>
+    </div>
+  )
+}
+
+function RoleTag({ role }: { role: string }) {
+  let color = ""
+
+  switch (role) {
+    case "writer": {
+      color = "bg-sfgreen-400"
+      break
+    }
+    case "owner": {
+      color = "bg-sfred-400"
+      break
+    }
+    case "reader": {
+      color = "bg-sfyellow-400"
+      break
+    }
+  }
+
+  return (
+    <span
+      className={`absolute right-1 top-1 rounded-lg ${color} p-1 text-xs sm:text-sm `}
+    >
+      {roleToText(role)}
+    </span>
+  )
+}
+
+function getStudentEmail(email: string) {
+  const regex = RegExp(
+    /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp)/
+    // /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp|s-tamaki@seig-boys.jp)/
+  )
+
+  const matches = email.match(regex)
+
+  if (!matches) return null
+  return matches[0]
+}
+
+function roleToText(role: string) {
+  switch (role) {
+    case "writer": {
+      return "編集者"
+    }
+
+    case "reader": {
+      return "閲覧者"
+    }
+
+    case "owner": {
+      return "オーナー"
+    }
+  }
 }

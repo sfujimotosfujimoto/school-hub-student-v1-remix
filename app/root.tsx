@@ -20,7 +20,7 @@ import {
 
 import Navigation from "./components/Navigation"
 import ErrorDocument from "./components/util/ErrorDocument"
-import { getUserBaseFromSession } from "./data/session.server"
+import { getUserBaseFromSession } from "./lib/session.server"
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -69,10 +69,10 @@ export function loader({ request }: LoaderArgs) {
 
 function Document({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='en'>
+    <html lang="en">
       <head>
-        <meta charSet='utf-8' />
-        <meta name='viewport' content='width=device-width,initial-scale=1' />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
         <Meta />
         <Links />
       </head>
@@ -125,23 +125,23 @@ export function ErrorBoundary() {
       <Document>
         <main>
           <ErrorDocument>
-            <h1 className='text-xl'>
+            <h1 className="text-xl">
               {`${errorMessage} : Route` ||
                 "Something went wrong. Please try again later."}
             </h1>
-            <p className='text-lg text-center'>{error.statusText}</p>
+            <p className="text-lg text-center">{error.statusText}</p>
 
-            <p className='text-lg'>
+            <p className="text-lg">
               Contact:
               <a
-                href='mailto:s-fujimoto@seig-boys.jp'
-                className='font-semibold ml-2 hover:text-sfred-200 underline '
+                href="mailto:s-fujimoto@seig-boys.jp"
+                className="font-semibold ml-2 hover:text-sfred-200 underline "
               >
                 s-fujimoto[at]seig-boys.jp
               </a>
             </p>
             <Link
-              to='/'
+              to="/"
               className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
             >
               Back to Home
@@ -156,12 +156,12 @@ export function ErrorBoundary() {
       <Document>
         <main>
           <ErrorDocument>
-            <p className='text-2xl'>
+            <p className="text-2xl">
               {`${error.message} : Error` ||
                 "Something went wrong. Please try again later."}
             </p>
             <Link
-              to='/'
+              to="/"
               className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
             >
               Back to Home
@@ -175,9 +175,9 @@ export function ErrorBoundary() {
       <Document>
         <main>
           <ErrorDocument>
-            <h1 className='text-2xl'>Unknown Error</h1>
+            <h1 className="text-2xl">Unknown Error</h1>
             <Link
-              to='/'
+              to="/"
               className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
             >
               Back to Home

@@ -25,7 +25,6 @@ export interface UserWithCredential {
   email: string
   Credential: {
     accessToken: string
-    // idToken: string
     expiryDate: bigint
   }
 }
@@ -56,11 +55,10 @@ export type StudentData = {
   folderLink: string | null
 }
 
-
-export type Permission =   {
+export type Permission = {
   id: string
   displayName: string
-  type: 'user' | 'group',
+  type: "user" | "group"
   emailAddress: string
-  role: 'owner' | 'writer' | 'reader'
+  role: "owner" | "writer" | "reader"
 }

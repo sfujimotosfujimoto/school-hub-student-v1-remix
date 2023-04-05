@@ -2,7 +2,6 @@ import { Link, useRouteLoaderData } from "@remix-run/react"
 
 import LeftArrow from "~/components/icons/LeftArrow"
 import StudentCards from "~/components/student.$studentFolderId/StudentCards"
-import StudentHeader from "~/components/student.$studentFolderId/StudentHeader"
 import type { RowType, StudentData } from "~/types"
 
 export default function StudentFolderPage() {
@@ -22,7 +21,7 @@ export default function StudentFolderPage() {
         </Link>
       </div>
 
-      <div className="mt-4 mb-12 overflow-x-auto ">
+      <div className="mb-12 mt-4 overflow-x-auto ">
         <StudentCards rows={rows} />
       </div>
     </>

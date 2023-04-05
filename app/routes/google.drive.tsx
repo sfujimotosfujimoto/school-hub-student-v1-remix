@@ -1,6 +1,6 @@
 import { json, type LoaderArgs } from "@remix-run/node"
-import { getDrive } from "~/data/google.server"
-import { getUserWithCredential } from "~/data/user.server"
+import { getDrive } from "~/lib/google.server"
+import { getUserWithCredential } from "~/lib/user.server"
 import type { drive_v3 } from "googleapis"
 import { Permission } from "~/types"
 
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderArgs) {
     const drive = await getDrive(user.Credential.accessToken)
 
     if (!drive) {
-      return json(
+      throw json(
         { errorMessage: "Unauthorized Google Account" },
         {
           status: 500,
@@ -37,10 +37,10 @@ export async function loader({ request }: LoaderArgs) {
     const permissions = await callPermissions(drive, fileId)
 
     return {
-      permissions
+      permissions,
     }
   } catch (error) {
-    return json(
+    throw json(
       { errorMessage: "Permissions not found" },
       {
         status: 400,
@@ -49,17 +49,17 @@ export async function loader({ request }: LoaderArgs) {
   }
 }
 
-export async function callPermissions(drive: drive_v3.Drive, fileId: string): Promise<Permission[]> {
-
-  const fields =
-    "permissions(id,type,emailAddress,role,displayName)"
+export async function callPermissions(
+  drive: drive_v3.Drive,
+  fileId: string
+): Promise<Permission[]> {
+  const fields = "permissions(id,type,emailAddress,role,displayName)"
   const list = await drive.permissions.list({
     fileId,
     fields,
   })
 
   const permissions = list.data as Permission[]
-
 
   return permissions
 }

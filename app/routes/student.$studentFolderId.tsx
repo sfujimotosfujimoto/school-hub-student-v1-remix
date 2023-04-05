@@ -1,23 +1,27 @@
 import invariant from "tiny-invariant"
 
 import { type LoaderArgs, json, type V2_MetaFunction } from "@remix-run/node"
-import { Link, Outlet, useLoaderData } from "@remix-run/react"
+import { Outlet, useLoaderData } from "@remix-run/react"
 
-import { requireUserSession } from "~/data/session.server"
+import { requireUserSession } from "~/lib/session.server"
 
 import {
   callDriveAPI,
   getDrive,
   getStudentByFolderId,
   getStudentData,
-} from "~/data/google.server"
+} from "~/lib/google.server"
 
-import LeftArrow from "~/components/icons/LeftArrow"
-import StudentCards from "~/components/student.$studentFolderId/StudentCards"
 import StudentHeader from "~/components/student.$studentFolderId/StudentHeader"
 import type { StudentData } from "~/types"
-import { getUserWithCredential } from "~/data/user.server"
+import { getUserWithCredential } from "~/lib/user.server"
 
+/**
+ * Loader
+ * get
+ * - rows: RowType[]
+ * - student: StudentData
+ */
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserSession(request)
 
@@ -47,8 +51,10 @@ export async function loader({ request, params }: LoaderArgs) {
       `trashed=false and '${studentFolderId}' in parents`
     )
 
+    // get StudentData[] from spreadsheet
     const studentData = await getStudentData(user)
 
+    // get StudentData from folder id
     const student = getStudentByFolderId(studentFolderId, studentData)
 
     return {
@@ -81,7 +87,7 @@ export const meta: V2_MetaFunction = ({
   ]
 }
 
-export default function StudentFolderPage() {
+export default function StudentFolderIdLayout() {
   const { student } = useLoaderData<typeof loader>()
 
   return (

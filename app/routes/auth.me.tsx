@@ -7,10 +7,10 @@ import {
 import {
   destroyUserSession,
   getUserBaseFromSession,
-} from "~/data/session.server"
-import { prisma } from "~/data/db.server"
+} from "~/lib/session.server"
+import { prisma } from "~/lib/db.server"
 import invariant from "tiny-invariant"
-import { errorResponse } from "~/data/utils.server"
+import { errorResponse } from "~/lib/utils.server"
 
 export async function loader({ request }: LoaderArgs) {
   if (request.method !== "GET") {
@@ -44,7 +44,7 @@ export async function action({ request }: ActionArgs) {
   })
 
   if (!user) {
-    return json(
+    throw json(
       { errorMessage: "User Data not found" },
       {
         status: 401,
@@ -53,7 +53,7 @@ export async function action({ request }: ActionArgs) {
   }
 
   if (!user.Credential?.expiryDate) {
-    return json(
+    throw json(
       { errorMessage: "User Data not found" },
       {
         status: 401,
