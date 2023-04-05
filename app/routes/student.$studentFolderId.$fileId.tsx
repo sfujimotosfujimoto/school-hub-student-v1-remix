@@ -117,7 +117,9 @@ export default function StudentFolderPage() {
           Back
         </Link>
       </div>
-      <div className="mt-4">{row && <StudentCard rowData={row} />}</div>
+      <div className="mt-4">
+        {row && <StudentCard rowData={row} thumbnailSize={"big"} />}
+      </div>
       <div className="mt-4">
         <PermissionTags permissions={permissions} />
       </div>

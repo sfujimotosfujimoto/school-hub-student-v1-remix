@@ -17,9 +17,14 @@ export default function NavRight() {
           <span className="">Home</span>
         </NavLink>
         {!user && (
-          <a href="/auth/signin" className={`btn-success btn-xs btn shadow-md`}>
-            <span className="">Sign in</span>
-          </a>
+          <Form reloadDocument method="post" action="/auth/signin">
+            <button
+              type="submit"
+              className={`btn-success btn-xs btn shadow-md`}
+            >
+              <span>Sign in</span>
+            </button>
+          </Form>
         )}
         {user && (
           <>

@@ -17,7 +17,13 @@ export function dateFormat(dateString: string) {
   return output
 }
 
-export default function StudentCard({ rowData }: { rowData: RowType }) {
+export default function StudentCard({
+  rowData,
+  thumbnailSize = "small",
+}: {
+  rowData: RowType
+  thumbnailSize?: "small" | "big"
+}) {
   return (
     <>
       {/* <a id="_StudentCard" href={`/student/${studentFolderId}/${rowData.id}`}> */}
@@ -45,7 +51,11 @@ export default function StudentCard({ rowData }: { rowData: RowType }) {
                 // rowData.thumbnailLink.startsWith("https://lh") && (
                 <img
                   className="object-contain"
-                  src={rowData.thumbnailLink?.split("=")[0]}
+                  src={
+                    thumbnailSize === "small"
+                      ? rowData.thumbnailLink
+                      : rowData.thumbnailLink?.split("=")[0]
+                  }
                   alt={rowData.name}
                 />
               )}
