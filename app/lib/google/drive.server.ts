@@ -1,23 +1,6 @@
-import { json } from "@remix-run/node"
-import { type drive_v3, google, type sheets_v4 } from "googleapis"
-import invariant from "tiny-invariant"
-import type { RowType, StudentData } from "~/types"
-
-// import { getFolderId } from "./google.client"
-
-/*********************************************************
- * Create OAuth client from given tokens in cookie
- */
-export async function getClient(accessToken: string) {
-  const client = new google.auth.OAuth2(
-    process.env.GOOGLE_API_CLIENT_ID,
-    process.env.GOOGLE_API_CLIENT_SECRET,
-    process.env.GOOGLE_API_REDIRECT_URI
-  )
-  client.setCredentials({ access_token: accessToken })
-
-  return client
-}
+import { type drive_v3, google } from "googleapis"
+import type { DriveFileData } from "~/types"
+import { getClient } from "./google.server"
 
 /*********************************************************
  * # getDrive()
@@ -36,67 +19,6 @@ export async function getDrive(
     return drive
   }
   return null
-}
-
-async function getPeople(accessToken: string) {
-  const client = await getClient(accessToken)
-
-  if (!client) return null
-
-  const people = google.people({
-    version: "v1",
-    auth: client,
-  })
-
-  if (!people) return null
-  else return people
-}
-
-export async function getUserInfoFromPeople(accessToken: string) {
-  const people = await getPeople(accessToken)
-
-  if (!people) return null
-
-  const resp = await people.people.get({
-    resourceName: "people/me",
-    personFields: "emailAddresses,names,photos,coverPhotos,metadata",
-  })
-
-  const givenName = resp.data.names?.at(0)?.givenName
-  const familyName = resp.data.names?.at(0)?.familyName
-  const pictureUrl = resp.data.photos?.at(0)?.url || ""
-
-  const email = resp.data.emailAddresses?.at(0)?.value
-
-  if (!email || !givenName || !familyName) return null
-
-  return { email, givenName, familyName, pictureUrl }
-}
-
-/*********************************************************
- * # getDrive()
- * - gets Drive instance
- */
-export async function getSheets(
-  accessToken: string
-): Promise<sheets_v4.Sheets | null> {
-  const client = await getClient(accessToken)
-
-  if (client) {
-    const sheets = google.sheets({
-      version: "v4",
-      auth: client,
-    })
-    return sheets
-  }
-  return null
-}
-
-export function getFolderId(folderUrl: string): string | null {
-  if (!folderUrl) return null
-  const output = String(folderUrl).split("/").at(-1)
-  if (!output) return null
-  return output
 }
 
 export function createQuery({
@@ -126,76 +48,10 @@ export function createQuery({
   return outputQuery.join(" and ")
 }
 
-type UserWithCredentials = {
-  Credential: {
-    accessToken: string
-    // idToken: string
-    expiryDate: bigint
-  } | null
-  email: string
-  id: number
-  first: string
-  last: string
-}
-
-export async function getStudentDataResponse(user: UserWithCredentials) {
-  try {
-    const studentData = await getStudentData(user)
-    return json({ studentData })
-  } catch (error) {
-    throw new Response("Unauthorized google account", {
-      status: 403,
-      statusText: `You are not authorized to the spreadsheet.`,
-    })
-  }
-}
-
-export async function getStudentData(user: UserWithCredentials) {
-  invariant(user.Credential, "Unauthorized google account")
-
-  const sheets = await getSheets(user.Credential.accessToken)
-  invariant(sheets, "Unauthorized google account")
-
-  const meiboSheetId = process.env.GOOGLE_API_MEIBO_SHEET_URI
-  invariant(meiboSheetId, "No meibo sheet id")
-
-  try {
-    const resp = await sheets.spreadsheets.values.get({
-      spreadsheetId: meiboSheetId,
-      range: "MEIBO!A2:J916",
-      valueRenderOption: "UNFORMATTED_VALUE",
-    })
-
-    const data = resp.data.values
-
-    if (!data || data.length === 0) {
-      throw new Error(`Could not get data"`)
-    }
-
-    const studentData: StudentData[] = data.map((d) => {
-      return {
-        gakuseki: (d[0] || 0) as number,
-        gakunen: d[1] as string,
-        hr: d[2] as string,
-        hrNo: Number(d[3]) as number,
-        last: d[4] as string,
-        first: d[5] as string,
-        sei: d[6] as string,
-        mei: d[7] as string,
-        email: d[8] as string,
-        folderLink: (d[9] || null) as string | null,
-      }
-    })
-    return studentData
-  } catch (err) {
-    throw Error(`Something went wrong getting data from spreadsheet. ${err}`)
-  }
-}
-
-export async function callDriveAPI(
+export async function getDriveFiles(
   drive: drive_v3.Drive,
   query: string
-): Promise<RowType[] | null> {
+): Promise<DriveFileData[] | null> {
   const list = await drive.files.list({
     pageSize: 20,
     q: query,
@@ -205,7 +61,7 @@ export async function callDriveAPI(
 
   if (!list.data.files) return null
 
-  const rows: RowType[] = list.data.files.map((d) => {
+  const driveFileData: DriveFileData[] = list.data.files.map((d) => {
     return {
       id: d.id || "",
       name: d.name || "",
@@ -220,104 +76,8 @@ export async function callDriveAPI(
     }
   })
 
-  return rows
+  return driveFileData
 }
-
-export function getStudentByFolderId(
-  folderId: string,
-  studentData: StudentData[]
-): StudentData | null {
-  const studentD = studentData.find(
-    (d) => d.folderLink && folderId === getFolderId(d.folderLink)
-  )
-
-  if (studentD) return studentD
-
-  return null
-}
-
-/*
-
-
-export async function getStudentData(user: UserWithCredentials) {
-  if (!user.Credential) {
-    return json(
-      { errorMessage: "Unauthorized google account" },
-      {
-        status: 500,
-      }
-    )
-  }
-
-  const sheets = await getSheets(user.Credential.accessToken)
-
-  if (!sheets) {
-    return json(
-      { errorMessage: "Unauthorized google account" },
-      {
-        status: 500,
-      }
-    )
-  }
-
-  const meiboSheetId = process.env.GOOGLE_API_MEIBO_SHEET_URI
-
-  if (!meiboSheetId) {
-    return json(
-      { errorMessage: "No meibo sheet id" },
-      {
-        status: 500,
-      }
-    )
-  }
-
-  try {
-    const resp = await sheets.spreadsheets.values.get({
-      spreadsheetId: meiboSheetId,
-      range: "MEIBO!A2:J916",
-      valueRenderOption: "UNFORMATTED_VALUE",
-    })
-
-    const data = resp.data.values
-
-    if (!data) {
-      return json(
-        { errorMessage: "Could not get data" },
-        {
-          status: 500,
-        }
-      )
-    }
-
-    const studentData: StudentData[] = data.map((d) => {
-      return {
-        gakuseki: (d[0] || 0) as number,
-        gakunen: d[1] as string,
-        hr: d[2] as string,
-        hrNo: Number(d[3]) as number,
-        last: d[4] as string,
-        first: d[5] as string,
-        sei: d[6] as string,
-        mei: d[7] as string,
-        email: d[8] as string,
-        folderLink: (d[9] || null) as string | null,
-      }
-    })
-    return json({ studentData })
-  } catch (err) {
-    return json(
-      {
-        errorMessage:
-          "Something went wrong getting data from spreadsheet. " + err,
-      },
-      {
-        status: 500,
-      }
-    )
-  }
-}
-
-*/
 
 /*
 

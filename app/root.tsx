@@ -123,19 +123,19 @@ export function ErrorBoundary() {
 
     return (
       <Document>
-        <main>
+        <main data-name="root">
           <ErrorDocument>
             <h1 className="text-xl">
               {`${errorMessage} : Route` ||
                 "Something went wrong. Please try again later."}
             </h1>
-            <p className="text-lg text-center">{error.statusText}</p>
+            <p className="text-center text-lg">{error.statusText}</p>
 
             <p className="text-lg">
               Contact:
               <a
                 href="mailto:s-fujimoto@seig-boys.jp"
-                className="font-semibold ml-2 hover:text-sfred-200 underline "
+                className="ml-2 font-semibold underline hover:text-sfred-200 "
               >
                 s-fujimoto[at]seig-boys.jp
               </a>

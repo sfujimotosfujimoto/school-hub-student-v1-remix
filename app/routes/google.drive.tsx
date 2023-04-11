@@ -1,23 +1,16 @@
 import { json, type LoaderArgs } from "@remix-run/node"
-import { getDrive } from "~/lib/google.server"
 import { getUserWithCredential } from "~/lib/user.server"
 import type { drive_v3 } from "googleapis"
-import { Permission } from "~/types"
+import type { Permission } from "~/types"
+import { getDrive } from "~/lib/google/drive.server"
 
 // akiba
 // https://drive.google.com/drive/folders/1REcOw43A014Tx43d5m546_g7Is-2pOlY?usp=share_link
 
 export async function loader({ request }: LoaderArgs) {
-  console.log(
-    '🚀 routes/google.drive.tsx ~ 	🌈 request.headers.get("Cookie") ✨ ',
-    request.headers.get("Cookie")
-  )
-
   let user
   try {
     user = await getUserWithCredential(request)
-
-    console.log("🚀 routes/google.drive.tsx ~ 	🌈 user ✨ ", user)
 
     // get drive instance
     const drive = await getDrive(user.Credential.accessToken)

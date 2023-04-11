@@ -5,24 +5,27 @@ import { Outlet, useLoaderData } from "@remix-run/react"
 
 import { requireUserSession } from "~/lib/session.server"
 
+import StudentHeader from "~/components/student.$studentFolderId/StudentHeader"
+import type { DriveFileData, StudentData } from "~/types"
+import { getUserWithCredential } from "~/lib/user.server"
+import { getDriveFiles, getDrive } from "~/lib/google/drive.server"
 import {
-  callDriveAPI,
-  getDrive,
   getStudentByFolderId,
   getStudentData,
-} from "~/lib/google.server"
-
-import StudentHeader from "~/components/student.$studentFolderId/StudentHeader"
-import type { StudentData } from "~/types"
-import { getUserWithCredential } from "~/lib/user.server"
+} from "~/lib/google/sheets.server"
 
 /**
  * Loader
  * get
- * - rows: RowType[]
+ * - rows: DriveFileData[]
  * - student: StudentData
  */
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderArgs): Promise<{
+  driveFileData: DriveFileData[] | null
+  student: StudentData | null
+  segments: string[]
+  extensions: string[]
+}> {
   await requireUserSession(request)
 
   const studentFolderId = params.studentFolderId
@@ -45,8 +48,8 @@ export async function loader({ request, params }: LoaderArgs) {
       )
     }
 
-    // call drive
-    const rows = await callDriveAPI(
+    // call drive and get DriveFileData[] of student
+    const driveFileData = await getDriveFiles(
       drive,
       `trashed=false and '${studentFolderId}' in parents`
     )
@@ -57,8 +60,30 @@ export async function loader({ request, params }: LoaderArgs) {
     // get StudentData from folder id
     const student = getStudentByFolderId(studentFolderId, studentData)
 
+    let segments = Array.from(
+      new Set(driveFileData?.map((d) => d.name.split(/[-_.]/)).flat())
+    )
+
+    const filterOutSegments = [
+      student?.last,
+      student?.first,
+      `${student?.last}${student?.first}`,
+      `${student?.last} ${student?.first}`,
+      `${student?.last}　${student?.first}`,
+      student?.gakuseki,
+    ]
+    segments = segments.filter((seg) => !filterOutSegments.includes(seg))
+
+    // get ex. "pdf", "document"
+    const extensions =
+      Array.from(new Set(driveFileData?.map((d) => d.mimeType))).map(
+        (ext) => ext.split(/[/.]/).at(-1) || ""
+      ) || []
+
     return {
-      rows,
+      extensions,
+      segments,
+      driveFileData,
       student,
     }
   } catch (error) {
@@ -71,6 +96,9 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+/**
+ * Meta Function
+ */
 export const meta: V2_MetaFunction = ({
   data,
 }: {

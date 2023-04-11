@@ -7,11 +7,14 @@ export type Tokens = {
   refresh_token?: string
 }
 
-export type UserBase = {
+export interface Person {
   last: string
   first: string
   email: string
   picture: string
+}
+
+export interface UserBase extends Person {
   exp: number
 }
 
@@ -29,7 +32,7 @@ export interface UserWithCredential {
   }
 }
 
-export type RowType = {
+export type DriveFileData = {
   id: string
   name: string
   mimeType: string
@@ -61,4 +64,16 @@ export type Permission = {
   type: "user" | "group"
   emailAddress: string
   role: "owner" | "writer" | "reader"
+}
+
+export type UserWithCredentials = {
+  Credential: {
+    accessToken: string
+    // idToken: string
+    expiryDate: bigint
+  } | null
+  email: string
+  id: number
+  first: string
+  last: string
 }

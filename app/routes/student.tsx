@@ -5,11 +5,11 @@ import { Outlet, useLoaderData, useOutletContext } from "@remix-run/react"
 
 import Sidebar from "~/components/student/Sidebar"
 import { requireUserSession } from "~/lib/session.server"
-import { getStudentDataResponse } from "~/lib/google.server"
 import { getUserWithCredential } from "~/lib/user.server"
 import { useEffect, useRef, useState } from "react"
 import type { Gakunen, Hr } from "~/types"
 import { filterStudentDataByGakunen } from "~/lib/utils"
+import { getStudentDataResponse } from "~/lib/student.server"
 
 /**
  * loader function

@@ -8,7 +8,6 @@ import { Link } from "@remix-run/react"
 import { google } from "googleapis"
 
 export async function action({ request }: ActionArgs) {
-  console.log("🚀 routes/auth.signin.tsx ~ 	🙂 in action")
   if (request.method !== "POST") {
     throw json({ message: "Invalid request method" }, { status: 400 })
   }
@@ -36,13 +35,10 @@ export async function action({ request }: ActionArgs) {
     include_granted_scopes: true,
   })
 
-  console.log("🚀 routes/auth.signin.tsx action ~ 	🌈 authUrl ✨ ", authUrl)
-
   return redirect(authUrl, { status: 302 })
 }
 
 export async function loader({ request }: LoaderArgs) {
-  console.log("🚀 routes/auth.signin.tsx ~ 	🙂 in loader")
   if (request.method !== "GET") {
     throw json({ message: "Invalid request method" }, { status: 400 })
   }
@@ -53,8 +49,6 @@ export async function loader({ request }: LoaderArgs) {
     process.env.GOOGLE_API_CLIENT_SECRET,
     process.env.GOOGLE_API_REDIRECT_URI
   )
-
-  console.log("🚀 routes/auth.signin.tsx ~ 	🙂 after oauth2Client")
 
   // the default scopes are set in console.google
   const scopes = [
@@ -71,8 +65,6 @@ export async function loader({ request }: LoaderArgs) {
     scope: scopes,
     include_granted_scopes: true,
   })
-
-  console.log("🚀 routes/auth.signin.tsx ~ 	🌈 authUrl ✨ ", authUrl)
 
   return redirect(authUrl, { status: 302 })
 }

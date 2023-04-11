@@ -1,6 +1,6 @@
 import Renew from "~/components/icons/Renew"
 import Time from "~/components/icons/Time"
-import type { RowType } from "~/types"
+import type { DriveFileData } from "~/types"
 
 export function dateFormat(dateString: string) {
   const date = new Date(dateString)
@@ -21,7 +21,7 @@ export default function StudentCard({
   rowData,
   thumbnailSize = "small",
 }: {
-  rowData: RowType
+  rowData: DriveFileData
   thumbnailSize?: "small" | "big"
 }) {
   return (

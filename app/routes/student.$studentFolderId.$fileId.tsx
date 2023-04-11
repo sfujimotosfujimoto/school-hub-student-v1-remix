@@ -1,24 +1,29 @@
-import invariant from "tiny-invariant"
-
 import { type LoaderArgs, json, type V2_MetaFunction } from "@remix-run/node"
 import {
+  Await,
   Link,
   useLoaderData,
   useParams,
   useRouteLoaderData,
 } from "@remix-run/react"
+import invariant from "tiny-invariant"
 
+import type { Permission, DriveFileData, StudentData } from "~/types"
+
+import { getUserWithCredential } from "~/lib/user.server"
 import { requireUserSession } from "~/lib/session.server"
 
-import { getDrive } from "~/lib/google.server"
-
 import LeftArrow from "~/components/icons/LeftArrow"
-import type { Permission, RowType, StudentData } from "~/types"
-import { getUserWithCredential } from "~/lib/user.server"
 import { type drive_v3 } from "googleapis"
 import StudentCard from "~/components/student.$studentFolderId/StudentCard"
+import PermissionTags from "~/components/student.$studentFolderId.$fileId/PermissionTags"
+import { getDrive } from "~/lib/google/drive.server"
 
-import { loader as studentLoader } from "~/routes/student.$studentFolderId"
+import { loader as studentFolderIdLoader } from "./student.$studentFolderId"
+
+/**
+ * Loader Function
+ */
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserSession(request)
 
@@ -60,6 +65,9 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
+/**
+ * call Permissions API
+ */
 export async function callPermissions(
   drive: drive_v3.Drive,
   fileId: string
@@ -75,36 +83,44 @@ export async function callPermissions(
   return permissions
 }
 
-// export const meta: V2_MetaFunction = ({
-//   data,
-// }: {
-//   data: { rows: any; student: StudentData }
-// }) => {
-//   const title =
-//     `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
-//     ""
+/**
+ * Meta Function
+ */
+export const meta: V2_MetaFunction = ({
+  data,
+}: {
+  data: { permissions: Permission[] }
+}) => {
+  // const title =
+  //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
+  //   ""
 
-//   return [
-//     {
-//       title: `${title} | SCHOOL HUB`,
-//     },
-//   ]
-// }
+  console.log(
+    "🚀 routes/student.$studentFolderId.$fileId.tsx ~ 	🌈 data ✨ ",
+    data.permissions
+  )
 
+  const title = "test"
+
+  return [
+    {
+      title: `${title} | SCHOOL HUB`,
+    },
+  ]
+}
+
+/**
+ * StudentFolderPage
+ */
 export default function StudentFolderPage() {
   const { permissions } = useLoaderData<typeof loader>()
   const { studentFolderId, fileId } = useParams()
-  const { rows, student } = useRouteLoaderData(
+  const { driveFileData } = useRouteLoaderData(
     "routes/student.$studentFolderId"
-  ) as ReturnType<() => { rows: RowType[]; student: StudentData }>
+  ) as Awaited<ReturnType<typeof studentFolderIdLoader>>
+  // () => { driveFileData: DriveFileData[]; student: StudentData }
 
-  // console.log(
-  //   "🚀 routes/student.$studentFolderId.$fileId.tsx ~ 	🌈 permissions ✨ ",
-
-  //   permissions
-  // )
-
-  const row = rows.find((r) => r.id === fileId)
+  const driveFileDatum = driveFileData?.find((r) => r.id === fileId)
 
   return (
     <>
@@ -118,126 +134,13 @@ export default function StudentFolderPage() {
         </Link>
       </div>
       <div className="mt-4">
-        {row && <StudentCard rowData={row} thumbnailSize={"big"} />}
+        {driveFileDatum && (
+          <StudentCard rowData={driveFileDatum} thumbnailSize={"big"} />
+        )}
       </div>
       <div className="mt-4">
         <PermissionTags permissions={permissions} />
       </div>
     </>
   )
-}
-
-function PermissionTags({ permissions }: { permissions: Permission[] }) {
-  const owner = permissions.find((p) => p.role === "owner")
-  const student = permissions.find((p) => getStudentEmail(p.emailAddress))
-  const others = permissions.filter(
-    (p) => p.id !== owner?.id && p.id !== student?.id
-  )
-
-  const h2Style = `mt-4 text-sm font-semibold sm:text-lg`
-  const gridStyle = `grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3`
-
-  return (
-    <>
-      <h2 className={` ${h2Style}`}>生徒</h2>
-      <div className={`${gridStyle} gap-4`}>
-        {student && (
-          <PermissionTag permission={student} classes="bg-sfgreen-100" />
-        )}
-      </div>
-      <h2 className={`mt-4 ${h2Style}`}>オーナー</h2>
-      <div className={`${gridStyle} gap-4`}>
-        {owner && (
-          <PermissionTag permission={owner} classes="bg-sfyellow-100" />
-        )}
-      </div>
-      <h2 className={`mt-4 ${h2Style}`}>共有</h2>
-      <div className={`${gridStyle} gap-4`}>
-        {permissions &&
-          others.map((p) => (
-            <PermissionTag
-              key={p.id}
-              permission={p}
-              classes={"bg-sfyellow-100"}
-            />
-          ))}
-      </div>
-    </>
-  )
-}
-
-function PermissionTag({
-  permission,
-  classes,
-}: {
-  permission: Permission
-  classes: string
-}) {
-  const textStyle = `text-sm sm:text-base truncate`
-  return (
-    <div className={`rounded p-4 ${classes} relative`}>
-      <div className="flex flex-col place-content-center">
-        <span className={`font-semibold ${textStyle}`}>
-          {permission.displayName}
-        </span>
-        <span className={`${textStyle}`}>{permission.emailAddress}</span>
-        <RoleTag role={permission.role} />
-      </div>
-    </div>
-  )
-}
-
-function RoleTag({ role }: { role: string }) {
-  let color = ""
-
-  switch (role) {
-    case "writer": {
-      color = "bg-sfgreen-400"
-      break
-    }
-    case "owner": {
-      color = "bg-sfred-400"
-      break
-    }
-    case "reader": {
-      color = "bg-sfyellow-400"
-      break
-    }
-  }
-
-  return (
-    <span
-      className={`absolute right-1 top-1 rounded-lg ${color} p-1 text-xs sm:text-sm `}
-    >
-      {roleToText(role)}
-    </span>
-  )
-}
-
-function getStudentEmail(email: string) {
-  const regex = RegExp(
-    /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp)/
-    // /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp|s-tamaki@seig-boys.jp)/
-  )
-
-  const matches = email.match(regex)
-
-  if (!matches) return null
-  return matches[0]
-}
-
-function roleToText(role: string) {
-  switch (role) {
-    case "writer": {
-      return "編集者"
-    }
-
-    case "reader": {
-      return "閲覧者"
-    }
-
-    case "owner": {
-      return "オーナー"
-    }
-  }
 }

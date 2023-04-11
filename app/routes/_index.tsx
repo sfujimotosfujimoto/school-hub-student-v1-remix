@@ -5,7 +5,7 @@ import LogoText from "~/components/icons/LogoText"
 
 export default function Index() {
   return (
-    <main className="flex justify-center">
+    <main data-name="_index" className="flex justify-center">
       <div className="mx-auto flex h-screen w-screen max-w-7xl flex-col items-center justify-center gap-8">
         <LogoAndText />
         <div className="max-w-xl rounded-lg bg-base-100 p-4 shadow-lg">

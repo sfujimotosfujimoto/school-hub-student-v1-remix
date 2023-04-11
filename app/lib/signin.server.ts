@@ -3,7 +3,7 @@ import * as jose from "jose"
 import type { Tokens } from "~/types"
 
 import { prisma } from "./db.server"
-import { getUserInfoFromPeople } from "./google.server"
+import { getUserInfoFromPeople } from "./google/people.server"
 import { createUserSession } from "./session.server"
 import { errorResponse } from "./utils.server"
 
@@ -48,10 +48,10 @@ export async function signin({ code }: { code: string }) {
   if (!user) {
     user = await prisma.user.create({
       data: {
-        first: userInfo.givenName,
-        last: userInfo.familyName,
+        first: userInfo.first,
+        last: userInfo.last,
         email: userInfo.email,
-        picture: userInfo.pictureUrl,
+        picture: userInfo.picture,
       },
     })
   }
@@ -86,12 +86,6 @@ export async function signin({ code }: { code: string }) {
       },
     })
   }
-
-  // TODO: delete me
-  console.log(
-    "🚀 data/signin.server.ts ~ 	🌈 access_token ✨ ",
-    tokens.access_token
-  )
 
   const secret = process.env.SESSION_SECRET
 

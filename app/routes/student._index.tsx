@@ -18,7 +18,7 @@ export default function StudentPage() {
 
   return (
     <div
-      id="student._index"
+      data-name="student._index"
       className="flex h-full flex-col items-center justify-center"
     >
       <div
