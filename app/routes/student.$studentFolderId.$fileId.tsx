@@ -13,7 +13,6 @@ import invariant from "tiny-invariant"
 import type { Permission } from "~/types"
 
 import { getUserWithCredential } from "~/lib/user.server"
-import { requireUserSession } from "~/lib/session.server"
 
 import LeftArrow from "~/components/icons/LeftArrow"
 import { type drive_v3 } from "googleapis"
@@ -23,7 +22,7 @@ import { getDrive } from "~/lib/google/drive.server"
 
 import type { loader as studentFolderIdLoader } from "./student.$studentFolderId"
 import ToFolderBtn from "~/components/student.$studentFolderId.$fileId/ToFolderBtn"
-
+import { requireUserSession } from "~/lib/session.server"
 /**
  * StudentFolderFileIdPage
  */

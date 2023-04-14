@@ -10,6 +10,9 @@ import { errorResponse } from "./utils.server"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
 
+/**
+ * signin
+ */
 export async function signin({ code }: { code: string }) {
   // creates oauth2Client from client_id and client_secret
   const oauth2Client = new google.auth.OAuth2(
@@ -93,7 +96,7 @@ export async function signin({ code }: { code: string }) {
 
   const token = await new jose.SignJWT({ email: user.email })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("24h")
+    .setExpirationTime(tokens.expiry_date)
     .sign(secretEncoded)
 
   return createUserSession(token, "/student")

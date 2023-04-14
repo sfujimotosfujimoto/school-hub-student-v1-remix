@@ -4,6 +4,8 @@ import type { UserBase, UserWithCredential } from "~/types"
 import { prisma } from "./db.server"
 import { getUserBaseFromSession } from "./session.server"
 
+// Get UserBase
+// used in `getUserBaseFromSession`
 export async function getUserInfo(email: string): Promise<UserBase | null> {
   const user = await prisma.user.findUnique({
     where: {
@@ -37,6 +39,8 @@ export async function getUserInfo(email: string): Promise<UserBase | null> {
   }
 }
 
+// used in [`student.tsx`, `student.$studentFolderId.tsx`
+// `student.$studentFolderId.$fileId.tsx`]
 export async function getUserWithCredential(
   request: Request
 ): Promise<UserWithCredential> {

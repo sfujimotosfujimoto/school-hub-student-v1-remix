@@ -16,7 +16,9 @@ export default function LogoLeft() {
           }`}
         />
       </Link>
-      <LogoText className="h-7 w-16 sm:h-10 sm:w-20 lg:h-16 lg:w-24" />
+      <Link to="/" aria-label="Go home" className="mr-2">
+        <LogoText className="h-7 w-16 sm:h-10 sm:w-20 lg:h-16 lg:w-24" />
+      </Link>
     </div>
   )
 }

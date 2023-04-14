@@ -22,6 +22,42 @@ import Navigation from "./components/Navigation"
 import ErrorDocument from "./components/util/ErrorDocument"
 import { getUserBaseFromSession } from "./lib/session.server"
 
+function Document({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Navigation />
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  )
+}
+
+export default function App() {
+  return (
+    <Document>
+      <Outlet />
+    </Document>
+  )
+}
+
+export function loader({ request }: LoaderArgs) {
+  try {
+    return getUserBaseFromSession(request)
+  } catch (error) {
+    return null
+  }
+}
+
 export const meta: V2_MetaFunction = () => {
   return [
     {
@@ -59,42 +95,6 @@ export const links: LinksFunction = () => {
   ]
 }
 
-export function loader({ request }: LoaderArgs) {
-  try {
-    return getUserBaseFromSession(request)
-  } catch (error) {
-    return null
-  }
-}
-
-function Document({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <Navigation />
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
-      </body>
-    </html>
-  )
-}
-
-export default function App() {
-  return (
-    <Document>
-      <Outlet />
-    </Document>
-  )
-}
-
 export function ErrorBoundary() {
   console.log("🚀 app/root.tsx ~ 	🙂 in ErrorBoundary")
   let error = useRouteError()
@@ -126,7 +126,7 @@ export function ErrorBoundary() {
         <main data-name="root">
           <ErrorDocument>
             <h1 className="text-xl">
-              {`${errorMessage} : Route` ||
+              {`${errorMessage} : ${error.status}` ||
                 "Something went wrong. Please try again later."}
             </h1>
             <p className="text-center text-lg">{error.statusText}</p>
