@@ -44,9 +44,12 @@ export default function LoginButton() {
             </button>
           </Form>
         )}
-        {login === "false" && <Toast text="You have to login!" />}
-        {expired && <Toast text="Your token has expired!" />}
-        {!user && <Toast text="You have to login!" />}
+
+        <div className="toast-end toast">
+          {login === "false" && <Toast text="You have to login!" />}
+          {expired && <Toast text="Your token has expired!" />}
+          {!user && <Toast text="Please login." />}
+        </div>
       </div>
     </>
   )

@@ -58,6 +58,7 @@ export async function getUserBaseFromSession(
 
   const payload = getPayloadFromUserToken(userToken)
 
+  if (!payload) return null
   // get UserBase from Prisma
   const user = await getUserInfo(payload.email)
 
@@ -78,6 +79,12 @@ export async function requireUserSession(request: Request) {
 
   if (!userToken) {
     throw redirect("/?login=false")
+  }
+
+  const payload = getPayloadFromUserToken(userToken)
+
+  if (!payload || isExpired(payload.exp)) {
+    throw redirect("/?expired=true")
   }
   return userToken
 }
@@ -104,7 +111,8 @@ function getPayloadFromUserToken(userToken: string) {
   const payload = jose.decodeJwt(userToken) as { email: string; exp: number }
 
   if (isExpired(payload.exp)) {
-    throw redirect("/?expired=true")
+    return null
+    // throw redirect("/?expired=true")
   }
   return payload
 }
