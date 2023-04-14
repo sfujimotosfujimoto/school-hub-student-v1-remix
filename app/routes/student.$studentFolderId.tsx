@@ -84,15 +84,23 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
       new Set(driveFileData?.map((d) => d.name.split(/[-_.]/)).flat())
     )
 
-    const filterOutSegments = [
-      student?.last,
-      student?.first,
-      `${student?.last}${student?.first}`,
-      `${student?.last} ${student?.first}`,
-      `${student?.last}　${student?.first}`,
-      student?.gakuseki,
-    ]
-    segments = segments.filter((seg) => !filterOutSegments.includes(seg))
+    console.log("segments", segments)
+
+    const regex = RegExp(
+      `${student?.last}|${student?.first}|${student?.gakuseki}|(${student?.hr}+\\d+)|(${student?.hr}組\\d+番)|pdf|png|jpg|jpeg`,
+      "g"
+    )
+
+    // const filterOutSegments = [
+    //   student?.last,
+    //   student?.first,
+    //   `${student?.last}${student?.first}`,
+    //   `${student?.last} ${student?.first}`,
+    //   `${student?.last}　${student?.first}`,
+    //   String(student?.gakuseki),
+    // ]
+    segments = segments.filter((seg) => !seg.match(regex))
+    // segments = segments.filter((seg) => !filterOutSegments.includes(seg))
 
     // get ex. "pdf", "document"
     const extensions =

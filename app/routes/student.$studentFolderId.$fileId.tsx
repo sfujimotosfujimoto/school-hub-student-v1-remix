@@ -23,6 +23,7 @@ import { getDrive } from "~/lib/google/drive.server"
 
 import type { loader as studentFolderIdLoader } from "./student.$studentFolderId"
 import FolderIcon from "~/components/icons/FolderIcon"
+import ToFolderBtn from "~/components/student.$studentFolderId.$fileId/ToFolderBtn"
 
 /**
  * StudentFolderFileIdPage
@@ -48,17 +49,7 @@ export default function StudentFolderIdFileIdPage() {
           Back
         </Link>
         {driveFileDatum && driveFileDatum.parents && (
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href={`https://drive.google.com/drive/folders/${driveFileDatum.parents[0]}`}
-            className={`  h-full rounded-lg bg-sfgreen-200 px-2 py-3 shadow-md transition-all duration-500  hover:-translate-y-1 hover:bg-sfgreen-400`}
-          >
-            <div className="flex items-center justify-center">
-              <FolderIcon class="mr-2 h-6 w-6" />
-              フォルダへ
-            </div>
-          </a>
+          <ToFolderBtn parentId={driveFileDatum.parents[0]} />
         )}
       </div>
 
