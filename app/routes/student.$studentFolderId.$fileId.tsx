@@ -22,7 +22,6 @@ import PermissionTags from "~/components/student.$studentFolderId.$fileId/Permis
 import { getDrive } from "~/lib/google/drive.server"
 
 import type { loader as studentFolderIdLoader } from "./student.$studentFolderId"
-import FolderIcon from "~/components/icons/FolderIcon"
 import ToFolderBtn from "~/components/student.$studentFolderId.$fileId/ToFolderBtn"
 
 /**

@@ -1,6 +1,8 @@
-/**
- * student.$studentFolderId._index.tsx
- */
+//-------------------------------------------
+// student.$studentFolderId._index.tsx
+// Index
+//-------------------------------------------
+
 import { Link, useRouteLoaderData } from "@remix-run/react"
 import { useEffect, useState } from "react"
 
@@ -67,7 +69,7 @@ export default function StudentFolderIdIndexPage() {
       </div>
 
       {/* segments of filenames split by "-","_" and "." */}
-      <div className="mt-2">
+      <div className="mt-4">
         <div className={`flex flex-wrap`}>
           <span
             onClick={() => setFilteredFiles(driveFileData)}

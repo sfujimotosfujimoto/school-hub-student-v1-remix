@@ -1,5 +1,6 @@
 //-------------------------------------------
 // student.$studentFolderId.tsx
+// Layout
 //-------------------------------------------
 import invariant from "tiny-invariant"
 
@@ -87,7 +88,7 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
     console.log("segments", segments)
 
     const regex = RegExp(
-      `${student?.last}|${student?.first}|${student?.gakuseki}|(${student?.hr}+\\d+)|(${student?.hr}組\\d+番)|pdf|png|jpg|jpeg`,
+      `${student?.last}|${student?.first}|${student?.gakuseki}|([ABCDE]+\\d+)|([ABCDE]組\\d+番)|pdf|png|jpg|jpeg`,
       "g"
     )
 
@@ -101,6 +102,12 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
     // ]
     segments = segments.filter((seg) => !seg.match(regex))
     // segments = segments.filter((seg) => !filterOutSegments.includes(seg))
+
+    console.log(
+      "🚀 routes/student.$studentFolderId.tsx ~ 	🌈 segments ✨ ",
+      regex,
+      segments
+    )
 
     // get ex. "pdf", "document"
     const extensions =
