@@ -39,7 +39,7 @@ export default function StudentFolderIdFileIdPage() {
   // JSX -------------------------
   return (
     <>
-      <div className="flex gap-4">
+      <div className="flex items-center gap-4">
         <Link
           to={`/student/${studentFolderId}`}
           className="btn-success btn shadow-md hover:bg-sfgreen-400"
@@ -47,6 +47,19 @@ export default function StudentFolderIdFileIdPage() {
           <LeftArrow className="mr-2 h-5 w-5" />
           Back
         </Link>
+        {driveFileDatum && driveFileDatum.parents && (
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={`https://drive.google.com/drive/folders/${driveFileDatum.parents[0]}`}
+            className={`  h-full rounded-lg bg-sfgreen-200 px-2 py-3 shadow-md transition-all duration-500  hover:-translate-y-1 hover:bg-sfgreen-400`}
+          >
+            <div className="flex items-center justify-center">
+              <FolderIcon class="mr-2 h-6 w-6" />
+              フォルダへ
+            </div>
+          </a>
+        )}
       </div>
 
       {/* Student file card */}
@@ -59,19 +72,6 @@ export default function StudentFolderIdFileIdPage() {
             href={`${driveFileDatum.link}`}
           >
             <StudentCard rowData={driveFileDatum} thumbnailSize={"big"} />
-          </a>
-        )}
-        {driveFileDatum && driveFileDatum.parents && (
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href={`https://drive.google.com/drive/folders/${driveFileDatum.parents[0]}`}
-            className={`mt-4 inline-block rounded bg-sfgreen-200 px-2 py-1 shadow-md transition-all duration-500 hover:-translate-y-1  hover:bg-sfgreen-400 `}
-          >
-            <div className="flex items-center">
-              <FolderIcon class="mr-2 h-6 w-6" />
-              Parent Folder
-            </div>
           </a>
         )}
       </div>
