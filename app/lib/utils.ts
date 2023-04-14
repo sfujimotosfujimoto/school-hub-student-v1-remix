@@ -34,3 +34,16 @@ export function getFolderId(folderUrl: string): string | null {
   if (!output) return null
   return output
 }
+
+// used in student.$studentFolderId.tsx
+export function filterSegments(
+  segments: string[],
+  student?: StudentData | null
+) {
+  const regex = RegExp(
+    `${student?.last}|${student?.first}|${student?.gakuseki}|([ABCDE]+\\d+)|([ABCDE]組\\d+番)|^\\d+$|pdf|png|jpg|jpeg`,
+    "g"
+  )
+
+  return segments.filter((seg) => !seg.match(regex))
+}

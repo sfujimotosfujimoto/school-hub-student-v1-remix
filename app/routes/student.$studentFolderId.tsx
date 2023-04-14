@@ -17,6 +17,7 @@ import {
   getStudentByFolderId,
   getStudentData,
 } from "~/lib/google/sheets.server"
+import { filterSegments } from "~/lib/utils"
 
 /**
  * StudentFolderIdLayout
@@ -85,29 +86,7 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
       new Set(driveFileData?.map((d) => d.name.split(/[-_.]/)).flat())
     )
 
-    console.log("segments", segments)
-
-    const regex = RegExp(
-      `${student?.last}|${student?.first}|${student?.gakuseki}|([ABCDE]+\\d+)|([ABCDE]組\\d+番)|pdf|png|jpg|jpeg`,
-      "g"
-    )
-
-    // const filterOutSegments = [
-    //   student?.last,
-    //   student?.first,
-    //   `${student?.last}${student?.first}`,
-    //   `${student?.last} ${student?.first}`,
-    //   `${student?.last}　${student?.first}`,
-    //   String(student?.gakuseki),
-    // ]
-    segments = segments.filter((seg) => !seg.match(regex))
-    // segments = segments.filter((seg) => !filterOutSegments.includes(seg))
-
-    console.log(
-      "🚀 routes/student.$studentFolderId.tsx ~ 	🌈 segments ✨ ",
-      regex,
-      segments
-    )
+    segments = filterSegments(segments, student)
 
     // get ex. "pdf", "document"
     const extensions =
