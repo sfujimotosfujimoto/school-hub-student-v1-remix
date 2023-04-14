@@ -55,6 +55,8 @@ export default function StudentFolderIdIndexPage() {
     filterExtensions(extension)
   }, [extension, driveFileData])
 
+  const textSize = `text-xs sm:text-sm`
+
   // JSX -------------------------
   return (
     <>
@@ -74,7 +76,7 @@ export default function StudentFolderIdIndexPage() {
           <span
             onClick={() => setFilteredFiles(driveFileData)}
             key="ALL"
-            className={`btn-error btn-xs btn m-1 text-sm`}
+            className={`btn-error btn-xs btn m-1 ${textSize}`}
           >
             ALL
           </span>
@@ -85,7 +87,7 @@ export default function StudentFolderIdIndexPage() {
                 <span
                   onClick={() => setExtension(segment)}
                   key={idx}
-                  className={`btn-success btn-xs btn m-1 text-sm`}
+                  className={`btn-success btn-xs btn m-1 ${textSize}`}
                 >
                   {segment}
                 </span>
@@ -97,7 +99,7 @@ export default function StudentFolderIdIndexPage() {
                 <span
                   onClick={() => setSegment(segment)}
                   key={idx}
-                  className={`btn-warning btn-xs btn m-1 text-sm`}
+                  className={`btn-warning btn-xs btn m-1 ${textSize}`}
                 >
                   {segment}
                 </span>
