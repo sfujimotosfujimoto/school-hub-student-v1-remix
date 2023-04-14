@@ -43,6 +43,7 @@ export type DriveFileData = {
   createdTime?: string
   modifiedTime?: string
   webContentLink?: string
+  parents?: string[]
 }
 
 export type StudentData = {

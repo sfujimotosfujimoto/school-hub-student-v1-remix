@@ -56,7 +56,7 @@ export async function getDriveFiles(
     pageSize: 20,
     q: query,
     fields:
-      "nextPageToken, files(id,name,mimeType,webViewLink,thumbnailLink,hasThumbnail,iconLink,createdTime,modifiedTime,webContentLink)",
+      "nextPageToken, files(id,name,mimeType,webViewLink,thumbnailLink,hasThumbnail,iconLink,createdTime,modifiedTime,webContentLink,parents)",
   })
 
   if (!list.data.files) return null
@@ -73,6 +73,7 @@ export async function getDriveFiles(
       createdTime: d.createdTime || undefined,
       modifiedTime: d.modifiedTime || undefined,
       webContentLink: d.webContentLink || undefined,
+      parents: d.parents || undefined,
     }
   })
 

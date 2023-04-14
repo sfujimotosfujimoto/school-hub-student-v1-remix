@@ -1,3 +1,6 @@
+//-------------------------------------------
+// student.$studentFolderId.tsx
+//-------------------------------------------
 import invariant from "tiny-invariant"
 
 import { type LoaderArgs, json, type V2_MetaFunction } from "@remix-run/node"
@@ -13,6 +16,23 @@ import {
   getStudentByFolderId,
   getStudentData,
 } from "~/lib/google/sheets.server"
+
+/**
+ * StudentFolderIdLayout
+ */
+export default function StudentFolderIdLayout() {
+  const { student } = useLoaderData<typeof loader>()
+
+  // JSX -------------------------
+  return (
+    <div className="container mx-auto h-screen p-8 pt-14 sm:pt-8">
+      <div className="mb-4 space-y-4">
+        {student && <StudentHeader student={student} />}
+      </div>
+      <Outlet />
+    </div>
+  )
+}
 
 /**
  * Loader
@@ -113,17 +133,4 @@ export const meta: V2_MetaFunction = ({
       title: `${title} | SCHOOL HUB`,
     },
   ]
-}
-
-export default function StudentFolderIdLayout() {
-  const { student } = useLoaderData<typeof loader>()
-
-  return (
-    <div className="container mx-auto h-screen p-8 pt-14 sm:pt-8">
-      <div className="mb-4 space-y-4">
-        {student && <StudentHeader student={student} />}
-      </div>
-      <Outlet />
-    </div>
-  )
 }

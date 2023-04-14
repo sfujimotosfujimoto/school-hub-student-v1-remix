@@ -1,8 +1,9 @@
 import {
-  type ActionArgs,
   json,
-  type LoaderArgs,
   redirect,
+  type LoaderArgs,
+  type ActionArgs,
+  type TypedResponse,
 } from "@remix-run/node"
 import {
   destroyUserSession,
@@ -11,7 +12,9 @@ import {
 import { prisma } from "~/lib/db.server"
 import invariant from "tiny-invariant"
 import { errorResponse } from "~/lib/utils.server"
+import type { UserBase } from "~/types"
 
+// TODO: Do we need this?
 export async function loader({ request }: LoaderArgs) {
   if (request.method !== "GET") {
     throw errorResponse("Invalid request method", 400)
@@ -20,7 +23,9 @@ export async function loader({ request }: LoaderArgs) {
   return redirect("/")
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({
+  request,
+}: ActionArgs): Promise<TypedResponse<never> | UserBase> {
   const userBase = await getUserBaseFromSession(request)
   invariant(userBase, "couldn't get userBase")
 
@@ -78,6 +83,6 @@ export async function action({ request }: ActionArgs) {
     first: user.first,
     email: user.email,
     picture: user.picture,
-    exp: user.Credential.expiryDate,
+    exp: Number(user.Credential.expiryDate),
   }
 }
