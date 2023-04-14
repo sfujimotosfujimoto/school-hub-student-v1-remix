@@ -38,6 +38,7 @@ type ContextType = {
   setGakunen: React.Dispatch<React.SetStateAction<Gakunen>>
   hr: Hr
   setHr: React.Dispatch<React.SetStateAction<Hr>>
+  drawerRef: React.RefObject<HTMLInputElement>
 }
 
 export function useGakunen() {
@@ -96,7 +97,7 @@ export default function StudentLayout() {
               data-name="__rightside-content"
               className="drawer-content flex flex-col items-center justify-start"
             >
-              <Outlet context={{ setGakunen, gakunen, hr, setHr }} />
+              <Outlet context={{ setGakunen, gakunen, hr, setHr, drawerRef }} />
             </div>
 
             {/* <!-- SideBar --> */}

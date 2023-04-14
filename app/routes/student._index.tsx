@@ -4,6 +4,7 @@ import HrButtons from "~/components/student._index/HrButtons"
 import type { V2_MetaFunction } from "@remix-run/node"
 
 import { useGakunen } from "./student"
+import { useEffect } from "react"
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -14,7 +15,13 @@ export const meta: V2_MetaFunction = () => {
 }
 
 export default function StudentPage() {
-  const { gakunen, setGakunen, hr, setHr } = useGakunen()
+  const { gakunen, setGakunen, hr, setHr, drawerRef } = useGakunen()
+
+  useEffect(() => {
+    if (hr !== "ALL" && drawerRef?.current) {
+      drawerRef.current.checked = true
+    }
+  }, [hr, drawerRef])
 
   return (
     <div
