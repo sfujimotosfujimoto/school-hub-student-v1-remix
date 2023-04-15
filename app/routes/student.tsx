@@ -78,7 +78,7 @@ export default function StudentLayout() {
           <label
             data-name="__hamburger-wrapper"
             htmlFor="my-drawer"
-            className="drawer-button btn-success btn-sm  btn absolute left-1 top-11 z-10 shadow-lg hover:bg-sfgreen-400 sm:top-16 lg:hidden"
+            className="btn-success drawer-button btn-sm  btn absolute left-1 top-11 z-10 shadow-lg hover:bg-sfgreen-400 sm:top-16 lg:hidden"
           >
             <MenuIcon className="h-3 w-3" />
           </label>

@@ -24,6 +24,13 @@ import { filterSegments } from "~/lib/utils"
  */
 export default function StudentFolderIdLayout() {
   const { student } = useLoaderData<typeof loader>()
+  // let navigate = useNavigate()
+
+  // let revalidate = useRevalidate()
+  // // revalidate()
+  // useEffect(() => {
+  //   revalidate()
+  // }, [])
 
   // JSX -------------------------
   return (

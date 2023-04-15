@@ -19,7 +19,7 @@ export default function StudentFolderIdIndexPage() {
   ) as Awaited<ReturnType<typeof studentFolderIdLoader>>
 
   // filteredFiles : filtered driveFileData
-  const [filteredFiles, setFilteredFiles] = useState(driveFileData)
+  const [filteredFiles, setFilteredFiles] = useState(() => driveFileData)
 
   // value of the clicked segment ex. リフレクション
   const [segment, setSegment] = useState("")
@@ -36,7 +36,7 @@ export default function StudentFolderIdIndexPage() {
       })
 
       // check if no filtered results or no segment clicked
-      if (!filtered || !segment) return driveFileData
+      if (!filtered || !segment) return setFilteredFiles(driveFileData)
       setFilteredFiles(filtered)
     }
     filterSegments(segment)
@@ -49,7 +49,7 @@ export default function StudentFolderIdIndexPage() {
         const currentExt = f.mimeType.split(/[/.]/).at(-1)
         return currentExt === ext
       })
-      if (!filtered || !extension) return driveFileData
+      if (!filtered || !extension) return setFilteredFiles(driveFileData)
       setFilteredFiles(filtered)
     }
     filterExtensions(extension)
