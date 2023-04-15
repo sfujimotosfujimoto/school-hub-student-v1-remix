@@ -1,6 +1,4 @@
 import { Link, useParams } from "@remix-run/react"
-import { useEffect } from "react"
-import { useRevalidate } from "~/lib/hooks/useRevalidate"
 import type { DriveFileData } from "~/types"
 import StudentCard from "./StudentCard"
 
@@ -10,7 +8,6 @@ export default function StudentCards({
   driveFileData: DriveFileData[]
 }) {
   const { studentFolderId } = useParams()
-  console.log("🚀 student.$studentFolderId/StudentCards.tsx ~ 	🙂 rendered!")
 
   return (
     <div
