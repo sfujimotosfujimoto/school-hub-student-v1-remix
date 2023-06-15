@@ -16,11 +16,7 @@ export default function StudentCards({
     >
       {driveFileData &&
         driveFileData.map((d: DriveFileData) => (
-          <Link
-            key={d.id}
-            id="_StudentCard"
-            to={`/student/${studentFolderId}/${d.id}`}
-          >
+          <Link key={d.id} id="_StudentCard" to={`/${studentFolderId}/${d.id}`}>
             <StudentCard rowData={d} />
           </Link>
         ))}

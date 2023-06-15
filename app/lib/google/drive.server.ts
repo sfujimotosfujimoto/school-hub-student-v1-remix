@@ -53,7 +53,7 @@ export async function getDriveFiles(
   query: string
 ): Promise<DriveFileData[] | null> {
   const list = await drive.files.list({
-    pageSize: 20,
+    pageSize: 100,
     q: query,
     fields:
       "nextPageToken, files(id,name,mimeType,webViewLink,thumbnailLink,hasThumbnail,iconLink,createdTime,modifiedTime,webContentLink,parents)",

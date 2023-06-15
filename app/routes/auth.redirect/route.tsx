@@ -1,11 +1,11 @@
-import { json, type LoaderArgs } from "@remix-run/node"
-import { signin } from "~/lib/signin.server"
+import { type LoaderArgs } from "@remix-run/node"
+import { signin } from "~/lib/signinout.server"
 
 export async function loader({ request }: LoaderArgs) {
   // TODO: Do we need this? loader always receives GET
-  if (request.method !== "GET") {
-    throw json({ message: "Invalid request method" }, { status: 400 })
-  }
+  // if (request.method !== "GET") {
+  //   throw json({ message: "Invalid request method" }, { status: 400 })
+  // }
 
   // get code from url query
   const parsedUrl = new URL(request.url)

@@ -1,5 +1,4 @@
-import Renew from "~/components/icons/Renew"
-import Time from "~/components/icons/Time"
+import { Renew, Time } from "~/components/icons"
 import type { DriveFileData } from "~/types"
 
 export function dateFormat(dateString: string) {

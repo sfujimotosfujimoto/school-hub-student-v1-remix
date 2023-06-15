@@ -17,10 +17,7 @@ export function filterStudentDataByGakunen(
 }
 
 export function getStudentEmail(email: string) {
-  const regex = RegExp(
-    /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp)/
-    // /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp|s-tamaki@seig-boys.jp)/
-  )
+  const regex = RegExp(/(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp)/)
 
   const matches = email.match(regex)
 
@@ -30,8 +27,10 @@ export function getStudentEmail(email: string) {
 
 export function getFolderId(folderUrl: string): string | null {
   if (!folderUrl) return null
-  const output = String(folderUrl).split("/").at(-1)
+  let output = String(folderUrl).split("/").at(-1)
   if (!output) return null
+  let output2 = output.split("?")
+  if (output2.length > 1) return output2[0]
   return output
 }
 

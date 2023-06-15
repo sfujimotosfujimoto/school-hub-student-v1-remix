@@ -5,19 +5,18 @@ import {
   useSearchParams,
 } from "@remix-run/react"
 
-import Logo from "../icons/Logo"
-import Toast from "../util/Toast"
+import { Logo } from "~/components/icons"
+import Toast from "~/components/util/Toast"
 
 export default function LoginButton() {
   const user = useMatches().filter((m) => m.id === "root")[0]?.data
 
   const [params] = useSearchParams()
 
-  const login = params.get("login")
-  const expired = params.get("expired")
   let navigation = useNavigation()
 
   let loading = navigation.state === "loading"
+  let authstate = params.get("authstate")
 
   return (
     <>
@@ -27,7 +26,7 @@ export default function LoginButton() {
             <button type="submit" className={`btn-success btn w-64 shadow-lg`}>
               <Logo className="h-7 w-4" />
               <span className=" ml-2 sm:ml-4 sm:inline">
-                Sign in to SCHOOL HUB
+                SCHOOL HUB サインイン
               </span>
             </button>
           </Form>
@@ -39,16 +38,28 @@ export default function LoginButton() {
             >
               <Logo className={`h-7 w-4 ${loading && "animate-spin"}`} />
               <span className=" ml-1 sm:ml-2 sm:inline">
-                Sign out of SCHOOL HUB
+                SCHOOL HUB サインアウト
               </span>
             </button>
           </Form>
         )}
 
         <div className="toast-end toast">
-          {login === "false" && <Toast text="You have to login!" />}
-          {expired && <Toast text="Your token has expired!" />}
-          {!user && <Toast text="Please login." />}
+          {authstate === "expired" && (
+            <Toast text="アクセス期限が切れました。" />
+          )}
+          {authstate === "unauthorized" && (
+            <Toast text="アクセス権限がありません。" />
+          )}
+          {authstate === "no-login" && (
+            <Toast text="ログインをしてください。" />
+          )}
+          {authstate === "not-parent-account" && (
+            <Toast text="保護者・生徒Googleアカウントでログインをしてください。" />
+          )}
+          {authstate === "no-folder" && (
+            <Toast text="Googleフォルダがないか、名簿のGoogleSheetが共有されていません。" />
+          )}
         </div>
       </div>
     </>

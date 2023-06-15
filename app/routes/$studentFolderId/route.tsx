@@ -9,14 +9,11 @@ import { Outlet, useLoaderData } from "@remix-run/react"
 
 import { requireUserSession } from "~/lib/session.server"
 
-import StudentHeader from "~/components/student.$studentFolderId/StudentHeader"
+import StudentHeader from "./StudentHeader"
 import type { DriveFileData, StudentData } from "~/types"
 import { getUserWithCredential } from "~/lib/user.server"
 import { getDriveFiles, getDrive } from "~/lib/google/drive.server"
-import {
-  getStudentByFolderId,
-  getStudentData,
-} from "~/lib/google/sheets.server"
+import { getStudentData } from "~/lib/google/sheets.server"
 import { filterSegments } from "~/lib/utils"
 
 /**
@@ -24,13 +21,6 @@ import { filterSegments } from "~/lib/utils"
  */
 export default function StudentFolderIdLayout() {
   const { student } = useLoaderData<typeof loader>()
-  // let navigate = useNavigate()
-
-  // let revalidate = useRevalidate()
-  // // revalidate()
-  // useEffect(() => {
-  //   revalidate()
-  // }, [])
 
   // JSX -------------------------
   return (
@@ -54,12 +44,13 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
   student: StudentData | null
   segments: string[]
   extensions: string[]
+  folderId: string
 }> {
+  console.log("🚀 routes/$studentFolderId.tsx ~ 	🙂 in loader")
   await requireUserSession(request)
 
-  const studentFolderId = params.studentFolderId
-
-  invariant(studentFolderId, "studentFolder in params is required")
+  const folderId = params.studentFolderId
+  invariant(folderId, "studentFolder in params is required")
 
   let user
   try {
@@ -80,14 +71,13 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
     // call drive and get DriveFileData[] of student
     const driveFileData = await getDriveFiles(
       drive,
-      `trashed=false and '${studentFolderId}' in parents`
+      `trashed=false and '${folderId}' in parents`
     )
 
-    // get StudentData[] from spreadsheet
-    const studentData = await getStudentData(user)
+    // get StudentData from json
+    const student = await getStudentData(user)
 
-    // get StudentData from folder id
-    const student = getStudentByFolderId(studentFolderId, studentData)
+    invariant(student, `Couldn't find student: ${user.email}`)
 
     let segments = Array.from(
       new Set(driveFileData?.map((d) => d.name.split(/[-_.]/)).flat())
@@ -95,6 +85,7 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
 
     segments = filterSegments(segments, student)
 
+    console.log("🚀 routes/$studentFolderId.tsx ~ 	🌈 segments ✨ ", segments)
     // get ex. "pdf", "document"
     const extensions =
       Array.from(new Set(driveFileData?.map((d) => d.mimeType))).map(
@@ -106,6 +97,7 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
       segments,
       driveFileData,
       student,
+      folderId,
     }
   } catch (error) {
     throw json(

@@ -18,9 +18,9 @@ import {
   useRouteError,
 } from "@remix-run/react"
 
-import Navigation from "./components/Navigation"
-import ErrorDocument from "./components/util/ErrorDocument"
-import { getUserBaseFromSession } from "./lib/session.server"
+import Navigation from "./Navigation"
+import ErrorDocument from "./ErrorDocument"
+import { getUserBaseFromSession } from "~/lib/session.server"
 
 function Document({ children }: { children: React.ReactNode }) {
   return (
@@ -61,7 +61,7 @@ export function loader({ request }: LoaderArgs) {
 export const meta: V2_MetaFunction = () => {
   return [
     {
-      title: "SCHOOL HUB",
+      title: "SCHOOL HUB FOR PARENTS",
     },
   ]
 }
@@ -151,15 +151,12 @@ export function ErrorBoundary() {
       </Document>
     )
   } else if (error instanceof Error) {
-    console.log("🚀 app/root.tsx ~ 	🌈 error ✨ ", error)
+    console.error("🚀 app/root.tsx ~ 	🌈 error ✨ ", error.message)
     return (
       <Document>
         <main>
           <ErrorDocument>
-            <p className="text-2xl">
-              {`${error.message} : Error` ||
-                "Something went wrong. Please try again later."}
-            </p>
+            <p className="text-2xl">{"Something went wrong."}</p>
             <Link
               to="/"
               className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}

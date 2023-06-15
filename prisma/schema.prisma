@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,7 +15,10 @@ model User {
   picture    String
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  Credential Credential?
+  activated  Boolean     @default(false)
+  role       Role        @default(USER)
+  credential Credential?
+  stats      Stats?
 }
 
 model Credential {
@@ -29,4 +29,17 @@ model Credential {
   expiryDate  BigInt
   user        User   @relation(fields: [userId], references: [id])
   userId      Int    @unique
+}
+
+model Stats {
+  id          Int      @id @default(sequence())
+  count       Int      @default(0)
+  lastVisited DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int      @unique
+}
+
+enum Role {
+  USER
+  ADMIN
 }

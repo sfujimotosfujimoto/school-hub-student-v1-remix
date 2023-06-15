@@ -6,16 +6,16 @@
 import { Link, useRouteLoaderData } from "@remix-run/react"
 import { useEffect, useState } from "react"
 
-import LeftArrow from "~/components/icons/LeftArrow"
-import StudentCards from "~/components/student.$studentFolderId/StudentCards"
-import type { loader as studentFolderIdLoader } from "./student.$studentFolderId"
+import { LeftArrow } from "~/components/icons"
+import StudentCards from "./StudentCards"
+import type { loader as studentFolderIdLoader } from "../$studentFolderId/route"
 
 /**
  * StudentFolderIndexPage Component
  */
 export default function StudentFolderIdIndexPage() {
   const { driveFileData, segments, extensions } = useRouteLoaderData(
-    "routes/student.$studentFolderId"
+    "routes/$studentFolderId"
   ) as Awaited<ReturnType<typeof studentFolderIdLoader>>
 
   // filteredFiles : filtered driveFileData
@@ -61,10 +61,7 @@ export default function StudentFolderIdIndexPage() {
   return (
     <>
       <div className="flex gap-4">
-        <Link
-          to="/student"
-          className="btn-success btn shadow-md hover:bg-sfgreen-400"
-        >
+        <Link to="/" className="btn-success btn shadow-md hover:bg-sfgreen-400">
           <LeftArrow className="mr-2 h-5 w-5" />
           Back
         </Link>

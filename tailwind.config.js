@@ -38,14 +38,44 @@ module.exports = {
           300: "#E6BC87",
           400: "#E4B06E",
         },
+        sfblue: {
+          300: "#384d6a",
+        },
+      },
+      height: {
+        screen: ["100vh", "100dvh"],
+      },
+      minHeight: {
+        screen: ["100vh", "100dvh"],
+      },
+      maxHeight: {
+        screen: ["100vh", "100dvh"],
       },
       gridTemplateColumns: {
         sidebar: "200px 1fr",
+      },
+      gridTemplateRows: {
+        layout: "auto 1fr auto",
       },
     },
   },
   plugins: [require("@tailwindcss/typography"), require("daisyui")],
   daisyui: {
-    themes: ["winter"],
+    themes: [
+      {
+        mytheme: {
+          primary: "#80CED1",
+          secondary: "#E58B8A",
+          accent: "#EDCDA5",
+          neutral: "#FCFDFE",
+          "base-100": "#FCFDFE",
+          info: "#80CED1",
+          success: "#80CED1",
+          warning: "#EDCDA5",
+          error: "#E58B8A",
+        },
+      },
+      "winter",
+    ],
   },
 }

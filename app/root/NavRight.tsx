@@ -2,7 +2,7 @@ import type { UserBase } from "~/types"
 
 import { Form, NavLink, useLoaderData } from "@remix-run/react"
 
-import ImageIcon from "../util/ImageIcon"
+import ImageIcon from "./ImageIcon"
 
 export default function NavRight() {
   const user = useLoaderData<UserBase>()
@@ -28,12 +28,12 @@ export default function NavRight() {
         )}
         {user && (
           <>
-            <NavLink
+            {/* <NavLink
               to="/student"
               className={`btn-success btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
             >
               <span className="">Students </span>
-            </NavLink>
+            </NavLink> */}
             <Form method="post" action="/auth/signout">
               <button
                 type="submit"

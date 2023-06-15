@@ -1,7 +1,5 @@
-import LoginButton from "~/components/_index/LoginButton"
-import DriveLogo from "~/components/icons/DriveLogo"
-import Logo from "~/components/icons/Logo"
-import LogoText from "~/components/icons/LogoText"
+import LoginButton from "./LoginButton"
+import { DriveLogo, Logo, LogoText } from "~/components/icons"
 
 export default function Index() {
   return (
@@ -21,8 +19,8 @@ export default function Index() {
 function LogoAndText() {
   return (
     <div className="flex items-center">
-      <Logo className="h-12 w-12 sm:h-32 sm:w-32" />
-      <LogoText className="h-12 w-32 sm:h-32 sm:w-72" />
+      <Logo className="h-24 w-16 sm:h-32 sm:w-32" />
+      <LogoText className="h-24 w-52 sm:h-40 sm:w-72" />
     </div>
   )
 }
@@ -31,9 +29,9 @@ function WhatIsSchoolHub() {
   return (
     <h2 className="text-xl font-semibold">
       ✨ What is{" "}
-      <span className="text-bold  rounded-md bg-sfred-50 px-1 text-indigo-900">
+      <span className="text-bold inline-block rounded-md bg-sfred-50 p-[2px] px-1 text-indigo-900">
         <Logo className="inline h-4 w-4" />
-        SCHOOL HUB
+        SCHOOL HUB FOR STUDENTS
       </span>
       ?
     </h2>
@@ -45,9 +43,9 @@ function Explanation() {
     <p className="text-normal mt-2 text-base-content ">
       <span className="text-bold rounded-md px-1 text-indigo-900 underline decoration-sfred-200 decoration-2">
         <Logo className="inline h-3 w-3" />
-        SCHOOL HUB
+        SCHOOL HUB FOR STUDENTS
       </span>
-      とは生徒の
+      とは
       <span className="underline decoration-sfred-200 decoration-2">
         <DriveLogo className="inline h-3 w-3" />
         Google Drive

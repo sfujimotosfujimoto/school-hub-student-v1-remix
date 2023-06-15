@@ -1,12 +1,11 @@
 import { Link, useNavigation } from "@remix-run/react"
 
-import Logo from "../icons/Logo"
-import LogoText from "../icons/LogoText"
+import { LogoText, Logo } from "~/components/icons"
 
 export default function LogoLeft() {
   let navigation = useNavigation()
 
-  let loading = navigation.state === "loading"
+  let loading = navigation.state !== "idle"
   return (
     <div className="mr-6 flex flex-shrink-0 items-center">
       <Link to="/" aria-label="Go home" className="mr-2">
@@ -17,7 +16,7 @@ export default function LogoLeft() {
         />
       </Link>
       <Link to="/" aria-label="Go home" className="mr-2">
-        <LogoText className="h-7 w-16 sm:h-10 sm:w-20 lg:h-16 lg:w-24" />
+        <LogoText className="h-8 w-16 sm:h-16 sm:w-20 lg:h-16 lg:w-24" />
       </Link>
     </div>
   )

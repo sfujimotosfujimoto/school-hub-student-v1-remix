@@ -4,7 +4,9 @@ import type { Tokens } from "~/types"
 
 import { prisma } from "./db.server"
 import { getUserInfoFromPeople } from "./google/people.server"
-import { createUserSession } from "./session.server"
+import { getStudentDataByEmail } from "./google/sheets.server"
+import { createUserSession, destroyUserSession } from "./session.server"
+import { getFolderId } from "./utils"
 import { errorResponse } from "./utils.server"
 
 const SESSION_SECRET = process.env.SESSION_SECRET
@@ -23,6 +25,7 @@ export async function signin({ code }: { code: string }) {
 
   // get token from OAuth client
   const output = await oauth2Client.getToken(code)
+  oauth2Client.generateAuthUrl({ prompt: "select_account" })
 
   const tokens = output.tokens as Tokens
   if (!tokens.access_token) {
@@ -89,6 +92,14 @@ export async function signin({ code }: { code: string }) {
       },
     })
   }
+  // get StudentData from json
+  const student = await getStudentDataByEmail(user.email)
+
+  // if no folderLink
+  if (!student?.folderLink)
+    throw errorResponse("You must use a parent account.", 403)
+
+  const folderId = getFolderId(student?.folderLink)
 
   const secret = process.env.SESSION_SECRET
 
@@ -99,66 +110,12 @@ export async function signin({ code }: { code: string }) {
     .setExpirationTime(tokens.expiry_date)
     .sign(secretEncoded)
 
-  return createUserSession(token, "/student")
+  return createUserSession(token, `/${folderId}`)
 }
 
-// export async function signup({
-//   email,
-//   password,
-// }: {
-//   email: string
-//   password: string
-// }) {
-//   const existingUser = await prisma.user.findFirst({ where: { email } })
-
-//   if (existingUser) {
-//     const error = new Error(
-//       "A user with the provided email address already exists."
-//     )
-
-//     // @ts-ignore
-//     error.status = 422
-//     throw error
-//   }
-
-//   const passwordHash = await hash(password, 12)
-
-//   const user = await prisma.user.create({
-//     data: { email, password: passwordHash },
-//   })
-//   return createUserSession(user.id, "/expenses")
-// }
-
-// export async function login({
-//   email,
-//   password,
-// }: {
-//   email: string
-//   password: string
-// }) {
-//   const existingUser = await prisma.user.findFirst({ where: { email } })
-
-//   if (!existingUser) {
-//     const error = new Error(
-//       "Could not log you in, please check the provided credentials."
-//     )
-
-//     // @ts-ignore
-//     error.status = 401
-//     throw error
-//   }
-
-//   const passwordCorrect = await compare(password, existingUser.password)
-
-//   if (!passwordCorrect) {
-//     const error = new Error(
-//       "Could not log you in, please check the provided credentials."
-//     )
-
-//     // @ts-ignore
-//     error.status = 401
-//     throw error
-//   }
-
-//   return createUserSession(existingUser.id, "/expenses")
-// }
+/**
+ * signout
+ */
+export async function signout({ request }: { request: Request }) {
+  return destroyUserSession(request)
+}

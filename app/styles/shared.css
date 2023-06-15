@@ -1,5 +1,11 @@
+html,
+body {
+	height: 100%;
+}
+
 :root {
   background-color: theme("colors.slate.100");
+  color: theme("colors.sfblue.300");
 }
 
 
