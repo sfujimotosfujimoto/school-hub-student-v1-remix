@@ -1,6 +1,5 @@
 module.exports = {
-  plugins: [require("prettier-plugin-tailwindcss")],
-  // plugins: [],
+  plugins: [],
   tabWidth: 2,
   semi: false,
   singleQuote: false,

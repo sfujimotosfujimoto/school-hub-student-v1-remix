@@ -1,13 +1,17 @@
-import { google } from "googleapis"
 import * as jose from "jose"
 import type { Tokens } from "~/types"
 
 import { prisma } from "./db.server"
-import { getUserInfoFromPeople } from "./google/people.server"
-import { getStudentDataByEmail } from "./google/sheets.server"
+import { getPersonFromPeople } from "./google/people.server"
+import { getStudentDatumByEmail } from "./google/sheets.server"
 import { createUserSession, destroyUserSession } from "./session.server"
-import { getFolderId } from "./utils"
-import { errorResponse } from "./utils.server"
+import {
+  checkValidAdminEmail,
+  checkValidStudentOrParentEmail,
+  getFolderId,
+} from "./utils"
+import { initializeClient } from "./google/google.server"
+import { redirect } from "@remix-run/node"
 
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -17,54 +21,67 @@ if (!SESSION_SECRET) throw Error("session secret is not set")
  */
 export async function signin({ code }: { code: string }) {
   // creates oauth2Client from client_id and client_secret
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_API_CLIENT_ID,
-    process.env.GOOGLE_API_CLIENT_SECRET,
-    process.env.GOOGLE_API_REDIRECT_URI
-  )
+  const oauth2Client = initializeClient()
+  oauth2Client.generateAuthUrl({ prompt: "select_account" })
 
   // get token from OAuth client
   const output = await oauth2Client.getToken(code)
-  oauth2Client.generateAuthUrl({ prompt: "select_account" })
 
   const tokens = output.tokens as Tokens
   if (!tokens.access_token) {
-    throw errorResponse(
-      "You are not authorized. Get permission from admin s-fujimoto@seig-boys.jp.",
-      401
-    )
+    throw redirect(`/?authstate=unauthorized`)
   }
 
-  const userInfo = await getUserInfoFromPeople(tokens.access_token)
-
-  if (!userInfo) {
-    throw errorResponse(
-      "You are not authorized. Get permission from admin s-fujimoto@seig-boys.jp.",
-      401
-    )
+  const person = await getPersonFromPeople(tokens.access_token)
+  if (!person) {
+    throw redirect(`/?authstate=unauthorized`)
   }
 
-  let user = await prisma.user.findUnique({
+  // check if email is valid or person is admin
+  if (
+    !checkValidStudentOrParentEmail(person.email) &&
+    !checkValidAdminEmail(person.email)
+  ) {
+    throw redirect(`/?authstate=not-parent-account`)
+  }
+
+  let userPrisma = await prisma.user.findUnique({
     where: {
-      email: userInfo.email,
+      email: person.email,
     },
   })
 
   // if no user, create in prisma db
-  if (!user) {
-    user = await prisma.user.create({
+  if (!userPrisma) {
+    userPrisma = await prisma.user.create({
       data: {
-        first: userInfo.first,
-        last: userInfo.last,
-        email: userInfo.email,
-        picture: userInfo.picture,
+        first: person.first,
+        last: person.last,
+        email: person.email,
+        picture: person.picture,
+      },
+    })
+  }
+
+  // check if user has stats in prisma db
+  let stats = await prisma.stats.findUnique({
+    where: {
+      userId: userPrisma.id,
+    },
+  })
+
+  // if no stats, create in prisma db
+  if (!stats) {
+    stats = await prisma.stats.create({
+      data: {
+        userId: userPrisma.id,
       },
     })
   }
 
   let cred = await prisma.credential.findUnique({
     where: {
-      userId: user.id,
+      userId: userPrisma.id,
     },
   })
 
@@ -76,13 +93,13 @@ export async function signin({ code }: { code: string }) {
         scope: tokens.scope,
         tokenType: tokens.token_type,
         expiryDate: tokens.expiry_date,
-        userId: user.id,
+        userId: userPrisma.id,
       },
     })
   } else {
     cred = await prisma.credential.update({
       where: {
-        userId: user.id,
+        userId: userPrisma.id,
       },
       data: {
         accessToken: tokens.access_token,
@@ -92,25 +109,42 @@ export async function signin({ code }: { code: string }) {
       },
     })
   }
-  // get StudentData from json
-  const student = await getStudentDataByEmail(user.email)
 
-  // if no folderLink
-  if (!student?.folderLink)
-    throw errorResponse("You must use a parent account.", 403)
+  // if user passes email check, set user.activated to true
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userPrisma.id,
+    },
+    data: {
+      activated: true,
+      stats: {
+        update: {
+          count: {
+            increment: 1,
+          },
+        },
+      },
+    },
+  })
 
-  const folderId = getFolderId(student?.folderLink)
+  if (!updatedUser) {
+    throw redirect(`/?authstate=not-seig-account`)
+  }
 
   const secret = process.env.SESSION_SECRET
-
   const secretEncoded = new TextEncoder().encode(secret)
-
-  const token = await new jose.SignJWT({ email: user.email })
+  const token = await new jose.SignJWT({ email: userPrisma.email })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime(tokens.expiry_date)
     .sign(secretEncoded)
 
-  return createUserSession(token, `/${folderId}`)
+  if (userPrisma.role === "ADMIN") {
+    return createUserSession(token, `/admin`)
+  }
+
+  const folderId = await getFolderIdFromEmail(userPrisma.email)
+
+  return createUserSession(token, `/student/${folderId}`)
 }
 
 /**
@@ -118,4 +152,27 @@ export async function signin({ code }: { code: string }) {
  */
 export async function signout({ request }: { request: Request }) {
   return destroyUserSession(request)
+}
+
+/**
+ * Gets folderId from email
+ *
+ * @export
+ * @param {string} email
+ * @return {*}  {(Promise<{
+ * 	folderId: string | null
+ * }>)}
+ */
+export async function getFolderIdFromEmail(
+  email: string
+): Promise<string | null> {
+  const student = await getStudentDatumByEmail(email)
+
+  if (!student?.folderLink) {
+    throw redirect(`/?authstate=no-folder`)
+  }
+
+  const folderId = getFolderId(student?.folderLink)
+
+  return folderId
 }

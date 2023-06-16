@@ -6,15 +6,6 @@ module.exports = {
       sans: ["Josefin Sans", "Zen Kaku Gothic New", "sans-serif"],
     },
     extend: {
-      height: {
-        screen: ["100vh", "100dvh"],
-      },
-      minHeight: {
-        screen: ["100vh", "100dvh"],
-      },
-      maxHeight: {
-        screen: ["100vh", "100dvh"],
-      },
       colors: {
         sfgreen: {
           50: "#D5F0F1",

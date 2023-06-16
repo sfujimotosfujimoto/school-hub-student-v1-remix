@@ -1,5 +1,5 @@
 import { google } from "googleapis"
-import { Person } from "~/types"
+import type { Person } from "~/types"
 import { getClient } from "./google.server"
 
 async function getPeople(accessToken: string) {
@@ -16,7 +16,7 @@ async function getPeople(accessToken: string) {
   else return people
 }
 
-export async function getUserInfoFromPeople(
+export async function getPersonFromPeople(
   accessToken: string
 ): Promise<Person | null> {
   const people = await getPeople(accessToken)

@@ -18,9 +18,10 @@ import {
   useRouteError,
 } from "@remix-run/react"
 
-import Navigation from "./Navigation"
-import ErrorDocument from "./ErrorDocument"
-import { getUserBaseFromSession } from "~/lib/session.server"
+import Navigation from "./root/Navigation"
+import ErrorDocument from "./root/ErrorDocument"
+import * as sessionS from "./lib/session.server"
+import Footer from "./root/Footer"
 
 function Document({ children }: { children: React.ReactNode }) {
   return (
@@ -32,8 +33,14 @@ function Document({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Navigation />
-        {children}
+        <div
+          data-name="root.tsx"
+          className="grid h-full mx-auto grid-rows-layout"
+        >
+          <Navigation />
+          <main className="h-full">{children}</main>
+          <Footer />
+        </div>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
@@ -52,7 +59,7 @@ export default function App() {
 
 export function loader({ request }: LoaderArgs) {
   try {
-    return getUserBaseFromSession(request)
+    return sessionS.getUserFromSession(request)
   } catch (error) {
     return null
   }
@@ -96,7 +103,7 @@ export const links: LinksFunction = () => {
 }
 
 export function ErrorBoundary() {
-  console.log("🚀 app/root.tsx ~ 	🙂 in ErrorBoundary")
+  console.log("🚀 app/root.tsx ~ 	✨ in ErrorBoundary")
   let error = useRouteError()
 
   if (isRouteErrorResponse(error)) {
@@ -129,7 +136,7 @@ export function ErrorBoundary() {
               {`${errorMessage} : ${error.status}` ||
                 "Something went wrong. Please try again later."}
             </h1>
-            <p className="text-center text-lg">{error.statusText}</p>
+            <p className="text-lg text-center">{error.statusText}</p>
 
             <p className="text-lg">
               Contact:

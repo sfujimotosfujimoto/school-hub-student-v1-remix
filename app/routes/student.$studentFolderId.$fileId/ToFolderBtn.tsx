@@ -1,4 +1,4 @@
-import FolderIcon from "../../components/icons/FolderIcon"
+import FolderIcon from "~/components/icons/FolderIcon"
 
 export default function ToFolderBtn({ parentId }: { parentId: string }) {
   return (

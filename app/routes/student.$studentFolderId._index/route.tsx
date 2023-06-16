@@ -3,19 +3,19 @@
 // Index
 //-------------------------------------------
 
-import { Link, useRouteLoaderData } from "@remix-run/react"
+import { Link, useMatches, useRouteLoaderData } from "@remix-run/react"
 import { useEffect, useState } from "react"
 
 import { LeftArrow } from "~/components/icons"
 import StudentCards from "./StudentCards"
-import type { loader as studentFolderIdLoader } from "../$studentFolderId/route"
+import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 
 /**
  * StudentFolderIndexPage Component
  */
 export default function StudentFolderIdIndexPage() {
   const { driveFileData, segments, extensions } = useRouteLoaderData(
-    "routes/$studentFolderId"
+    "routes/student.$studentFolderId"
   ) as Awaited<ReturnType<typeof studentFolderIdLoader>>
 
   // filteredFiles : filtered driveFileData
@@ -61,8 +61,8 @@ export default function StudentFolderIdIndexPage() {
   return (
     <>
       <div className="flex gap-4">
-        <Link to="/" className="btn-success btn shadow-md hover:bg-sfgreen-400">
-          <LeftArrow className="mr-2 h-5 w-5" />
+        <Link to="/" className="shadow-md btn-success btn hover:bg-sfgreen-400">
+          <LeftArrow className="w-5 h-5 mr-2" />
           Back
         </Link>
       </div>
@@ -104,7 +104,7 @@ export default function StudentFolderIdIndexPage() {
         </div>
       </div>
 
-      <div className="mb-12 mt-4 overflow-x-auto ">
+      <div className="mt-4 mb-12 overflow-x-auto ">
         {filteredFiles && <StudentCards driveFileData={filteredFiles} />}
       </div>
     </>

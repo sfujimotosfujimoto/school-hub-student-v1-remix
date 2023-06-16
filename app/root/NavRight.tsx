@@ -1,15 +1,16 @@
-import type { UserBase } from "~/types"
+import type { User } from "~/types"
 
 import { Form, NavLink, useLoaderData } from "@remix-run/react"
 
 import ImageIcon from "./ImageIcon"
+import { Dashboard, Login, Logout } from "~/components/icons"
 
 export default function NavRight() {
-  const user = useLoaderData<UserBase>()
+  const user = useLoaderData<User>()
 
   return (
     <div className="flex">
-      <div className="flex flex-grow items-center gap-1 text-xs sm:gap-2 sm:text-base">
+      <div className="flex items-center flex-grow gap-1 text-xs sm:gap-2 sm:text-base">
         <NavLink
           to="/"
           className={`btn-success btn-xs btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
@@ -22,24 +23,30 @@ export default function NavRight() {
               type="submit"
               className={`btn-success btn-xs btn shadow-md`}
             >
-              <span>Sign in</span>
+              <Login className="w-5 h-5 sm:hidden" />
+              <span className="hidden sm:block">サインイン</span>
             </button>
           </Form>
         )}
+
         {user && (
           <>
-            {/* <NavLink
-              to="/student"
-              className={`btn-success btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
-            >
-              <span className="">Students </span>
-            </NavLink> */}
+            {user.role === "ADMIN" && (
+              <NavLink
+                to="/admin"
+                className={`btn-warning btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
+              >
+                <Dashboard className="w-5 h-5 sm:hidden " />
+                <span className="hidden sm:block">ADMIN</span>
+              </NavLink>
+            )}
             <Form method="post" action="/auth/signout">
               <button
                 type="submit"
                 className={`btn-error btn-xs btn  border-0 shadow-md hover:bg-opacity-70`}
               >
-                Sign out
+                <Logout className="w-5 h-5 sm:hidden" />
+                <span className="hidden sm:block">サインアウト</span>
               </button>
             </Form>
 

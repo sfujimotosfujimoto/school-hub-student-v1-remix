@@ -1,10 +1,9 @@
 import * as jose from "jose"
 import invariant from "tiny-invariant"
-import type { UserBase } from "~/types"
+import type { User } from "~/types"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
-
-import { getUserInfo } from "./user.server"
+import * as userS from "./user.server"
 
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -47,21 +46,18 @@ export async function destroyUserSession(request: Request) {
   })
 }
 
-// Gets UserBase from Session -------------------------
-// used in [`root.tsx`, `user.server.ts`]
-export async function getUserBaseFromSession(
+export async function getUserFromSession(
   request: Request
-): Promise<UserBase | null> {
+): Promise<User | null> {
   const userToken = await getUserTokenFromSession(request)
 
   if (!userToken) return null
 
-  const payload = getPayloadFromUserToken(userToken)
+  const payload = await verifyUserTokenJWT(userToken)
 
   if (!payload) return null
   // get UserBase from Prisma
-  const user = await getUserInfo(payload.email)
-
+  const user = await userS.getUserByEmail(payload.email)
   // if no user, create in prisma db
   invariant(user, "Could not find user")
 
@@ -78,15 +74,18 @@ export async function requireUserSession(request: Request) {
   const userToken = session.get("userToken") as string | null | undefined
 
   if (!userToken) {
-    throw redirect("/?login=false")
+    throw redirect("/?authstate=unauthorized")
   }
 
-  const payload = getPayloadFromUserToken(userToken)
+  // get payload<email, exp>
+  const payload = await verifyUserTokenJWT(userToken)
+  if (!payload) throw redirect("/?authstate=expired")
 
   if (!payload || isExpired(payload.exp)) {
     throw redirect("/?expired=true")
   }
-  return userToken
+
+  return payload
 }
 
 //-------------------------------------------
@@ -107,47 +106,34 @@ export async function getUserTokenFromSession(request: Request) {
   return userToken
 }
 
-function getPayloadFromUserToken(userToken: string) {
-  const payload = jose.decodeJwt(userToken) as { email: string; exp: number }
+// Gets payload<email, exp> from "userToken"
+async function verifyUserTokenJWT(userToken: string) {
+  // decode the JWT and get payload<email,exp>
+  const secret = new TextEncoder().encode(process.env.SESSION_SECRET)
+  const { payload } = await jose.jwtVerify(userToken, secret)
+  // const payload = jose.decodeJwt(userToken) as { email: string; exp: number }
+  if (payload.email === undefined || payload.exp === undefined) return null
 
-  if (isExpired(payload.exp)) {
+  const typedPayload = payload as { email: string; exp: number }
+  // check if expired
+  if (isExpired(typedPayload.exp)) {
     return null
-    // throw redirect("/?expired=true")
   }
-  return payload
+
+  return typedPayload
 }
 
+// Check expiration
 function isExpired(expire: number): boolean {
   if (expire < 10_000_000_000 && expire > 0)
     throw Error(`expire is incorrect: ${expire}`)
 
   const now = Date.now()
 
-  // console.log(
-  //   "🚀 lib/session.server.ts ~ 	🌈 expire ✨ ",
-  //   new Date(expire).toTimeString(),
-  //   new Date(Date.now()).toTimeString()
-  // )
-
   // check for expired!!
   if (expire < now) {
-    console.log("🚀 lib/session.server.ts ~ 	🌈 Expired! ✨ ")
     return true
   } else {
     return false
   }
 }
-
-// export async function requireUserWithExpiry(request: Request) {
-//   const user = await getUserWithCredential(request)
-
-//   if (!user) {
-//     throw redirect("/?login=false")
-//   }
-
-//   if (isExpired(Number(user.Credential.expiryDate))) {
-//     throw redirect("/?expired=true")
-//   }
-
-//   return user
-// }

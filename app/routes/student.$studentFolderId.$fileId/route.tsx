@@ -4,12 +4,10 @@
 import { type LoaderArgs, type V2_MetaFunction } from "@remix-run/node"
 import { Link, useParams, useRouteLoaderData } from "@remix-run/react"
 
-import type { Permission } from "~/types"
-
 import { LeftArrow } from "~/components/icons"
-import StudentCard from "~/routes/$studentFolderId._index/StudentCard"
+import StudentCard from "~/routes/student.$studentFolderId._index/StudentCard"
 
-import type { loader as studentFolderIdLoader } from "../$studentFolderId/route"
+import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import ToFolderBtn from "./ToFolderBtn"
 import { requireUserSession } from "~/lib/session.server"
 
@@ -37,9 +35,9 @@ export default function StudentFolderIdFileIdPage() {
       <div className="flex items-center gap-4">
         <Link
           to={`/${studentFolderId}`}
-          className="btn-success btn shadow-md hover:bg-sfgreen-400"
+          className="shadow-md btn-success btn hover:bg-sfgreen-400"
         >
-          <LeftArrow className="mr-2 h-5 w-5" />
+          <LeftArrow className="w-5 h-5 mr-2" />
           Back
         </Link>
         {driveFileDatum && driveFileDatum.parents && (
@@ -76,7 +74,7 @@ export async function loader({ request }: LoaderArgs) {
 // export async function loader({ request, params }: LoaderArgs) {
 //   await requireUserSession(request)
 
-//   console.log("🚀 routes/$studentFolderId.$fileId.tsx ~ 	🙂 in loader")
+//   console.log("🚀 routes/$studentFolderId.$fileId.tsx ~ 	✨ in loader")
 //   const studentFolderId = params.studentFolderId
 //   const fileId = params.fileId
 
@@ -86,7 +84,7 @@ export async function loader({ request }: LoaderArgs) {
 //   let user
 //   try {
 //     user = await getUserWithCredential(request)
-//     const drive = await getDrive(user.Credential.accessToken)
+//     const drive = await getDrive(user.credential.accessToken)
 
 //     if (!drive) {
 //       throw json(
@@ -112,7 +110,7 @@ export async function loader({ request }: LoaderArgs) {
 //     }
 //   } catch (error) {
 //     console.error(
-//       "🚀 routes/$studentFolderId.$fileId.tsx ~ 	🙂 in Error of studentFolderId.$fileId.tsx",
+//       "🚀 routes/$studentFolderId.$fileId.tsx ~ 	✨ in Error of studentFolderId.$fileId.tsx",
 //       error
 //     )
 //     throw json(
@@ -128,7 +126,7 @@ export async function loader({ request }: LoaderArgs) {
  * call Permissions API
  */
 // export async function callPermissions(drive: drive_v3.Drive, fileId: string) {
-//   console.log("🚀 routes/$studentFolderId.$fileId.tsx ~ 	🙂 in callPermmissions")
+//   console.log("🚀 routes/$studentFolderId.$fileId.tsx ~ 	✨ in callPermmissions")
 //   const fields = "permissions(id,type,emailAddress,role,displayName)"
 
 //   try {
@@ -148,16 +146,10 @@ export async function loader({ request }: LoaderArgs) {
 /**
  * Meta Function
  */
-export const meta: V2_MetaFunction = ({
-  data,
-}: {
-  data: { permissions: Permission[] }
-}) => {
+export const meta: V2_MetaFunction = () => {
   // const title =
   //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
   //   ""
-
-  const title = "test"
 
   return [
     {

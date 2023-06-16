@@ -1,13 +1,7 @@
 import Spinner from "~/components/icons/Spinner"
 import StudentNameLink from "~/components/student/StudentNameLink"
-import type { Gakunen, StudentData } from "~/types"
-
-function getFolderId(folderUrl: string): string | null {
-  if (!folderUrl) return null
-  const output = String(folderUrl).split("/").at(-1)
-  if (!output) return null
-  return output
-}
+import { getFolderId } from "~/lib/utils"
+import type { StudentData } from "~/types"
 
 // Sidebar
 export default function Sidebar({
@@ -23,13 +17,13 @@ export default function Sidebar({
     }
   }
   return (
-    <div id='__Sidebar' className='drawer-side rounded-md shadow-md'>
-      <label htmlFor='my-drawer' className='drawer-overlay' />
+    <div id="__Sidebar" className="rounded-md shadow-md drawer-side">
+      <label htmlFor="my-drawer" className="drawer-overlay" />
       {studentData ? (
-        <ul className='menu w-[240px] items-start bg-sfgreen-200 p-2 pt-20 sm:pt-10 text-base-content'>
+        <ul className="menu w-[240px] items-start bg-sfgreen-200 p-2 pt-20 sm:pt-10 text-base-content">
           {studentData.length === 0 && (
-            <li className='h-full flex flex-col justify-center items-center'>
-              <h1 className='text-3xl font-bold mx-auto'>No Data</h1>
+            <li className="flex flex-col items-center justify-center h-full">
+              <h1 className="mx-auto text-3xl font-bold">No Data</h1>
             </li>
           )}
           {studentData.map((d: any) => (
@@ -46,7 +40,7 @@ export default function Sidebar({
           ))}
         </ul>
       ) : (
-        <div className='flex h-full flex-col items-center justify-center'>
+        <div className="flex flex-col items-center justify-center h-full">
           <Spinner />
         </div>
       )}

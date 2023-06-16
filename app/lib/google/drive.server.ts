@@ -2,25 +2,6 @@ import { type drive_v3, google } from "googleapis"
 import type { DriveFileData } from "~/types"
 import { getClient } from "./google.server"
 
-/*********************************************************
- * # getDrive()
- * - gets Drive instance
- */
-export async function getDrive(
-  accessToken: string
-): Promise<drive_v3.Drive | null> {
-  const client = await getClient(accessToken)
-
-  if (client) {
-    const drive = google.drive({
-      version: "v3",
-      auth: client,
-    })
-    return drive
-  }
-  return null
-}
-
 export function createQuery({
   folderId,
   mimeType,
@@ -49,19 +30,19 @@ export function createQuery({
 }
 
 export async function getDriveFiles(
-  drive: drive_v3.Drive,
+  accessToken: string,
   query: string
 ): Promise<DriveFileData[] | null> {
-  const list = await drive.files.list({
-    pageSize: 100,
-    q: query,
-    fields:
-      "nextPageToken, files(id,name,mimeType,webViewLink,thumbnailLink,hasThumbnail,iconLink,createdTime,modifiedTime,webContentLink,parents)",
-  })
+  const drive = await getDrive(accessToken)
+  if (!drive) throw new Error("Couldn't get drive")
 
-  if (!list.data.files) return null
+  const files: drive_v3.Schema$File[] = await callFilesList(drive, query)
 
-  const driveFileData: DriveFileData[] = list.data.files.map((d) => {
+  if (!files) return null
+  // if (!list.data.files) return null
+
+  const driveFileData: DriveFileData[] = files.map((d) => {
+    // const driveFileData: DriveFileData[] = list.data.files.map((d) => {
     return {
       id: d.id || "",
       name: d.name || "",
@@ -78,6 +59,50 @@ export async function getDriveFiles(
   })
 
   return driveFileData
+}
+
+//-------------------------------------------
+// PRIVATE FUNCTIONS
+//-------------------------------------------
+/*********************************************************
+ * # getDrive()
+ * - gets Drive instance
+ */
+async function getDrive(accessToken: string): Promise<drive_v3.Drive | null> {
+  const client = await getClient(accessToken)
+
+  if (client) {
+    const drive = google.drive({
+      version: "v3",
+      auth: client,
+    })
+    return drive
+  }
+  return null
+}
+
+async function callFilesList(drive: drive_v3.Drive, query: string) {
+  let files: drive_v3.Schema$File[] = []
+  let nextPageToken = undefined
+
+  const MaxSize = 3000
+
+  do {
+    const list: any = await drive.files.list({
+      pageSize: 300,
+      pageToken: nextPageToken,
+      q: query,
+      fields:
+        "nextPageToken, files(id,name,mimeType,webViewLink,thumbnailLink,hasThumbnail,iconLink,createdTime,modifiedTime,webContentLink,parents)",
+    })
+
+    if (list.data.files) {
+      files = files.concat(list.data.files)
+    }
+
+    if (list.data.nextPageToken) nextPageToken = list.data.nextPageToken
+  } while (nextPageToken && files.length < MaxSize)
+  return files
 }
 
 /*
