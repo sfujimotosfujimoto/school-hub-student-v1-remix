@@ -68,7 +68,7 @@ export function loader({ request }: LoaderArgs) {
 export const meta: V2_MetaFunction = () => {
   return [
     {
-      title: "SCHOOL HUB FOR PARENTS",
+      title: "SCHOOL HUB STUDENT",
     },
   ]
 }
