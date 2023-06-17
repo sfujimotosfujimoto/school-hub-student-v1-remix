@@ -1,25 +1,20 @@
-//-------------------------------------------
-// student.$studentFolderId.tsx
-// Layout
-//-------------------------------------------
 import invariant from "tiny-invariant"
+import { getDriveFiles } from "~/lib/google/drive.server"
+import { getStudentDatumByEmail } from "~/lib/google/sheets.server"
+import { requireUserRole } from "~/lib/user.server"
+import { filterSegments, getFolderId } from "~/lib/utils"
 
 import {
+  redirect,
   type LoaderArgs,
   type V2_MetaFunction,
-  redirect,
-  fetch,
 } from "@remix-run/node"
 import { Outlet, useLoaderData } from "@remix-run/react"
+import { kv } from "@vercel/kv"
 
 import StudentHeader from "./StudentHeader"
+
 import type { DriveFileData, StudentData } from "~/types"
-import { requireUserRole } from "~/lib/user.server"
-import { getDriveFiles } from "~/lib/google/drive.server"
-import { filterSegments, getFolderId } from "~/lib/utils"
-import { kv } from "@vercel/kv"
-import { logger } from "~/lib/logger"
-import { getStudentDatumByEmail2 } from "~/lib/student.server"
 
 /**
  * StudentFolderIdLayout
@@ -54,26 +49,26 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
   const user = await requireUserRole(request)
   if (!user || !user.credential) throw Error("unauthorized")
 
-  let studentData: StudentData[]
+  // let studentData: StudentData[]
 
-  const cache = await kv.get<StudentData[] | null>("studentData")
+  // const cache = await kv.get<StudentData[] | null>("studentData")
 
-  if (cache) {
-    logger.info("🎁 cache hit")
-    studentData = cache
-  } else {
-    logger.info("🎁 no cache")
-    const data = await (
-      await fetch(`${process.env.BASE_URL}/student-data`, { method: "POST" })
-    ).json()
+  // if (cache) {
+  //   logger.info("🎁 cache hit")
+  //   studentData = cache
+  // } else {
+  //   logger.info("🎁 no cache")
+  //   const data = await (
+  //     await fetch(`${process.env.BASE_URL}/student-data`, { method: "POST" })
+  //   ).json()
 
-    if (data) {
-      await kv.set("studentData", data.studentData, { ex: 60 })
-    }
-    studentData = data.studentData
-  }
+  //   if (data) {
+  //     await kv.set("studentData", data.studentData, { ex: KV_EXPIRE_SECONDS })
+  //   }
+  //   studentData = data.studentData
+  // }
 
-  const student = await getStudentDatumByEmail2(studentData, user.email)
+  const student = await getStudentDatumByEmail(user.email)
 
   if (!student || !student.folderLink)
     throw redirect("/?authstate=unauthorized")

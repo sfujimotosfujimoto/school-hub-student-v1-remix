@@ -1,27 +1,9 @@
 import React from "react"
 import { formatDate } from "~/lib/utils"
-import AdminRow from "./AdminRow"
 import type { User } from "~/types"
+import AdminRow from "./AdminRow"
 
 export default function AdminCard({ user }: { user: User }) {
-  // const user = {
-  //   picture: "",
-  //   last: "l",
-  //   first: "f",
-  //   id: "id",
-  //   email: "email",
-  //   role: "role",
-  //   activated: true,
-  //   createdAt: new Date(),
-  //   updatedAt: new Date(),
-  //   credential: {
-  //     expiryDate: new Date(),
-  //   },
-  //   stats: {
-  //     count: 1,
-  //     lastVisited: new Date(),
-  //   },
-  // }
   return (
     <div
       data-name="AdminCards"

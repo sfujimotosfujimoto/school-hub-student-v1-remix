@@ -1,8 +1,8 @@
-import React from "react"
 import type { LoaderArgs } from "@remix-run/node"
 import { useLoaderData } from "@remix-run/react"
-import Tables from "./Tables"
+import React from "react"
 import { getUsers, requireAdminRole } from "~/lib/user.server"
+import Tables from "./Tables"
 export default function AdminIndexPage() {
   const { users } = useLoaderData()
 

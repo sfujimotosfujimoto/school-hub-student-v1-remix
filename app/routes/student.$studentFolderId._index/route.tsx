@@ -3,12 +3,12 @@
 // Index
 //-------------------------------------------
 
-import { Link, useMatches, useRouteLoaderData } from "@remix-run/react"
+import { Link, useRouteLoaderData } from "@remix-run/react"
 import { useEffect, useState } from "react"
 
 import { LeftArrow } from "~/components/icons"
-import StudentCards from "./StudentCards"
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
+import StudentCards from "./StudentCards"
 
 /**
  * StudentFolderIndexPage Component

@@ -1,6 +1,5 @@
-import type { V2_MetaFunction } from "@remix-run/node"
+import type { LoaderArgs, V2_MetaFunction } from "@remix-run/node"
 import { Outlet } from "@remix-run/react"
-import type { LoaderArgs } from "@remix-run/node"
 import React from "react"
 import BackButton from "~/components/BackButton"
 import { getUserById, requireAdminRole } from "~/lib/user.server"

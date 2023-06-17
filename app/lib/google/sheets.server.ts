@@ -1,46 +1,37 @@
-import { google, type sheets_v4 } from "googleapis"
+import { google } from "googleapis"
 import invariant from "tiny-invariant"
-import type { StudentData, User } from "~/types"
+import type { StudentData } from "~/types"
 import { getFolderId } from "../utils"
-import { getClient, getServiceAccountClient } from "./google.server"
-import jsondata from "../../data/studentdata.json"
+import { getServiceAccountClient } from "./google.server"
+import { kv } from "@vercel/kv"
+import { logger } from "../logger"
 
-/*********************************************************
- * # getSheets()
- * - gets Drive instance
- */
-export async function getSheets(
-  accessToken: string
-): Promise<sheets_v4.Sheets | null> {
-  const client = await getClient(accessToken)
-
-  if (client) {
-    const sheets = google.sheets({
-      version: "v4",
-      auth: client,
-    })
-    return sheets
-  }
-  return null
-}
-
-export async function getStudentData(user: User) {
-  invariant(user.credential, "Unauthorized google account")
-
-  const studentEmail = user.email.replace(/^p/, "b")
-
-  let student = jsondata.find((d) => d.email === studentEmail)
-
-  return student
-}
+const KV_EXPIRE_SECONDS = 60
 
 export async function getStudentDatumByEmail(
   email: string
 ): Promise<StudentData | undefined> {
+  console.log("🚀 google/sheets.server.ts ~ 	😀 in getStudentDatumByEmail")
+  const studentData = await getStudentDataWithServiceAccount()
+
+  if (!studentData) return undefined
   const studentEmail = email.replace(/^p/, "b")
-  let student = jsondata.find((d) => d.email === studentEmail)
+
+  const student = studentData.find((d) => d.email === studentEmail)
   return student
 }
+
+// export async function getStudentDatumByEmail2(
+//   studentData: StudentData[],
+//   userEmail: string,
+// ): Promise<StudentData | undefined> {
+
+//   if (!studentData) return undefined
+//   const studentEmail = userEmail.replace(/^p/, "b")
+
+//   const student = studentData.find((d) => d.email === studentEmail)
+//   return student
+// }
 
 export function getStudentByFolderId(
   folderId: string,
@@ -56,7 +47,6 @@ export function getStudentByFolderId(
 }
 
 async function getSheetsWithServiceAccount() {
-  // console.log('🚀 server/sheets.server.ts ~ 	😀 in getSheetsWithServiceAccount')
   const client = await getServiceAccountClient()
   if (!client) return null
 
@@ -68,45 +58,55 @@ async function getSheetsWithServiceAccount() {
 }
 
 export async function getStudentDataWithServiceAccount() {
-  // console.log(
-  // "🚀 server/sheets.server.ts ~ getStudentDataWithServiceAccount in"
-  // )
-
+  console.log(
+    "🚀 google/sheets.server.ts ~ 	😀 in getStudentDataWithServiceAccount"
+  )
   try {
-    // console.log("🚀 server/sheets.server.ts ~ 	😀 before sheets")
     const sheets = await getSheetsWithServiceAccount()
     invariant(sheets, "Unauthorized google account")
-    // console.log("🚀 server/sheets.server.ts ~ 	🌈 sheets ✨ ", sheets)
 
-    const resp = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.GOOGLE_API_MEIBO_SHEET_URI,
-      range: "MEIBO!A2:J916",
-      valueRenderOption: "UNFORMATTED_VALUE",
-    })
+    let studentData: StudentData[]
 
-    // console.log("🚀 server/sheets.server.ts ~ 	🌈 resp ✨ ", resp)
+    const cache = await kv.get<StudentData[] | null>("studentData")
 
-    const data = resp.data.values
-    // console.log("🚀 server/sheets.server.ts ~ 	🌈 data ✨ ", data)
+    if (cache) {
+      logger.info("🎁 cache hit")
+      studentData = cache
+    } else {
+      logger.info("🎁 no cache")
+      // const data = await (
+      //   await fetch(`${process.env.BASE_URL}/student-data`, { method: "POST" })
+      // ).json()
 
-    if (!data || data.length === 0) {
-      throw new Error(`Could not get data"`)
-    }
-
-    const studentData: StudentData[] = data.map((d) => {
-      return {
-        gakuseki: (d[0] || 0) as number,
-        gakunen: d[1] as string,
-        hr: d[2] as string,
-        hrNo: Number(d[3]) as number,
-        last: d[4] as string,
-        first: d[5] as string,
-        sei: d[6] as string,
-        mei: d[7] as string,
-        email: d[8] as string,
-        folderLink: (d[9] || null) as string | null,
+      const resp = await sheets.spreadsheets.values.get({
+        spreadsheetId: process.env.GOOGLE_API_MEIBO_SHEET_URI,
+        range: "MEIBO!A2:J916",
+        valueRenderOption: "UNFORMATTED_VALUE",
+      })
+      const data = resp.data.values
+      if (!data || data.length === 0) {
+        throw new Error(`Could not get data"`)
       }
-    })
+
+      studentData = data.map((d) => {
+        return {
+          gakuseki: (d[0] || 0) as number,
+          gakunen: d[1] as string,
+          hr: d[2] as string,
+          hrNo: Number(d[3]) as number,
+          last: d[4] as string,
+          first: d[5] as string,
+          sei: d[6] as string,
+          mei: d[7] as string,
+          email: d[8] as string,
+          folderLink: (d[9] || null) as string | null,
+        }
+      })
+
+      if (data) {
+        await kv.set("studentData", studentData, { ex: KV_EXPIRE_SECONDS })
+      }
+    }
     return studentData
   } catch (err) {
     console.error(`sheets.server.ts: ${err}`)
@@ -114,3 +114,21 @@ export async function getStudentDataWithServiceAccount() {
     return []
   }
 }
+// /*********************************************************
+//  * # getSheets()
+//  * - gets Drive instance
+//  */
+// export async function getSheets(
+//   accessToken: string
+// ): Promise<sheets_v4.Sheets | null> {
+//   const client = await getClient(accessToken)
+
+//   if (client) {
+//     const sheets = google.sheets({
+//       version: "v4",
+//       auth: client,
+//     })
+//     return sheets
+//   }
+//   return null
+// }

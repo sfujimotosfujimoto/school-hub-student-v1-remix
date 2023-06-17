@@ -1,15 +1,12 @@
-/**
- * student.$studentFolderId.$fileId.tsx
- */
 import { type LoaderArgs, type V2_MetaFunction } from "@remix-run/node"
 import { Link, useParams, useRouteLoaderData } from "@remix-run/react"
 
 import { LeftArrow } from "~/components/icons"
 import StudentCard from "~/routes/student.$studentFolderId._index/StudentCard"
 
+import { requireUserSession } from "~/lib/session.server"
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import ToFolderBtn from "./ToFolderBtn"
-import { requireUserSession } from "~/lib/session.server"
 
 /**
  * StudentFolderFileIdPage
@@ -54,7 +51,10 @@ export default function StudentFolderIdFileIdPage() {
             rel="noopener noreferrer"
             href={`${driveFileDatum.link}`}
           >
-            <StudentCard rowData={driveFileDatum} thumbnailSize={"big"} />
+            <StudentCard
+              driveFileDatum={driveFileDatum}
+              thumbnailSize={"big"}
+            />
           </a>
         )}
       </div>
