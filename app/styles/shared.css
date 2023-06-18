@@ -1,6 +1,6 @@
 html,
 body {
-	height: 100%;
+  height: 100%;
 }
 
 :root {
@@ -8,19 +8,16 @@ body {
   color: theme("colors.sfblue.300");
 }
 
-
-.menu > li > button.active,
-.menu > li > button:focus,
-.menu > li > button:hover,
-.menu > li > button:active
-{
-
+.join > li > button.active,
+.join > li > button:focus,
+.join > li > button:hover,
+.join > li > button:active {
   background-color: theme("colors.sfgreen.300");
   color: inherit;
 }
 
 /* side bar hover */
-.menu > li > a:hover {
+.join > li > a:hover {
   color: theme("colors.sfred.200");
   background-color: inherit;
 }

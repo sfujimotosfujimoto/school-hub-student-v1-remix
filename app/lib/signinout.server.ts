@@ -122,6 +122,7 @@ export async function signin({ code }: { code: string }) {
           count: {
             increment: 1,
           },
+          lastVisited: new Date(),
         },
       },
     },

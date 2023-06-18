@@ -3,7 +3,6 @@ import { useLoaderData } from "@remix-run/react"
 import React from "react"
 import { getUserById, requireAdminRole } from "~/lib/user.server"
 import AdminCard from "./AdminCard"
-import type { User } from "~/types"
 import { rawUserToUser } from "~/lib/utils"
 
 export default function AdminIdIndexPage() {
