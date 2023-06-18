@@ -7,16 +7,16 @@ export default function LogoLeft() {
 
   let loading = navigation.state !== "idle"
   return (
-    <div className="mr-6 flex flex-shrink-0 items-center">
+    <div className="flex items-center flex-shrink-0 mr-6">
       <Link to="/" aria-label="Go home" className="mr-2">
         <Logo
-          className={`h-7 w-5 ease-in-out sm:h-12 sm:w-8 lg:w-12 ${
+          className={`h-9 w-8 ease-in-out sm:h-12 ${
             loading && "animate-bounce"
           }`}
         />
       </Link>
       <Link to="/" aria-label="Go home" className="mr-2">
-        <LogoText className="h-8 w-16 sm:h-16 sm:w-20 lg:h-16 lg:w-24" />
+        <LogoText className="w-20 h-10 sm:block" />
       </Link>
     </div>
   )

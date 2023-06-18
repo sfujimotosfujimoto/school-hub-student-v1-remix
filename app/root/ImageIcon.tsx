@@ -12,5 +12,13 @@ export default function ImageIcon({
   width?: number
   height?: number
 }) {
-  return <img src={src} alt={alt} width={width} height={height} />
+  return (
+    <img
+      className="rounded-full"
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+    />
+  )
 }
