@@ -28,10 +28,13 @@ export default function Tables({ users }: { users: User[] }) {
             </TableRow>
             <TableRow href={`/admin/${u.id}`}>{u.last}</TableRow>
             <TableRow href={`/admin/${u.id}`}>{u.first}</TableRow>
-            <TableRow href={`/admin/${u.id}`}>{u.stats?.count || 1}</TableRow>
-            <TableRow href={`/admin/${u.id}`}>
-              {formatDate(new Date(u.stats?.lastVisited || u.updatedAt))}
-            </TableRow>
+            <TableRow href={`/admin/${u.id}`}>{u.stats?.count || 0}</TableRow>
+
+            {u.stats ? (
+              <TableRow href={`/admin/${u.id}`}>
+                {formatDate(new Date(u.stats?.lastVisited))}
+              </TableRow>
+            ) : null}
           </tr>
         ))}
       </tbody>
