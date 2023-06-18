@@ -6,12 +6,11 @@ import { getServiceAccountClient } from "./google.server"
 import { kv } from "@vercel/kv"
 import { logger } from "../logger"
 
-const KV_EXPIRE_SECONDS = 60
+const KV_EXPIRE_SECONDS = 60 * 60 * 24 // 1 day
 
 export async function getStudentDatumByEmail(
   email: string
 ): Promise<StudentData | undefined> {
-  console.log("🚀 google/sheets.server.ts ~ 	😀 in getStudentDatumByEmail")
   const studentData = await getStudentDataWithServiceAccount()
 
   if (!studentData) return undefined
@@ -20,18 +19,6 @@ export async function getStudentDatumByEmail(
   const student = studentData.find((d) => d.email === studentEmail)
   return student
 }
-
-// export async function getStudentDatumByEmail2(
-//   studentData: StudentData[],
-//   userEmail: string,
-// ): Promise<StudentData | undefined> {
-
-//   if (!studentData) return undefined
-//   const studentEmail = userEmail.replace(/^p/, "b")
-
-//   const student = studentData.find((d) => d.email === studentEmail)
-//   return student
-// }
 
 export function getStudentByFolderId(
   folderId: string,
@@ -58,9 +45,6 @@ async function getSheetsWithServiceAccount() {
 }
 
 export async function getStudentDataWithServiceAccount() {
-  console.log(
-    "🚀 google/sheets.server.ts ~ 	😀 in getStudentDataWithServiceAccount"
-  )
   try {
     const sheets = await getSheetsWithServiceAccount()
     invariant(sheets, "Unauthorized google account")
@@ -74,9 +58,6 @@ export async function getStudentDataWithServiceAccount() {
       studentData = cache
     } else {
       logger.info("🎁 no cache")
-      // const data = await (
-      //   await fetch(`${process.env.BASE_URL}/student-data`, { method: "POST" })
-      // ).json()
 
       const resp = await sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_API_MEIBO_SHEET_URI,

@@ -365,7 +365,7 @@ export async function getMe(
 	})
 
 	const user = res.data.user ? res.data.user : null
-	console.log("🚀 google/client.ts ~ user", user?.displayName)
+
 	return user
 }
 

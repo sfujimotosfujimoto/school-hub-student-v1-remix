@@ -22,6 +22,7 @@ import Navigation from "./root/Navigation"
 import ErrorDocument from "./root/ErrorDocument"
 import * as sessionS from "./lib/session.server"
 import Footer from "./root/Footer"
+import { getStudentDatumByEmail } from "./lib/google/sheets.server"
 
 function Document({ children }: { children: React.ReactNode }) {
   return (
@@ -57,12 +58,16 @@ export default function App() {
   )
 }
 
-export function loader({ request }: LoaderArgs) {
-  try {
-    return sessionS.getUserFromSession(request)
-  } catch (error) {
-    return null
-  }
+export async function loader({ request }: LoaderArgs) {
+  const user = await sessionS.getUserFromSession(request)
+
+  if (!user?.email) return { user: null, student: null }
+
+  const student = await getStudentDatumByEmail(user?.email)
+
+  if (!student) return { user, student: null }
+
+  return { user, student }
 }
 
 export const meta: V2_MetaFunction = () => {

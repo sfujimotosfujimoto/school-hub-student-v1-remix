@@ -1,12 +1,14 @@
-import type { User } from "~/types"
-
 import { Form, NavLink, useLoaderData } from "@remix-run/react"
 
 import ImageIcon from "./ImageIcon"
-import { Dashboard, Login, Logout } from "~/components/icons"
+import { Dashboard, Login, Logout, UserIcon } from "~/components/icons"
+import { getFolderId } from "~/lib/utils"
+import type { loader } from "~/root"
 
 export default function NavRight() {
-  const user = useLoaderData<User>()
+  const { user, student } = useLoaderData<typeof loader>()
+
+  const studentLink = getFolderId(student?.folderLink || "")
 
   return (
     <div className="flex">
@@ -38,6 +40,16 @@ export default function NavRight() {
               >
                 <Dashboard className="w-5 h-5 sm:hidden " />
                 <span className="hidden sm:block">ADMIN</span>
+              </NavLink>
+            )}
+            {studentLink && (
+              <NavLink
+                to={`/student/${studentLink}`}
+                className={`btn-success btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
+              >
+                <UserIcon className="w-5 h-5 sm:hidden" />
+
+                <span className="hidden sm:block">生徒</span>
               </NavLink>
             )}
             <Form method="post" action="/auth/signout">

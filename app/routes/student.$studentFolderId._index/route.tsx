@@ -3,12 +3,12 @@
 // Index
 //-------------------------------------------
 
-import { Link, useRouteLoaderData } from "@remix-run/react"
+import { useRouteLoaderData } from "@remix-run/react"
 import { useEffect, useState } from "react"
 
-import { LeftArrow } from "~/components/icons"
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import StudentCards from "./StudentCards"
+import BackButton from "~/components/BackButton"
 
 /**
  * StudentFolderIndexPage Component
@@ -61,45 +61,41 @@ export default function StudentFolderIdIndexPage() {
   return (
     <>
       <div className="flex gap-4">
-        <Link to="/" className="shadow-md btn-success btn hover:bg-sfgreen-400">
-          <LeftArrow className="w-5 h-5 mr-2" />
-          Back
-        </Link>
+        <BackButton to="/" />
       </div>
 
       {/* segments of filenames split by "-","_" and "." */}
       <div className="mt-4">
         <div className={`flex flex-wrap`}>
-          <span
-            onClick={() => setFilteredFiles(driveFileData)}
-            key="ALL"
-            className={`btn-error btn-xs btn m-1 ${textSize}`}
-          >
-            ALL
-          </span>
+          <Segment
+            text="ALL"
+            textSize={textSize}
+            btnType="btn-error"
+            onClickFn={() => setFilteredFiles(driveFileData)}
+          />
           {extensions &&
             Array.from(extensions.values())
               .sort()
               .map((segment, idx) => (
-                <span
-                  onClick={() => setExtension(segment)}
+                <Segment
                   key={idx}
-                  className={`btn-success btn-xs btn m-1 ${textSize}`}
-                >
-                  {segment}
-                </span>
+                  text={segment}
+                  textSize={textSize}
+                  btnType="btn-success"
+                  onClickFn={() => setExtension(segment)}
+                />
               ))}
           {segments &&
             Array.from(segments.values())
               .sort()
               .map((segment, idx) => (
-                <span
-                  onClick={() => setSegment(segment)}
+                <Segment
                   key={idx}
-                  className={`btn-warning btn-xs btn m-1 ${textSize}`}
-                >
-                  {segment}
-                </span>
+                  text={segment}
+                  textSize={textSize}
+                  btnType="btn-warning"
+                  onClickFn={() => setSegment(segment)}
+                />
               ))}
         </div>
       </div>
@@ -108,5 +104,26 @@ export default function StudentFolderIdIndexPage() {
         {filteredFiles && <StudentCards driveFileData={filteredFiles} />}
       </div>
     </>
+  )
+}
+
+function Segment({
+  text,
+  btnType,
+  textSize,
+  onClickFn,
+}: {
+  text: string
+  btnType: "btn-error" | "btn-warning" | "btn-success"
+  textSize: string
+  onClickFn: React.MouseEventHandler<HTMLSpanElement>
+}) {
+  return (
+    <span
+      onClick={onClickFn}
+      className={`${btnType} btn-xs btn m-1 ${textSize}`}
+    >
+      {text}
+    </span>
   )
 }

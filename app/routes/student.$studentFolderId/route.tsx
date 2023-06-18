@@ -10,7 +10,6 @@ import {
   type V2_MetaFunction,
 } from "@remix-run/node"
 import { Outlet, useLoaderData } from "@remix-run/react"
-import { kv } from "@vercel/kv"
 
 import StudentHeader from "./StudentHeader"
 
@@ -18,6 +17,7 @@ import type { DriveFileData, StudentData } from "~/types"
 
 /**
  * StudentFolderIdLayout
+ * path = /student.$studentFolderId
  */
 export default function StudentFolderIdLayout() {
   const { student } = useLoaderData<typeof loader>()
@@ -34,10 +34,17 @@ export default function StudentFolderIdLayout() {
 }
 
 /**
- * Loader
- * get
- * - rows: DriveFileData[]
- * - student: StudentData
+ * Loader Function for student.$studentFolderId
+ * path = /student.$studentFolderId
+ *
+ * @export
+ * @param {LoaderArgs} { request, params }
+ * @return {*}  {(Promise<{
+ *   extensions: string[]
+ *   segments: string[]
+ *   driveFileData: DriveFileData[] | null
+ *   student: StudentData
+ * }>)}
  */
 export async function loader({ request, params }: LoaderArgs): Promise<{
   extensions: string[]
@@ -45,28 +52,8 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
   driveFileData: DriveFileData[] | null
   student: StudentData
 }> {
-  console.log("🚀 routes/$studentFolderId.tsx ~ 	✨ in loader")
   const user = await requireUserRole(request)
   if (!user || !user.credential) throw Error("unauthorized")
-
-  // let studentData: StudentData[]
-
-  // const cache = await kv.get<StudentData[] | null>("studentData")
-
-  // if (cache) {
-  //   logger.info("🎁 cache hit")
-  //   studentData = cache
-  // } else {
-  //   logger.info("🎁 no cache")
-  //   const data = await (
-  //     await fetch(`${process.env.BASE_URL}/student-data`, { method: "POST" })
-  //   ).json()
-
-  //   if (data) {
-  //     await kv.set("studentData", data.studentData, { ex: KV_EXPIRE_SECONDS })
-  //   }
-  //   studentData = data.studentData
-  // }
 
   const student = await getStudentDatumByEmail(user.email)
 
@@ -84,21 +71,17 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
     user.credential.accessToken,
     `trashed=false and '${studentFolderId}' in parents`
   )
-  console.log("🚀 student.$studentFolderId/route.tsx ~ 	😀 after driveFileData")
 
   let segments = Array.from(
     new Set(driveFileData?.map((d) => d.name.split(/[-_.]/)).flat())
   )
 
-  console.log("🚀 student.$studentFolderId/route.tsx ~ 	😀 after segments")
   segments = filterSegments(segments, student)
 
   const extensions =
     Array.from(new Set(driveFileData?.map((d) => d.mimeType))).map(
       (ext) => ext.split(/[/.]/).at(-1) || ""
     ) || []
-
-  console.log("🚀 student.$studentFolderId/route.tsx ~ 	😀 after extensions")
 
   return {
     extensions,

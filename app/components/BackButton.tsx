@@ -2,18 +2,18 @@ import { Link, useNavigate } from "@remix-run/react"
 import { LeftArrow } from "~/components/icons"
 
 export default function BackButton({
-  isLink = false,
+  isButton = false,
   to,
 }: {
-  isLink?: boolean
+  isButton?: boolean
   to?: string
 }) {
   const navigate = useNavigate()
 
-  if (!isLink && to) {
+  if (!isButton && to) {
     return (
-      <Link to={to} className="btn-success btn shadow-md hover:bg-sfgreen-400">
-        <LeftArrow className="mr-2 h-5 w-5" />
+      <Link to={to} className="shadow-md btn-success btn hover:bg-sfgreen-400">
+        <LeftArrow className="w-5 h-5 mr-2" />
         Back
       </Link>
     )
@@ -21,9 +21,9 @@ export default function BackButton({
     return (
       <button
         onClick={() => navigate(-1)}
-        className="btn-success btn shadow-md hover:bg-sfgreen-400"
+        className="shadow-md btn-success btn hover:bg-sfgreen-400"
       >
-        <LeftArrow className="mr-2 h-5 w-5" />
+        <LeftArrow className="w-5 h-5 mr-2" />
         Back
       </button>
     )
