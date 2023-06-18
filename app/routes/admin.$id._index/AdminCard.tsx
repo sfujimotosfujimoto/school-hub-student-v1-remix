@@ -1,4 +1,3 @@
-import React from "react"
 import { formatDate } from "~/lib/utils"
 import type { User } from "~/types"
 import AdminRow from "./AdminRow"

@@ -1,7 +1,7 @@
 import invariant from "tiny-invariant"
-import { getDriveFiles } from "~/lib/google/drive.server"
-import { getStudentDatumByEmail } from "~/lib/google/sheets.server"
-import { requireUserRole } from "~/lib/user.server"
+import * as driveS from "~/lib/google/drive.server"
+import * as sheetsS from "~/lib/google/sheets.server"
+import * as userS from "~/lib/user.server"
 import { filterSegments, getFolderId } from "~/lib/utils"
 
 import {
@@ -52,10 +52,10 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
   driveFileData: DriveFileData[] | null
   student: StudentData
 }> {
-  const user = await requireUserRole(request)
-  if (!user || !user.credential) throw Error("unauthorized")
+  const user = await userS.requireUserRole(request)
+  if (!user || !user.credential) throw redirect("/?authstate=unauthorized")
 
-  const student = await getStudentDatumByEmail(user.email)
+  const student = await sheetsS.getStudentDatumByEmail(user.email)
 
   if (!student || !student.folderLink)
     throw redirect("/?authstate=unauthorized")
@@ -67,7 +67,7 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
   const studentFolderId = params.studentFolderId
   invariant(studentFolderId, "studentFolder in params is required")
 
-  const driveFileData = await getDriveFiles(
+  const driveFileData = await driveS.getDriveFiles(
     user.credential.accessToken,
     `trashed=false and '${studentFolderId}' in parents`
   )

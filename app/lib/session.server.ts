@@ -94,7 +94,7 @@ export async function requireUserSession(request: Request) {
 // Gets session in Request Headers -------------------------
 // then gets "userToken"
 // Also check if token is expired
-export async function getUserTokenFromSession(request: Request) {
+async function getUserTokenFromSession(request: Request) {
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
   const userToken = session.get("userToken") as string | null | undefined

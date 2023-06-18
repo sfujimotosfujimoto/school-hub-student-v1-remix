@@ -1,7 +1,6 @@
 import type { LoaderArgs } from "@remix-run/node"
 import { useLoaderData } from "@remix-run/react"
-import React from "react"
-import { getUsers, requireAdminRole } from "~/lib/user.server"
+import * as userS from "~/lib/user.server"
 import Tables from "./Tables"
 export default function AdminIndexPage() {
   const { users } = useLoaderData()
@@ -20,8 +19,8 @@ export default function AdminIndexPage() {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  await requireAdminRole(request)
+  await userS.requireAdminRole(request)
 
-  const users = await getUsers()
+  const users = await userS.getUsers()
   return { users }
 }

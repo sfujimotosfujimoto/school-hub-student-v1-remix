@@ -1,7 +1,6 @@
 import type { LoaderArgs } from "@remix-run/node"
 import { useLoaderData } from "@remix-run/react"
-import React from "react"
-import { getUserById, requireAdminRole } from "~/lib/user.server"
+import * as userS from "~/lib/user.server"
 import AdminCard from "./AdminCard"
 import { rawUserToUser } from "~/lib/utils"
 
@@ -24,10 +23,10 @@ export default function AdminIdIndexPage() {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireAdminRole(request)
+  await userS.requireAdminRole(request)
   const { id } = params
 
-  const targetUser = await getUserById(Number(id))
+  const targetUser = await userS.getUserById(Number(id))
 
   return {
     targetUser,

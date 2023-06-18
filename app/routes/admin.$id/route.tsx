@@ -1,8 +1,7 @@
 import type { LoaderArgs, V2_MetaFunction } from "@remix-run/node"
 import { Outlet } from "@remix-run/react"
-import React from "react"
 import BackButton from "~/components/BackButton"
-import { getUserById, requireAdminRole } from "~/lib/user.server"
+import * as userS from "~/lib/user.server"
 
 export default function AdminIdLayoutPage() {
   return (
@@ -34,10 +33,10 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireAdminRole(request)
+  await userS.requireAdminRole(request)
   const { id } = params
 
-  const targetUser = await getUserById(Number(id))
+  const targetUser = await userS.getUserById(Number(id))
 
   return { targetUser }
 }

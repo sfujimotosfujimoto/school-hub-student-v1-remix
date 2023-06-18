@@ -25,7 +25,7 @@ export default function LoginButton() {
           <Form reloadDocument method="post" action="/auth/signin">
             <button type="submit" className={`btn-success btn w-64 shadow-lg`}>
               <Logo className="w-4 h-7" />
-              <span className="ml-2  sm:ml-4 sm:inline">
+              <span className="ml-2 sm:ml-4 sm:inline">
                 SCHOOL HUB サインイン
               </span>
             </button>
@@ -37,7 +37,7 @@ export default function LoginButton() {
               className={`btn-error btn w-64  border-0 shadow-lg hover:bg-opacity-70`}
             >
               <Logo className={`h-7 w-4 ${loading && "animate-spin"}`} />
-              <span className="ml-1  sm:ml-2 sm:inline">
+              <span className="ml-1 sm:ml-2 sm:inline">
                 SCHOOL HUB サインアウト
               </span>
             </button>

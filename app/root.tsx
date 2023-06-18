@@ -22,7 +22,7 @@ import Navigation from "./root/Navigation"
 import ErrorDocument from "./root/ErrorDocument"
 import * as sessionS from "./lib/session.server"
 import Footer from "./root/Footer"
-import { getStudentDatumByEmail } from "./lib/google/sheets.server"
+import * as sheetsS from "./lib/google/sheets.server"
 
 function Document({ children }: { children: React.ReactNode }) {
   return (
@@ -63,7 +63,7 @@ export async function loader({ request }: LoaderArgs) {
 
   if (!user?.email) return { user: null, student: null }
 
-  const student = await getStudentDatumByEmail(user?.email)
+  const student = await sheetsS.getStudentDatumByEmail(user?.email)
 
   if (!student) return { user, student: null }
 

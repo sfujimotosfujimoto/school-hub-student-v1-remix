@@ -3,10 +3,10 @@ import { useParams, useRouteLoaderData } from "@remix-run/react"
 
 import StudentCard from "~/routes/student.$studentFolderId._index/StudentCard"
 
-import { requireUserSession } from "~/lib/session.server"
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import ToFolderBtn from "./ToFolderBtn"
 import BackButton from "~/components/BackButton"
+import * as userS from "~/lib/user.server"
 
 /**
  * StudentFolderFileIdPage
@@ -53,7 +53,7 @@ export default function StudentFolderIdFileIdPage() {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserSession(request)
+  await userS.requireUserRole(request)
 
   return null
 }

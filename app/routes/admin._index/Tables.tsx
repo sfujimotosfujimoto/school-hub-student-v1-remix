@@ -5,7 +5,7 @@ import type { User } from "~/types"
 
 export default function Tables({ users }: { users: User[] }) {
   return (
-    <table className="table text-sm border rounded-lg table-xs table-pin-rows table-zebra">
+    <table className="table text-sm border rounded-lg table-pin-rows table-zebra">
       <thead>
         <tr>
           <th />

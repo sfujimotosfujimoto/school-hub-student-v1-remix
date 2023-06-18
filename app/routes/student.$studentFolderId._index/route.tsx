@@ -1,14 +1,11 @@
-//-------------------------------------------
-// student.$studentFolderId._index.tsx
-// Index
-//-------------------------------------------
-
 import { useRouteLoaderData } from "@remix-run/react"
-import { useEffect, useState } from "react"
 
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import StudentCards from "./StudentCards"
 import BackButton from "~/components/BackButton"
+import React from "react"
+import type { LoaderArgs } from "@remix-run/node"
+import * as userS from "~/lib/user.server"
 
 /**
  * StudentFolderIndexPage Component
@@ -19,16 +16,16 @@ export default function StudentFolderIdIndexPage() {
   ) as Awaited<ReturnType<typeof studentFolderIdLoader>>
 
   // filteredFiles : filtered driveFileData
-  const [filteredFiles, setFilteredFiles] = useState(() => driveFileData)
+  const [filteredFiles, setFilteredFiles] = React.useState(() => driveFileData)
 
   // value of the clicked segment ex. リフレクション
-  const [segment, setSegment] = useState("")
+  const [segment, setSegment] = React.useState("")
   // value of the clicked file extension ex. pdf
-  const [extension, setExtension] = useState("")
+  const [extension, setExtension] = React.useState("")
 
   // TODO: Need to integrate multiple useEffects
   // filter for segments (keywords in filename)
-  useEffect(() => {
+  React.useEffect(() => {
     function filterSegments(segment: string) {
       const filtered = driveFileData?.filter((f) => {
         const currentSegments = f.name.split(/[-_.]/)
@@ -43,7 +40,7 @@ export default function StudentFolderIdIndexPage() {
   }, [segment, driveFileData])
 
   // filter for file extensions
-  useEffect(() => {
+  React.useEffect(() => {
     function filterExtensions(ext: string) {
       const filtered = driveFileData?.filter((f) => {
         const currentExt = f.mimeType.split(/[/.]/).at(-1)
@@ -126,4 +123,10 @@ function Segment({
       {text}
     </span>
   )
+}
+
+export async function loader({ request }: LoaderArgs) {
+  await userS.requireUserRole(request)
+
+  return null
 }
