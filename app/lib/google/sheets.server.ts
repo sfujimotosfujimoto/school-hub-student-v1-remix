@@ -6,7 +6,7 @@ import { getServiceAccountClient } from "./google.server"
 import { kv } from "@vercel/kv"
 import { logger } from "../logger"
 
-const KV_EXPIRE_SECONDS = 60 * 60 * 24 // 1 day
+const KV_EXPIRE_SECONDS = 60 * 60
 
 export async function getStudentDatumByEmail(
   email: string
@@ -88,6 +88,31 @@ export async function getStudentDataWithServiceAccount() {
         await kv.set("studentData", studentData, { ex: KV_EXPIRE_SECONDS })
       }
     }
+
+    // const resp = await sheets.spreadsheets.values.get({
+    //   spreadsheetId: process.env.GOOGLE_API_MEIBO_SHEET_URI,
+    //   range: "MEIBO!A2:J916",
+    //   valueRenderOption: "UNFORMATTED_VALUE",
+    // })
+    // const data = resp.data.values
+    // if (!data || data.length === 0) {
+    //   throw new Error(`Could not get data"`)
+    // }
+
+    // studentData = data.map((d) => {
+    //   return {
+    //     gakuseki: (d[0] || 0) as number,
+    //     gakunen: d[1] as string,
+    //     hr: d[2] as string,
+    //     hrNo: Number(d[3]) as number,
+    //     last: d[4] as string,
+    //     first: d[5] as string,
+    //     sei: d[6] as string,
+    //     mei: d[7] as string,
+    //     email: d[8] as string,
+    //     folderLink: (d[9] || null) as string | null,
+    //   }
+    // })
     return studentData
   } catch (err) {
     console.error(`sheets.server.ts: ${err}`)
