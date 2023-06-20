@@ -1,4 +1,4 @@
-import type { PrismaUser, RawUser, User } from "~/types"
+import type { PrismaUser, User } from "~/types"
 
 import { prisma } from "./db.server"
 import * as sessionS from "./session.server"
@@ -89,11 +89,11 @@ export async function requireAdminRole(request: Request) {
 export async function getUsers(): Promise<User[] | null> {
   const users = await prisma.user.findMany({
     orderBy: [
-      {
-        stats: {
-          count: "desc",
-        },
-      },
+      // {
+      //   stats: {
+      //     count: "desc",
+      //   },
+      // },
       {
         stats: {
           lastVisited: "desc",
