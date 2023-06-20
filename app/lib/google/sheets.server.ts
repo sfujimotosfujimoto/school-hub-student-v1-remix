@@ -6,7 +6,7 @@ import { getServiceAccountClient } from "./google.server"
 import { kv } from "@vercel/kv"
 import { logger } from "../logger"
 
-const KV_EXPIRE_SECONDS = 60 * 60
+const KV_EXPIRE_SECONDS = 60 * 60 * 24
 
 export async function getStudentDatumByEmail(
   email: string
