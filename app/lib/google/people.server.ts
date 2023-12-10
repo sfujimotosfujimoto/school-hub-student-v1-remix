@@ -17,7 +17,7 @@ async function getPeople(accessToken: string) {
 }
 
 export async function getPersonFromPeople(
-  accessToken: string
+  accessToken: string,
 ): Promise<Person | null> {
   const people = await getPeople(accessToken)
 

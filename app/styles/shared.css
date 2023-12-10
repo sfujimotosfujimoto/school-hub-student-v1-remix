@@ -4,7 +4,7 @@ body {
 }
 
 :root {
-  background-color: theme("colors.slate.100");
+  background-color: theme("colors.slate.200");
   color: theme("colors.sfblue.300");
 }
 
@@ -20,4 +20,22 @@ body {
 .join > li > a:hover {
   color: theme("colors.sfred.200");
   background-color: inherit;
+}
+
+.btn-disabled {
+  @apply bg-slate-300;
+}
+
+
+button.nendo-active {
+  background-color: hsl(1, 64%, 72%);
+}
+a.nendo-active {
+  background-color: hsl(1, 64%, 72%);
+}
+button.tag-active {
+  background-color: #78C3C6;
+}
+div.flex.gap-2 > button.btn.btn-sm:hover {
+  background-color: hsl(1, 54%, 72%);
 }

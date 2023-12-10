@@ -1,132 +1,75 @@
 import { useRouteLoaderData } from "@remix-run/react"
-
-import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import StudentCards from "./StudentCards"
 import BackButton from "~/components/BackButton"
 import React from "react"
-import type { LoaderArgs } from "@remix-run/node"
-import * as userS from "~/lib/user.server"
+
+import { useDriveFilesContext } from "~/context/drive-files-context"
+import FileCount from "./components/file-count"
+import NendoButtons from "./components/nendo-buttons"
+import TagButtons from "./components/tag-buttons"
+import Segments from "./components/segments"
+import type { DriveFile, Student } from "~/types"
+import type { Role } from "@prisma/client"
 
 /**
  * StudentFolderIndexPage Component
  */
 export default function StudentFolderIdIndexPage() {
-  const { driveFileData, segments, extensions } = useRouteLoaderData(
-    "routes/student.$studentFolderId"
-  ) as Awaited<ReturnType<typeof studentFolderIdLoader>>
+  const { driveFiles, segments, extensions, nendos, tags } = useRouteLoaderData(
+    "routes/student.$studentFolderId",
+  ) as unknown as {
+    extensions: string[]
+    segments: string[]
+    driveFiles: DriveFile[] | null
+    student: Student | null
+    role: Role
+    nendos: string[]
+    tags: string[]
+  }
 
-  // filteredFiles : filtered driveFileData
-  const [filteredFiles, setFilteredFiles] = React.useState(() => driveFileData)
+  const { driveFiles: _driveFiles, driveFilesDispatch } = useDriveFilesContext()
 
-  // value of the clicked segment ex. リフレクション
-  const [segment, setSegment] = React.useState("")
-  // value of the clicked file extension ex. pdf
-  const [extension, setExtension] = React.useState("")
-
-  // TODO: Need to integrate multiple useEffects
-  // filter for segments (keywords in filename)
   React.useEffect(() => {
-    function filterSegments(segment: string) {
-      const filtered = driveFileData?.filter((f) => {
-        const currentSegments = f.name.split(/[-_.]/)
-        return currentSegments.includes(segment)
-      })
+    if (!driveFiles) return
+    driveFilesDispatch({ type: "SET", payload: { driveFiles } })
+  }, [driveFiles, driveFilesDispatch])
 
-      // check if no filtered results or no segment clicked
-      if (!filtered || !segment) return setFilteredFiles(driveFileData)
-      setFilteredFiles(filtered)
-    }
-    filterSegments(segment)
-  }, [segment, driveFileData])
-
-  // filter for file extensions
-  React.useEffect(() => {
-    function filterExtensions(ext: string) {
-      const filtered = driveFileData?.filter((f) => {
-        const currentExt = f.mimeType.split(/[/.]/).at(-1)
-        return currentExt === ext
-      })
-      if (!filtered || !extension) return setFilteredFiles(driveFileData)
-      setFilteredFiles(filtered)
-    }
-    filterExtensions(extension)
-  }, [extension, driveFileData])
-
-  const textSize = `text-xs sm:text-sm`
+  let baseDriveFiles = React.useMemo(() => {
+    if (!driveFiles) return []
+    return driveFiles
+  }, [driveFiles])
 
   // JSX -------------------------
   return (
-    <>
-      <div className="flex gap-4">
-        <BackButton to="/" />
-      </div>
+    <section className="space-y-4">
+      <BackButton to="/" />
 
-      {/* segments of filenames split by "-","_" and "." */}
-      <div className="mt-4">
-        <div className={`flex flex-wrap`}>
-          <Segment
-            text="ALL"
-            textSize={textSize}
-            btnType="btn-error"
-            onClickFn={() => setFilteredFiles(driveFileData)}
-          />
-          {extensions &&
-            Array.from(extensions.values())
-              .sort()
-              .map((segment, idx) => (
-                <Segment
-                  key={idx}
-                  text={segment}
-                  textSize={textSize}
-                  btnType="btn-success"
-                  onClickFn={() => setExtension(segment)}
-                />
-              ))}
-          {segments &&
-            Array.from(segments.values())
-              .sort()
-              .map((segment, idx) => (
-                <Segment
-                  key={idx}
-                  text={segment}
-                  textSize={textSize}
-                  btnType="btn-warning"
-                  onClickFn={() => setSegment(segment)}
-                />
-              ))}
-        </div>
-      </div>
+      <FileCount />
 
-      <div className="mt-4 mb-12 overflow-x-auto ">
-        {filteredFiles && <StudentCards driveFileData={filteredFiles} />}
+      <NendoButtons
+        baseDriveFiles={baseDriveFiles}
+        nendos={nendos}
+        color={"bg-slate-400"}
+        showAll={true}
+      />
+
+      <TagButtons
+        baseDriveFiles={baseDriveFiles}
+        tags={tags}
+        color={"bg-slate-400"}
+      />
+
+      {/* SEGMENTS */}
+      <Segments
+        extensions={extensions}
+        segments={segments}
+        baseDriveFiles={baseDriveFiles}
+      />
+
+      {/* STUDENTCARDS */}
+      <div className="mb-12 mt-4 overflow-x-auto px-2">
+        <StudentCards driveFiles={_driveFiles} />
       </div>
-    </>
+    </section>
   )
-}
-
-function Segment({
-  text,
-  btnType,
-  textSize,
-  onClickFn,
-}: {
-  text: string
-  btnType: "btn-error" | "btn-warning" | "btn-success"
-  textSize: string
-  onClickFn: React.MouseEventHandler<HTMLSpanElement>
-}) {
-  return (
-    <span
-      onClick={onClickFn}
-      className={`${btnType} btn-xs btn m-1 ${textSize}`}
-    >
-      {text}
-    </span>
-  )
-}
-
-export async function loader({ request }: LoaderArgs) {
-  await userS.requireUserRole(request)
-
-  return null
 }

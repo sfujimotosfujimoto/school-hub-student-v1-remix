@@ -9,7 +9,7 @@ export default function ErrorDocument({
     <main className="flex justify-center">
       <div className="mx-auto flex h-screen max-w-7xl flex-col items-center justify-center gap-8">
         <div className="flex items-center">
-          <ErrorIcon className="h-20 w-20 text-sfred-300 sm:h-48 sm:w-48" />
+          <ErrorIcon className="h-12 w-12 text-sfred-300 sm:h-24 sm:w-24" />
         </div>
         {children}
       </div>

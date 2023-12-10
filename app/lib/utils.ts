@@ -1,4 +1,4 @@
-import type { DriveFileData, RawUser, StudentData, User } from "~/types"
+import type { DriveFile, Student } from "~/types"
 
 export function dateFormat(dateString: string) {
   const date = new Date(dateString)
@@ -23,13 +23,10 @@ export function getFolderId(folderUrl: string): string | null {
 }
 
 // used in student.$studentFolderId.tsx
-export function filterSegments(
-  segments: string[],
-  student?: StudentData | null
-) {
+export function filterSegments(segments: string[], student?: Student | null) {
   const regex = RegExp(
     `${student?.last}|${student?.first}|${student?.gakuseki}|([ABCDE]+\\d+)|([ABCDE]組\\d+番)|^\\d+$|pdf|png|jpg|jpeg`,
-    "g"
+    "g",
   )
 
   return segments.filter((seg) => !seg.match(regex))
@@ -38,7 +35,7 @@ export function filterSegments(
 export function filterStudentDataByGakunen(
   gakunen: string,
   hr: string,
-  studentData: StudentData[]
+  studentData: Student[],
 ) {
   if (gakunen === "ALL" && hr === "ALL") {
     return studentData
@@ -62,7 +59,7 @@ export function getStudentEmail(email: string) {
 
 export function checkValidStudentOrParentEmail(email: string) {
   const regex = RegExp(
-    /([pb][0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp)/
+    /([pb][0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp)/,
     // /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp|s-tamaki@seig-boys.jp)/
   )
 
@@ -77,7 +74,7 @@ export function checkValidStudentOrParentEmail(email: string) {
 
 export function checkValidAdminEmail(email: string) {
   const regex = RegExp(
-    /(s-fujimoto@seig-boys.jp)/
+    /(s-fujimoto@seig-boys.jp)/,
     // /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp|s-tamaki@seig-boys.jp)/
   )
 
@@ -92,7 +89,7 @@ export function checkValidAdminEmail(email: string) {
 
 export function checkValidStudentSeigEmail(email: string) {
   const regex = RegExp(
-    /([a-z]{1}[0-9]{1,9}@seig-boys.jp)/
+    /([a-z]{1}[0-9]{1,9}@seig-boys.jp)/,
     // /(b[0-9]{5,}@seig-boys.jp|samples[0-9]{2}@seig-boys.jp|s-tamaki@seig-boys.jp)/
   )
 
@@ -112,7 +109,7 @@ export function stripText(name: string) {
   return null
 }
 
-export function checkGoogleMimeType(rowData: DriveFileData) {
+export function checkGoogleMimeType(rowData: DriveFile) {
   const regex = RegExp(/^application\/vnd\.google-apps.*/)
 
   const matches = rowData.mimeType.match(regex)
@@ -132,20 +129,30 @@ export function formatDate(date: Date, locals = "ja-JP") {
   // return formatter.format(new Date(date))
 }
 
-export function rawUserToUser(rawUser: RawUser): User {
-  let stats = null
-  if (rawUser.stats) {
-    stats = {
-      count: rawUser.stats.count,
-      lastVisited: new Date(rawUser.stats.lastVisited),
-    }
-  }
+// export function rawUserToUser(rawUser: PrismaUser): User {
+//   let stats = null
+//   if (rawUser.stats) {
+//     stats = {
+//       count: rawUser.stats.count,
+//       lastVisited: new Date(rawUser.stats.lastVisited),
+//     }
+//   }
 
-  const tUser: User = {
-    ...rawUser,
-    createdAt: rawUser?.createdAt ? new Date(rawUser.createdAt) : new Date(),
-    updatedAt: rawUser?.updatedAt ? new Date(rawUser.updatedAt) : new Date(),
-    stats,
-  }
-  return tUser
+//   const tUser: User = {
+//     ...rawUser,
+//     credential: {
+//       ...rawUser.credential,
+//       expiry: Number(rawUser.credential?.expiry),
+//       refreshTokenExpiry: Number(rawUser.credential?.refreshTokenExpiry),
+//     },
+
+//     createdAt: rawUser?.createdAt ? rawUser.createdAt : new Date(),
+//     updatedAt: rawUser?.updatedAt ? rawUser.updatedAt : new Date(),
+//     stats,
+//   }
+//   return tUser
+// }
+
+export function parseTags(genres: string) {
+  return genres.split(",").map((g) => g.trim())
 }

@@ -1,18 +1,58 @@
-import { google } from "googleapis"
+import { type Auth, google } from "googleapis"
+import { logger } from "../logger"
 
-export function initializeClient() {
-  const client = new google.auth.OAuth2(
-    process.env.GOOGLE_API_CLIENT_ID,
-    process.env.GOOGLE_API_CLIENT_SECRET,
-    process.env.GOOGLE_API_REDIRECT_URI
-  )
-  return client
+export async function getClientFromCode(code: string): Promise<{
+  client: Auth.OAuth2Client
+  tokens: Auth.Credentials
+}> {
+  logger.debug(`✅ getClientFromCode`)
+  // creates oauth2Client from client_id and client_secret
+  const client = initializeClient()
+
+  // get token from OAuth client
+  const { tokens } = await client.getToken(code)
+
+  // set credentials with refresh_token
+  client.setCredentials(tokens)
+
+  return {
+    client,
+    tokens,
+  }
 }
 
+export async function getRefreshedToken(
+  accessToken: string,
+  refreshToken: string,
+): Promise<Auth.Credentials> {
+  logger.debug(`✅ getRefreshedToken`)
+  const client = initializeClient()
+  client.setCredentials({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  })
+  const { credentials } = await client.refreshAccessToken()
+
+  return credentials
+}
+
+
+
 export async function getClient(accessToken: string) {
+  logger.debug(`✅ getClient`)
   const client = initializeClient()
   client.setCredentials({ access_token: accessToken })
 
+  return client
+}
+
+export function initializeClient(): Auth.OAuth2Client {
+  logger.debug(`✅ initializeClient`)
+  const client = new google.auth.OAuth2(
+    process.env.GOOGLE_API_CLIENT_ID,
+    process.env.GOOGLE_API_CLIENT_SECRET,
+    process.env.GOOGLE_API_REDIRECT_URI,
+  )
   return client
 }
 
@@ -22,7 +62,7 @@ export async function getServiceAccountClient() {
   }
 
   const credential = JSON.parse(
-    Buffer.from(process.env.GOOGLE_SERVICE_KEY).toString()
+    Buffer.from(process.env.GOOGLE_SERVICE_KEY).toString(),
   )
 
   const client = await google.auth.getClient({

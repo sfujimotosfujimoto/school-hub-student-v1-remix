@@ -1,13 +1,17 @@
 import { type drive_v3, google } from "googleapis"
-import type { DriveFileData } from "~/types"
+import type { DriveFile } from "~/types"
 import { getClient } from "./google.server"
+import { logger } from "../logger"
+import { QUERY_FILES_FIELDS } from "../config"
 
 export function createQuery({
   folderId,
   mimeType,
+  query = undefined,
 }: {
   folderId: string
-  mimeType: string
+  mimeType?: string
+  query?: string
 }) {
   const outputQuery = []
 
@@ -24,6 +28,12 @@ export function createQuery({
     outputQuery.push(mimeTypeQuery)
   }
 
+  let queryString: string
+  if (query) {
+    queryString = `${query.trim()}`
+    outputQuery.push(queryString)
+  }
+
   if (!outputQuery) return null
 
   return outputQuery.join(" and ")
@@ -31,34 +41,17 @@ export function createQuery({
 
 export async function getDriveFiles(
   accessToken: string,
-  query: string
-): Promise<DriveFileData[] | null> {
+  query: string,
+): Promise<DriveFile[] | null> {
   const drive = await getDrive(accessToken)
   if (!drive) throw new Error("Couldn't get drive")
 
-  const files: drive_v3.Schema$File[] = await callFilesList(drive, query)
+  const files: drive_v3.Schema$File[] = await execFilesList(drive, query)
 
   if (!files) return null
   // if (!list.data.files) return null
 
-  const driveFileData: DriveFileData[] = files.map((d) => {
-    // const driveFileData: DriveFileData[] = list.data.files.map((d) => {
-    return {
-      id: d.id || "",
-      name: d.name || "",
-      mimeType: d.mimeType || "",
-      link: d.webViewLink || "",
-      iconLink: d.iconLink || "",
-      hasThumbnail: d.hasThumbnail || false,
-      thumbnailLink: d.thumbnailLink || undefined,
-      createdTime: d.createdTime || undefined,
-      modifiedTime: d.modifiedTime || undefined,
-      webContentLink: d.webContentLink || undefined,
-      parents: d.parents || undefined,
-    }
-  })
-
-  return driveFileData
+  return mapFilesToDriveFiles(files)
 }
 
 //-------------------------------------------
@@ -81,7 +74,8 @@ async function getDrive(accessToken: string): Promise<drive_v3.Drive | null> {
   return null
 }
 
-async function callFilesList(drive: drive_v3.Drive, query: string) {
+async function execFilesList(drive: drive_v3.Drive, query: string) {
+  let count = 0
   let files: drive_v3.Schema$File[] = []
   let nextPageToken = undefined
 
@@ -92,18 +86,89 @@ async function callFilesList(drive: drive_v3.Drive, query: string) {
       pageSize: 300,
       pageToken: nextPageToken,
       q: query,
-      fields:
-        "nextPageToken, files(id,name,mimeType,webViewLink,thumbnailLink,hasThumbnail,iconLink,createdTime,modifiedTime,webContentLink,parents)",
+      fields: QUERY_FILES_FIELDS,
     })
-
     if (list.data.files) {
       files = files.concat(list.data.files)
     }
+    nextPageToken = list.data.nextPageToken
 
-    if (list.data.nextPageToken) nextPageToken = list.data.nextPageToken
+    logger.debug(
+      `✅ execFilesList: files: ${
+        files.length
+      } files: count: ${count++}, nextPageToken: ${!!nextPageToken}`,
+    )
+    // if (list.data.nextPageToken) nextPageToken = list.data.nextPageToken
   } while (nextPageToken && files.length < MaxSize)
+  // files.forEach((f, idx) => {
+  //   logger.debug(`✅ file: ${idx}: ${f.name}`)
+  // })
   return files
 }
+/**
+ * Convert File[] to DriveFileData[]
+ */
+export function mapFilesToDriveFiles(
+  files: drive_v3.Schema$File[],
+): DriveFile[] {
+  const driveFiles: DriveFile[] = files.map((d) => {
+    return mapFilesToDriveFile(d)
+  })
+
+  return driveFiles
+}
+
+function mapFilesToDriveFile(file: drive_v3.Schema$File): DriveFile {
+  // const permissions = convertPermissions(file.permissions)
+
+  return {
+    id: file.id || "",
+    name: file.name || "",
+    mimeType: file.mimeType || "",
+    link: file.webViewLink || "",
+    iconLink: file.iconLink || "",
+    hasThumbnail: file.hasThumbnail || false,
+    thumbnailLink: file.thumbnailLink || undefined,
+    createdTime: file.createdTime || undefined,
+    modifiedTime: file.modifiedTime || undefined,
+    webContentLink: file.webContentLink || undefined,
+    parents: file.parents || undefined,
+    appProperties: file.appProperties || undefined,
+    // permissions: permissions,
+  }
+}
+
+// function convertPermissions(
+//   permissions: drive_v3.Schema$Permission[] | undefined,
+// ): Permission[] | undefined {
+//   if (!permissions) return undefined
+
+//   return permissions.map((p) => {
+//     let type_: "user" | "group" | "unknown" = "unknown"
+//     if (isType(p.type)) {
+//       type_ = p.type
+//     }
+//     let role: "owner" | "writer" | "reader" | "unknown" = "unknown"
+//     if (isRole(p.role)) {
+//       role = p.role
+//     }
+
+//     return {
+//       id: p.id || "",
+//       displayName: p.displayName || "",
+//       type: type_,
+//       emailAddress: p.emailAddress || "",
+//       role: role,
+//     }
+//   })
+// }
+
+// function isType(x: unknown): x is "user" | "group" {
+//   return ["user", "group"].includes(x as string)
+// }
+// function isRole(x: unknown): x is "owner" | "writer" | "reader" {
+//   return ["owner", "writer", "reader"].includes(x as string)
+// }
 
 /*
 

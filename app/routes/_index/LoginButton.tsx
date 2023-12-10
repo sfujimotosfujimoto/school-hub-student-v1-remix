@@ -1,15 +1,16 @@
 import {
   Form,
-  useMatches,
   useNavigation,
+  useRouteLoaderData,
   useSearchParams,
 } from "@remix-run/react"
-
 import { Logo } from "~/components/icons"
 import Toast from "~/components/util/Toast"
 
+import type { loader } from "~/routes/_index/route"
+
 export default function LoginButton() {
-  const { user } = useMatches().filter((m) => m.id === "root")[0]?.data
+  const loaderData = useRouteLoaderData<typeof loader>("routes/_index")
 
   const [params] = useSearchParams()
 
@@ -20,11 +21,11 @@ export default function LoginButton() {
 
   return (
     <>
-      <div className="relative flex items-center justify-center w-full gap-8 ">
-        {!user ? (
+      <div className="relative flex w-full items-center justify-center gap-8 ">
+        {!loaderData?.role ? (
           <Form reloadDocument method="post" action="/auth/signin">
-            <button type="submit" className={`btn-success btn w-64 shadow-lg`}>
-              <Logo className="w-4 h-7" />
+            <button type="submit" className={`btn btn-success w-64 shadow-lg`}>
+              <Logo className="h-7 w-4" />
               <span className="ml-2 sm:ml-4 sm:inline">
                 SCHOOL HUB サインイン
               </span>
@@ -34,7 +35,7 @@ export default function LoginButton() {
           <Form method="post" action="/auth/signout">
             <button
               type="submit"
-              className={`btn-error btn w-64  border-0 shadow-lg hover:bg-opacity-70`}
+              className={`btn btn-error w-64  border-0 shadow-lg hover:bg-opacity-70`}
             >
               <Logo className={`h-7 w-4 ${loading && "animate-spin"}`} />
               <span className="ml-1 sm:ml-2 sm:inline">
@@ -44,7 +45,7 @@ export default function LoginButton() {
           </Form>
         )}
 
-        <div className="toast-end toast">
+        <div className="toast toast-end">
           {authstate === "expired" && (
             <Toast text="アクセス期限が切れました。" />
           )}

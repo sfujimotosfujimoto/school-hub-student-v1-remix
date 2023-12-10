@@ -44,7 +44,7 @@ export default function AdminCard({ user }: { user: User }) {
 
           {user.credential && (
             <AdminRow label="Expiry: ">
-              {formatDate(new Date(Number(user.credential.expiryDate)))}
+              {formatDate(new Date(Number(user.credential.expiry)))}
             </AdminRow>
           )}
           {user.stats && (

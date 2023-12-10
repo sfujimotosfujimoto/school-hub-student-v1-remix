@@ -1,10 +1,10 @@
+import type { MetaFunction } from "@remix-run/node"
 import { Outlet } from "@remix-run/react"
-import type { V2_MetaFunction } from "@remix-run/node"
 
 export default function AdminLayoutPage() {
   return <Outlet />
 }
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{ title: `ADMIN | SCHOOL HUB` }]
 }

@@ -1,9 +1,8 @@
-import type { PrismaUser, User } from "~/types"
+import type { Credential, PrismaUserWithAll, Student, User } from "~/types"
 
 import { prisma } from "./db.server"
-import * as sessionS from "./session.server"
 import { redirect } from "@remix-run/node"
-import { Role } from "@prisma/client"
+import { logger } from "./logger"
 
 const selectUser = {
   id: true,
@@ -18,7 +17,10 @@ const selectUser = {
   credential: {
     select: {
       accessToken: true,
-      expiryDate: true,
+      expiry: true,
+      refreshToken: true,
+      refreshTokenExpiry: true,
+      createdAt: true,
     },
   },
   stats: {
@@ -27,6 +29,24 @@ const selectUser = {
       lastVisited: true,
     },
   },
+  student: {
+    select: {
+      gakuseki: true,
+      gakunen: true,
+      hr: true,
+      hrNo: true,
+      last: true,
+      first: true,
+      sei: true,
+      mei: true,
+      email: true,
+      folderLink: true,
+      createdAt: true,
+      expiry: true,
+      users: true,
+    },
+  },
+  studentGakuseki: true,
 }
 // Get UserBase
 // used in `getUserBaseFromSession`
@@ -49,39 +69,18 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return returnUser(user)
 }
 
-export async function requireUserRole(request: Request): Promise<User> {
-  const payload = await sessionS.requireUserSession(request)
+export async function requireUserRole(user: User) {
+  logger.debug("👑 requireUserRole start")
 
-  const user = await getUserByEmail(payload.email)
-
-  if (!user?.credential) {
-    throw redirect("/?authstate=no-login")
-  }
-
-  if (user && !user.activated) {
-    throw redirect("/?authstate=not-activated")
-  }
-
-  if (user && ![Role.ADMIN, Role.USER].includes(user.role)) {
+  if (user && !["SUPER", "ADMIN", "MODERATOR", "USER"].includes(user.role)) {
     throw redirect("/?authstate=unauthorized")
   }
-  return user
 }
 
-export async function requireAdminRole(request: Request) {
-  const payload = await sessionS.requireUserSession(request)
+export async function requireAdminRole(user: User) {
+  logger.debug("👑 requireAdminRole start")
 
-  const user = await getUserByEmail(payload.email)
-
-  if (!user?.credential) {
-    throw redirect("/?authstate=no-login")
-  }
-
-  if (user && !user.activated) {
-    throw redirect("/?authstate=not-activated")
-  }
-
-  if (user && user.role !== Role.ADMIN) {
+  if (user && !["SUPER", "ADMIN"].includes(user.role)) {
     throw redirect("/?authstate=unauthorized")
   }
 }
@@ -135,7 +134,7 @@ export async function getUserById(id: number): Promise<User | null> {
 //-------------------------------------------
 // LOCAL FUNCTIONS
 //-------------------------------------------
-export function returnUser(user: PrismaUser) {
+export function returnUser(user: PrismaUserWithAll): User {
   const {
     id,
     last,
@@ -145,8 +144,30 @@ export function returnUser(user: PrismaUser) {
     activated,
     createdAt,
     updatedAt,
+    studentGakuseki,
     role,
   } = user
+
+  let student: Student | null = null
+
+  if (user.student) {
+    student = {
+      ...user.student,
+      expiry: Number(user.student.expiry),
+    }
+  }
+
+  let cred: Credential | null = null
+
+  if (user.credential) {
+    cred = {
+      accessToken: user.credential.accessToken,
+      expiry: Number(user.credential.expiry),
+      refreshToken: user.credential.refreshToken,
+      refreshTokenExpiry: Number(user.credential.refreshTokenExpiry),
+      createdAt: user.credential.createdAt,
+    }
+  }
 
   if (!user.credential)
     return {
@@ -161,10 +182,13 @@ export function returnUser(user: PrismaUser) {
       role,
       credential: null,
       stats: user.stats || null,
+      student: student ? student : null,
+      studentGakuseki,
     }
+
   if (!user.stats)
     return {
-      id,
+      id: Number(id),
       last,
       first,
       email,
@@ -173,16 +197,16 @@ export function returnUser(user: PrismaUser) {
       createdAt,
       updatedAt,
       role,
-      credential:
-        {
-          accessToken: user.credential.accessToken,
-          expiryDate: Number(user.credential.expiryDate),
-        } || null,
+      credential: cred || null,
+
       stats: null,
+      student: student || null,
+      studentGakuseki,
     }
 
-  const { accessToken, expiryDate } = user.credential
+  // const { accessToken, expiry } = user.credential
   const { count, lastVisited } = user.stats
+
   return {
     id,
     last,
@@ -193,19 +217,17 @@ export function returnUser(user: PrismaUser) {
     createdAt,
     updatedAt,
     role,
-    credential: {
-      accessToken,
-      // expiryDate,
-      expiryDate: Number(expiryDate),
-    },
+    credential: cred,
     stats: {
       count,
       lastVisited,
     },
+    student: student || null,
+    studentGakuseki,
   }
 }
 
-function returnUsers(prismaUsers: PrismaUser[]) {
+function returnUsers(prismaUsers: PrismaUserWithAll[]) {
   return prismaUsers.map((user) => returnUser(user))
 }
 
@@ -224,7 +246,7 @@ Type '
   updatedAt: Date; 
   credential: { 
       accessToken: string; 
-      expiryDate: bigint; 
+      expiry: bigint; 
   } | null; 
   stats: { ...; } | 
   null; }[]' 
@@ -244,7 +266,7 @@ Type '
   updatedAt: Date
   credential: {
     accessToken: string
-    expiryDate: number
+    expiry: number
   } | null
   stats: {
     count: number
@@ -263,7 +285,7 @@ Type '
     updatedAt: Date; 
     credential: { 
       accessToken: string; 
-      expiryDate: bigint; 
+      expiry: bigint; 
     } | null; 
     stats: { ...; } | 
     null; }' is not assignable to type '

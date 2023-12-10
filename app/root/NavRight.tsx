@@ -6,48 +6,48 @@ import { getFolderId } from "~/lib/utils"
 import type { loader } from "~/root"
 
 export default function NavRight() {
-  const { user, student } = useLoaderData<typeof loader>()
+  const { role, picture, folderLink } = useLoaderData<typeof loader>()
 
-  const studentLink = getFolderId(student?.folderLink || "")
+  const studentLink = getFolderId(folderLink || "")
 
   return (
     <div className="flex">
-      <div className="flex items-center flex-grow gap-1 text-xs sm:gap-2 sm:text-base">
+      <div className="flex flex-grow items-center gap-1 text-xs sm:gap-2 sm:text-base">
         <NavLink
           to="/"
-          className={`btn-success btn-xs btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
+          className={`btn btn-success btn-xs hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
         >
-          <span className="">Home</span>
+          <span className="">ホーム</span>
         </NavLink>
-        {!user && (
+        {!role && (
           <Form reloadDocument method="post" action="/auth/signin">
             <button
               type="submit"
-              className={`btn-success btn-xs btn shadow-md`}
+              className={`btn btn-success btn-xs shadow-md`}
             >
-              <Login className="w-5 h-5 sm:hidden" />
+              <Login className="h-5 w-5 sm:hidden" />
               <span className="hidden sm:block">サインイン</span>
             </button>
           </Form>
         )}
 
-        {user && (
+        {role && (
           <>
-            {user.role === "ADMIN" && (
+            {role === "ADMIN" && (
               <NavLink
                 to="/admin"
-                className={`btn-warning btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
+                className={`btn btn-warning btn-xs  border-0 shadow-md hover:bg-opacity-70 `}
               >
-                <Dashboard className="w-5 h-5 sm:hidden " />
+                <Dashboard className="h-5 w-5 sm:hidden " />
                 <span className="hidden sm:block">ADMIN</span>
               </NavLink>
             )}
             {studentLink && (
               <NavLink
                 to={`/student/${studentLink}`}
-                className={`btn-success btn-xs btn  border-0 shadow-md hover:bg-opacity-70 `}
+                className={`btn btn-success btn-xs  border-0 shadow-md hover:bg-opacity-70 `}
               >
-                <UserIcon className="w-5 h-5 sm:hidden" />
+                <UserIcon className="h-5 w-5 sm:hidden" />
 
                 <span className="hidden sm:block">生徒</span>
               </NavLink>
@@ -55,19 +55,14 @@ export default function NavRight() {
             <Form method="post" action="/auth/signout">
               <button
                 type="submit"
-                className={`btn-error btn-xs btn  border-0 shadow-md hover:bg-opacity-70`}
+                className={`btn btn-error btn-xs  border-0 shadow-md hover:bg-opacity-70`}
               >
-                <Logout className="w-5 h-5 sm:hidden" />
+                <Logout className="h-5 w-5 sm:hidden" />
                 <span className="hidden sm:block">サインアウト</span>
               </button>
             </Form>
 
-            <ImageIcon
-              src={user.picture}
-              alt="user icon"
-              width={24}
-              height={24}
-            />
+            <ImageIcon src={picture} alt="user icon" width={24} height={24} />
           </>
         )}
       </div>

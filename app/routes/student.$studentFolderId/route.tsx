@@ -1,19 +1,20 @@
 import invariant from "tiny-invariant"
 import * as driveS from "~/lib/google/drive.server"
-import * as sheetsS from "~/lib/google/sheets.server"
-import * as userS from "~/lib/user.server"
-import { filterSegments, getFolderId } from "~/lib/utils"
+import { filterSegments, getFolderId, parseTags } from "~/lib/utils"
 
-import {
-  redirect,
-  type LoaderArgs,
-  type V2_MetaFunction,
-} from "@remix-run/node"
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
+import { json, redirect } from "@remix-run/node"
 import { Outlet, useLoaderData } from "@remix-run/react"
 
 import StudentHeader from "./StudentHeader"
 
-import type { DriveFileData, StudentData } from "~/types"
+import { logger } from "~/lib/logger"
+import { authenticate } from "~/lib/authenticate.server"
+import { requireUserRole } from "~/lib/require-roles.server"
+import { StudentSchema } from "~/schemas"
+import type { Student } from "~/types"
+import DriveFilesProvider from "~/context/drive-files-context"
+import NendoTagsProvider from "~/context/nendos-tags-context"
 
 /**
  * StudentFolderIdLayout
@@ -21,41 +22,37 @@ import type { DriveFileData, StudentData } from "~/types"
  */
 export default function StudentFolderIdLayout() {
   const { student } = useLoaderData<typeof loader>()
+  const result = StudentSchema.safeParse(student)
+
+  let resultStudent: Student | null = null
+  if (result.success) {
+    resultStudent = result.data
+  }
 
   // JSX -------------------------
   return (
-    <div className="container h-screen p-8 mx-auto pt-14 sm:pt-8">
-      <div className="mb-4 space-y-4">
-        {student && <StudentHeader student={student} />}
-      </div>
-      <Outlet />
-    </div>
+    <DriveFilesProvider>
+      <NendoTagsProvider>
+        <div className="container mx-auto h-screen p-8 pt-14 sm:pt-8">
+          <div className="mb-4 space-y-4">
+            {resultStudent && <StudentHeader student={resultStudent} />}
+          </div>
+          <Outlet />
+        </div>
+      </NendoTagsProvider>
+    </DriveFilesProvider>
   )
 }
 
-/**
- * Loader Function for student.$studentFolderId
- * path = /student.$studentFolderId
- *
- * @export
- * @param {LoaderArgs} { request, params }
- * @return {*}  {(Promise<{
- *   extensions: string[]
- *   segments: string[]
- *   driveFileData: DriveFileData[] | null
- *   student: StudentData
- * }>)}
- */
-export async function loader({ request, params }: LoaderArgs): Promise<{
-  extensions: string[]
-  segments: string[]
-  driveFileData: DriveFileData[] | null
-  student: StudentData
-}> {
-  const user = await userS.requireUserRole(request)
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  logger.debug(`🍿 loader: student.$studentFolderId ${request.url}`)
+  const { user } = await authenticate(request)
+  await requireUserRole(user)
+
   if (!user || !user.credential) throw redirect("/?authstate=unauthorized")
 
-  const student = await sheetsS.getStudentDatumByEmail(user.email)
+  const student = user.student
+  // const student = await sheetsS.getStudentByEmail(user.email)
 
   if (!student || !student.folderLink)
     throw redirect("/?authstate=unauthorized")
@@ -67,38 +64,67 @@ export async function loader({ request, params }: LoaderArgs): Promise<{
   const studentFolderId = params.studentFolderId
   invariant(studentFolderId, "studentFolder in params is required")
 
-  const driveFileData = await driveS.getDriveFiles(
+  const driveFiles = await driveS.getDriveFiles(
     user.credential.accessToken,
-    `trashed=false and '${studentFolderId}' in parents`
+    `trashed=false and '${studentFolderId}' in parents`,
   )
 
-  let segments = Array.from(
-    new Set(driveFileData?.map((d) => d.name.split(/[-_.]/)).flat())
+  let segments: string[] = Array.from(
+    new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
   )
 
   segments = filterSegments(segments, student)
 
-  const extensions =
-    Array.from(new Set(driveFileData?.map((d) => d.mimeType))).map(
-      (ext) => ext.split(/[/.]/).at(-1) || ""
+  const extensions: string[] =
+    Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
+      (ext) => ext.split(/[/.]/).at(-1) || "",
     ) || []
 
-  return {
-    extensions,
-    segments,
-    driveFileData,
-    student,
-  }
+  const tags: Set<string> = new Set(
+    driveFiles
+      ?.map((df) => {
+        if (df.appProperties?.tags)
+          return parseTags(df.appProperties.tags) || null
+        return null
+      })
+      .filter((g): g is string[] => g !== null)
+      .flat(),
+  )
+  const nendos: Set<string> = new Set(
+    driveFiles
+      ?.map((df) => {
+        if (df.appProperties?.nendo)
+          return df.appProperties.nendo.trim() || null
+        return null
+      })
+      .filter((g): g is string => g !== null)
+      .flat(),
+  )
+
+  return json(
+    {
+      studentFolderId,
+      extensions,
+      segments,
+      driveFiles,
+      student,
+      tags: Array.from(tags),
+      nendos: Array.from(nendos),
+      role: user.role,
+    },
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": `max-age=${60 * 10}`,
+      },
+    },
+  )
 }
 
 /**
  * Meta Function
  */
-export const meta: V2_MetaFunction = ({
-  data,
-}: {
-  data: { rows: any; student: StudentData }
-}) => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const title =
     `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
     ""

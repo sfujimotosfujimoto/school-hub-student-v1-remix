@@ -1,38 +1,75 @@
 import * as jose from "jose"
-import type { Tokens } from "~/types"
+import { z } from "zod"
 
-import { prisma } from "./db.server"
 import { getPersonFromPeople } from "./google/people.server"
-import { getStudentDatumByEmail } from "./google/sheets.server"
+import { getStudentByEmail } from "./google/sheets.server"
 import { createUserSession, destroyUserSession } from "./session.server"
 import {
   checkValidAdminEmail,
   checkValidStudentOrParentEmail,
   getFolderId,
 } from "./utils"
-import { initializeClient } from "./google/google.server"
+import { getClientFromCode } from "./google/google.server"
 import { redirect } from "@remix-run/node"
-
+import { logger } from "./logger"
+import { prisma } from "./db.server"
+const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
+
+const TokenSchema = z.object({
+  token_type: z.string(),
+  access_token: z.string(),
+  scope: z.string(),
+  expiry_date: z.number(),
+  refresh_token: z.string().optional(),
+  id_token: z.string(),
+})
 
 /**
  * signin
  */
 export async function signin({ code }: { code: string }) {
-  // creates oauth2Client from client_id and client_secret
-  const oauth2Client = initializeClient()
-  oauth2Client.generateAuthUrl({ prompt: "select_account" })
+  logger.debug("🍓 signin")
+  const { tokens } = await getClientFromCode(code)
 
-  // get token from OAuth client
-  const output = await oauth2Client.getToken(code)
+  // verify token with zod
+  const result = TokenSchema.safeParse(tokens)
 
-  const tokens = output.tokens as Tokens
-  if (!tokens.access_token) {
-    throw redirect(`/?authstate=unauthorized`)
+  if (!result.success) {
+    console.error(result.error.errors)
+    throw redirect(`/?authstate=unauthorized-001`)
   }
 
-  const person = await getPersonFromPeople(tokens.access_token)
+  let { access_token, expiry_date, scope, token_type, refresh_token } =
+    result.data
+
+  // TODO: !!DEBUG!!: setting expiryDateDummy to 10 seconds
+  const expiryDummy = new Date().getTime() + 1000 * 15
+  expiry_date = expiryDummy
+
+  // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
+  // let refreshTokenExpiry = refreshTokenExpiryDummy
+  let refreshTokenExpiry = Date.now() + 1000 * 60 * 60 * 24 * 14 // 14 days
+
+  logger.info(
+    `🍓 signin: new expiry_date ${new Date(expiry_date || 0).toLocaleString(
+      "ja-JP",
+      { timeZone: "Asia/Tokyo" },
+    )}`,
+  )
+
+  logger.info(
+    `🍓 signin: new refreshTokenExpiry ${new Date(
+      refreshTokenExpiry || 0,
+    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+  )
+
+  if (!access_token) {
+    throw redirect(`/?authstate=unauthorized-002`)
+  }
+
+  const person = await getPersonFromPeople(access_token)
   if (!person) {
     throw redirect(`/?authstate=unauthorized`)
   }
@@ -45,6 +82,7 @@ export async function signin({ code }: { code: string }) {
     throw redirect(`/?authstate=not-parent-account`)
   }
 
+  // find if user is parent or student in db
   let userPrisma = await prisma.user.findUnique({
     where: {
       email: person.email,
@@ -52,6 +90,8 @@ export async function signin({ code }: { code: string }) {
   })
 
   // if no user, create in prisma db
+  // this can be parent or student
+
   if (!userPrisma) {
     userPrisma = await prisma.user.create({
       data: {
@@ -59,11 +99,13 @@ export async function signin({ code }: { code: string }) {
         last: person.last,
         email: person.email,
         picture: person.picture,
+        role: "USER",
       },
     })
   }
 
-  // check if user has stats in prisma db
+  // find stats in prisma db
+  // there can be one for perent and student
   let stats = await prisma.stats.findUnique({
     where: {
       userId: userPrisma.id,
@@ -79,35 +121,104 @@ export async function signin({ code }: { code: string }) {
     })
   }
 
+  // find credential in prisma db
+  // there can be one for perent and student
   let cred = await prisma.credential.findUnique({
     where: {
       userId: userPrisma.id,
     },
   })
 
+  // if no credential, create in prisma db
+  // use data from google endpoint
   if (!cred) {
-    // add credentials to cockroach db
     cred = await prisma.credential.create({
       data: {
-        accessToken: tokens.access_token,
-        scope: tokens.scope,
-        tokenType: tokens.token_type,
-        expiryDate: tokens.expiry_date,
+        accessToken: access_token,
+        scope: scope,
+        tokenType: token_type,
+        expiry: expiry_date,
         userId: userPrisma.id,
+        refreshToken: refresh_token,
+        refreshTokenExpiry: refreshTokenExpiry,
       },
     })
   } else {
+    // else update credential in prisma db
     cred = await prisma.credential.update({
       where: {
         userId: userPrisma.id,
       },
       data: {
-        accessToken: tokens.access_token,
-        scope: tokens.scope,
-        tokenType: tokens.token_type,
-        expiryDate: tokens.expiry_date,
+        accessToken: access_token,
+        scope: scope,
+        tokenType: token_type,
+        expiry: expiry_date,
+        refreshToken: refresh_token,
+        refreshTokenExpiry: refreshTokenExpiry,
       },
     })
+  }
+
+  // convert parent email to student email
+  let studentEmail = person.email.replace(/^p/, "b")
+  logger.debug(`✅ studentEmail ${studentEmail}`)
+
+  // find student in prisma db with student email even if user is parent
+  const studentPrisma = await prisma.student.findUnique({
+    where: {
+      email: studentEmail,
+    },
+    include: {
+      users: true,
+    },
+  })
+
+  // if no student in db, create in prisma db
+  if (!studentPrisma) {
+    const student = await getStudentByEmail(studentEmail)
+    logger.debug(`✅ in !studentPrisma`)
+    if (student) {
+      await prisma.student.create({
+        data: {
+          gakuseki: student.gakuseki,
+          gakunen: student.gakunen,
+          hr: student.hr,
+          hrNo: student.hrNo,
+          last: student.last,
+          first: student.first,
+          sei: student.sei || "",
+          mei: student.mei || "",
+          email: student.email,
+          folderLink: student.folderLink,
+          expiry: EXPIRY_DATE,
+          users: {
+            connect: {
+              id: userPrisma.id,
+            },
+          },
+        },
+      })
+    }
+  } else {
+    logger.debug(`✅ in else studentPrisma`)
+    // if there is student in db, and user's id is not in student.users,
+    // create student abd relation to user
+    const userIds = studentPrisma.users.map((u) => u.id)
+    if (!userIds.includes(userPrisma.id) && userPrisma.studentGakuseki) {
+      await prisma.student.update({
+        where: {
+          gakuseki: userPrisma.studentGakuseki,
+        },
+        data: {
+          users: {
+            connect: {
+              id: userPrisma.id,
+            },
+          },
+        },
+      })
+    }
   }
 
   // if user passes email check, set user.activated to true
@@ -132,20 +243,50 @@ export async function signin({ code }: { code: string }) {
     throw redirect(`/?authstate=not-seig-account`)
   }
 
-  const secret = process.env.SESSION_SECRET
-  const secretEncoded = new TextEncoder().encode(secret)
-  const token = await new jose.SignJWT({ email: userPrisma.email })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(tokens.expiry_date)
-    .sign(secretEncoded)
-
+  const userJWT = await updateUserJWT(
+    userPrisma.email,
+    expiry_date,
+    refreshTokenExpiry,
+  )
   if (userPrisma.role === "ADMIN") {
-    return createUserSession(token, `/admin`)
+    return createUserSession(userJWT, `/admin`)
   }
 
-  const folderId = await getFolderIdFromEmail(userPrisma.email)
+  const newUser = await prisma.user.findUnique({
+    where: {
+      email: userPrisma.email,
+    },
+    include: {
+      student: true,
+    },
+  })
 
-  return createUserSession(token, `/student/${folderId}`)
+  logger.debug(
+    `✅ newUser ${JSON.stringify(newUser?.student?.folderLink, null, 2)}`,
+  )
+
+  if (!newUser?.student?.folderLink) {
+    throw redirect(`/?authstate=no-folder`)
+  }
+  const folderId = getFolderId(newUser?.student?.folderLink)
+
+  return createUserSession(userJWT, `/student/${folderId}`)
+}
+
+// used in authenticate
+export async function updateUserJWT(
+  email: string,
+  expiry: number,
+  refreshTokenExpiry: number,
+): Promise<string> {
+  logger.debug(`🍓 signin: updateUserJWT: email ${email}`)
+  const secret = process.env.SESSION_SECRET
+  const secretEncoded = new TextEncoder().encode(secret)
+  const userJWT = await new jose.SignJWT({ email, rexp: refreshTokenExpiry })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime(expiry)
+    .sign(secretEncoded)
+  return userJWT
 }
 
 /**
@@ -165,9 +306,9 @@ export async function signout({ request }: { request: Request }) {
  * }>)}
  */
 export async function getFolderIdFromEmail(
-  email: string
+  email: string,
 ): Promise<string | null> {
-  const student = await getStudentDatumByEmail(email)
+  const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
     throw redirect(`/?authstate=no-folder`)

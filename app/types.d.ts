@@ -1,4 +1,4 @@
-import type { Role } from "@prisma/client"
+import type { Role, User as PrismaUser } from "@prisma/client"
 
 export type Tokens = {
   access_token: string
@@ -20,9 +20,6 @@ export interface UserBase extends Person {
   exp: number
 }
 
-export type Gakunen = "ALL" | "J1" | "J2" | "J3" | "H1" | "H2" | "H3"
-export type Hr = "ALL" | "A" | "B" | "C" | "D" | "E"
-
 export interface User {
   id: number
   first: string
@@ -33,61 +30,43 @@ export interface User {
   activated: boolean
   createdAt: Date
   updatedAt: Date
-  credential: {
-    accessToken: string
-    expiryDate: number
-  } | null
-  stats: {
-    count: number
-    lastVisited: Date
-  } | null
+  credential: Credential | null
+  stats: Stats | null
+  student?: Student | null
+  studentGakuseki?: number | null
 }
 
-export interface RawUser {
-  id: number
-  first: string
-  last: string
-  email: string
-  picture: string
-  role: Role
-  activated: boolean
-  createdAt: string
-  updatedAt: string
-  credential: {
-    accessToken: string
-    expiryDate: number
-  } | null
-  stats: {
-    count: number
-    lastVisited: string
-  } | null
-}
-
-export interface PrismaUser {
-  id: number
-  first: string
-  last: string
-  email: string
-  picture: string
-  role: Role
-  activated: boolean
+type Credential = {
+  accessToken: string
+  expiry: number
+  refreshToken: string | null
+  refreshTokenExpiry: number
   createdAt: Date
-  updatedAt: Date
-  credential: {
-    accessToken: string
-    expiryDate: bigint
-  } | null
-  stats: {
-    count: number
-    lastVisited: Date
-  } | null
+}
+type PrismaCredential = {
+  accessToken: string
+  expiry: bigint
+  refreshToken: string | null
+  refreshTokenExpiry: bigint
+  createdAt: Date
 }
 
-export type DriveFileData = {
+type Stats = {
+  count: number
+  lastVisited: Date
+}
+
+export type PrismaUserWithAll = PrismaUser & {
+  credential: PrismaCredential | null
+  stats: Stats | null
+  student?: PrismaStudent | null
+}
+
+export type DriveFile = {
   id: string
   name: string
   mimeType: string
-  link: string
+  link?: string
   iconLink: string
   hasThumbnail: boolean
   thumbnailLink?: string
@@ -95,9 +74,39 @@ export type DriveFileData = {
   modifiedTime?: string
   webContentLink?: string
   parents?: string[]
+  appProperties?: {
+    [key: string]: string | null
+  }
+  // meta?: DriveFileMeta
 }
 
-export type StudentData = {
+export type DriveFileMeta = {
+  selected?: boolean
+  studentFolder?: {
+    folderLink?: string
+    folderId?: string
+    name?: string
+  }
+  destination?: {
+    folderId?: string
+    name?: string
+  }
+  last?: {
+    folderId?: string
+  }
+  file?: {
+    segments?: string[]
+    name?: string
+    formerName?: string
+    studentEmail?: string
+    tags?: string
+    nendo?: string
+  }
+  student?: Student
+  permissions?: Permission[]
+}
+
+export type Student = {
   gakuseki: number
   gakunen: string
   hr: string
@@ -107,5 +116,38 @@ export type StudentData = {
   sei: string
   mei: string
   email: string
-  folderLink: string | null
+  folderLink?: string | null
+  userId?: number
+  createdAt?: Date
+  expiry?: number
+}
+export type PrismaStudent = {
+  gakuseki: number
+  gakunen: string
+  hr: string
+  hrNo: number
+  last: string
+  first: string
+  sei: string
+  mei: string
+  email: string
+  folderLink?: string | null
+  userId?: number
+  createdAt?: Date
+  expiry?: bigint
+}
+
+export type Permission = {
+  id: string
+  displayName: string
+  type: "user" | "group"
+  emailAddress: string
+  role: "owner" | "writer" | "reader"
+}
+
+// rexp = refresh token expiry date
+export type Payload = {
+  email: string
+  exp: number
+  rexp: number
 }

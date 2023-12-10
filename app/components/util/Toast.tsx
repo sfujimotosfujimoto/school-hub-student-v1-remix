@@ -1,12 +1,10 @@
-"use client"
-
 import React from "react"
 
-type AlertType =
-  | "alert-warning"
-  | "alert-primary"
-  | "alert-error"
-  | "alert-secondary"
+// type AlertType =
+//   | "alert-warning"
+//   | "alert-primary"
+//   | "alert-error"
+//   | "alert-secondary"
 
 export default function Toast({ text }: { text: string }) {
   const [visible, setVisible] = React.useState<boolean>(true)

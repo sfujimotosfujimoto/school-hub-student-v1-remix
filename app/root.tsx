@@ -1,10 +1,11 @@
 import sharedStyles from "~/styles/shared.css"
 import tailwindStyles from "~/styles/tailwind.css"
 
-import type {
-  LinksFunction,
-  LoaderArgs,
-  V2_MetaFunction,
+import {
+  json,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/node"
 import {
   Link,
@@ -14,63 +15,42 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  isRouteErrorResponse,
   useRouteError,
 } from "@remix-run/react"
 
 import Navigation from "./root/Navigation"
-import ErrorDocument from "./root/ErrorDocument"
 import * as sessionS from "./lib/session.server"
 import Footer from "./root/Footer"
-import * as sheetsS from "./lib/google/sheets.server"
+import ErrorDocument from "./root/ErrorDocument"
 
-function Document({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <div
-          data-name="root.tsx"
-          className="grid h-full mx-auto grid-rows-layout"
-        >
-          <Navigation />
-          <main className="h-full">{children}</main>
-          <Footer />
-        </div>
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
-      </body>
-    </html>
-  )
-}
-
-export default function App() {
-  return (
-    <Document>
-      <Outlet />
-    </Document>
-  )
-}
-
-export async function loader({ request }: LoaderArgs) {
+/**
+ * LOADER function
+ */
+export async function loader({ request }: LoaderFunctionArgs) {
   const user = await sessionS.getUserFromSession(request)
 
-  if (!user?.email) return { user: null, student: null }
+  if (!user?.email) return { role: null, picture: null, folderLink: null }
 
-  const student = await sheetsS.getStudentDatumByEmail(user?.email)
+  // const student = await sheetsS.getStudentDatumByEmail(user?.email)
 
-  if (!student) return { user, student: null }
+  const student = user?.student
+  if (!student)
+    return { role: user.role, picture: user.picture, folderLink: null }
 
-  return { user, student }
+  const headers = new Headers()
+
+  headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
+
+  return json(
+    { role: user.role, picture: user.picture, folderLink: student.folderLink },
+    { headers },
+  )
 }
 
-export const meta: V2_MetaFunction = () => {
+/**
+ * META function
+ */
+export const meta: MetaFunction = () => {
   return [
     {
       title: "SCHOOL HUB STUDENT",
@@ -78,6 +58,9 @@ export const meta: V2_MetaFunction = () => {
   ]
 }
 
+/**
+ * LINKS function
+ */
 export const links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: tailwindStyles },
@@ -85,6 +68,11 @@ export const links: LinksFunction = () => {
     {
       rel: "apple-touch-icon",
       sizes: "180x180",
+      href: "/apple-touch-icon.png",
+    },
+    {
+      rel: "apple-touch-icon",
+      sizes: "120x120",
       href: "/apple-touch-icon.png",
     },
     {
@@ -107,93 +95,177 @@ export const links: LinksFunction = () => {
   ]
 }
 
+/**
+ * Component
+ */
+function Document({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <div
+          data-name="root.tsx"
+          className="mx-auto grid h-full grid-rows-layout"
+        >
+          <Navigation />
+          <main className="h-full">{children}</main>
+          <Footer />
+        </div>
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  )
+}
+
+export default function App() {
+  return (
+    <Document>
+      <Outlet />
+    </Document>
+  )
+}
+
 export function ErrorBoundary() {
-  console.log("🚀 app/root.tsx ~ 	✨ in ErrorBoundary")
   let error = useRouteError()
+  const errorMessage = error instanceof Error && error.message
+  // if (isRouteErrorResponse(error)) {
+  //   console.error(`${error.status}: ${error.statusText}:${error}`)
+  //   let errorMessage = "An error occurred."
+  //   switch (error.status) {
+  //     case 401: {
+  //       errorMessage = "You are not authorized."
+  //       break
+  //     }
+  //     case 403: {
+  //       errorMessage = "You are not authenticated."
+  //       break
+  //     }
+  //     case 500: {
+  //       errorMessage = "Something went wrong in the server."
+  //       break
+  //     }
+  //     default: {
+  //       errorMessage = "Something went wrong. (default)"
+  //     }
+  //   }
+  // }
 
-  if (isRouteErrorResponse(error)) {
-    let errorMessage = "An error occurred."
-    console.log("🚀 app/root.tsx ~ 	🌈 error ✨ ", error, typeof error.status)
+  return (
+    <Document>
+      <ErrorDocument>
+        <h1 className="text-xl">
+          Something went wrong. Please try again later.
+        </h1>
 
-    switch (error.status) {
-      case 401: {
-        errorMessage = "You are not authorized."
-        break
-      }
-      case 403: {
-        errorMessage = "You are not authenticated."
-        break
-      }
-      case 500: {
-        errorMessage = "Something went wrong in the server."
-        break
-      }
-      default: {
-        errorMessage = "Something went wrong. (default)"
-      }
-    }
+        <p className="text-lg">{errorMessage && <p>{errorMessage}</p>}</p>
 
-    return (
-      <Document>
-        <main data-name="root">
-          <ErrorDocument>
-            <h1 className="text-xl">
-              {`${errorMessage} : ${error.status}` ||
-                "Something went wrong. Please try again later."}
-            </h1>
-            <p className="text-lg text-center">{error.statusText}</p>
+        <p className="text-lg">
+          Contact:
+          <a
+            href="mailto:s-fujimoto@seig-boys.jp"
+            className="ml-2 font-semibold underline hover:text-sfred-200 "
+          >
+            s-fujimoto[at]seig-boys.jp
+          </a>
+        </p>
+        <BackToHomeButton />
+      </ErrorDocument>
 
-            <p className="text-lg">
-              Contact:
-              <a
-                href="mailto:s-fujimoto@seig-boys.jp"
-                className="ml-2 font-semibold underline hover:text-sfred-200 "
-              >
-                s-fujimoto[at]seig-boys.jp
-              </a>
-            </p>
-            <Link
-              to="/"
-              className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
-            >
-              Back to Home
-            </Link>
-          </ErrorDocument>
-        </main>
-      </Document>
-    )
-  } else if (error instanceof Error) {
-    console.error("🚀 app/root.tsx ~ 	🌈 error ✨ ", error.message)
-    return (
-      <Document>
-        <main>
-          <ErrorDocument>
-            <p className="text-2xl">{"Something went wrong."}</p>
-            <Link
-              to="/"
-              className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
-            >
-              Back to Home
-            </Link>
-          </ErrorDocument>
-        </main>
-      </Document>
-    )
-  } else {
-    return (
-      <Document>
-        <main>
-          <ErrorDocument>
-            <h1 className="text-2xl">Unknown Error</h1>
-            <Link
-              to="/"
-              className={`btn-success btn-md btn hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
-            >
-              Back to Home
-            </Link>
-          </ErrorDocument>
-        </main>
-      </Document>
-    )
-  }
+      <BackToHomeButton />
+    </Document>
+  )
+
+  //   return (
+  //     <html lang="en" data-theme="mytheme">
+  //       <head>
+  //         <meta charSet="utf-8" />
+  //         <meta name="viewport" content="width=device-width,initial-scale=1" />
+  //         <Meta />
+  //         <Links />
+  //       </head>
+  //       <body>
+  //         {/* MAIN */}
+  //         <div
+  //           data-name="root.tsx"
+  //           className="mx-auto grid h-full grid-rows-layout text-sfblue-300"
+  //         >
+  //           <main className="h-full ">
+  //             <ErrorDocument>
+  //               <h1 className="text-xl">
+  //                 {`${errorMessage} : ${error.status}` ||
+  //                   "Something went wrong. Please try again later."}
+  //               </h1>
+
+  //               <p className="text-lg">
+  //                 Contact:
+  //                 <a
+  //                   href="mailto:s-fujimoto@seig-boys.jp"
+  //                   className="ml-2 font-semibold underline hover:text-sfred-200 "
+  //                 >
+  //                   s-fujimoto[at]seig-boys.jp
+  //                 </a>
+  //               </p>
+  //               <BackToHomeButton />
+  //             </ErrorDocument>
+  //           </main>
+  //           <Footer />
+  //         </div>
+
+  //         <ScrollRestoration />
+  //         <Scripts />
+  //         <LiveReload />
+  //       </body>
+  //     </html>
+  //   )
+  // } else {
+  //   return (
+  //     <html lang="en" data-theme="mytheme">
+  //       <head>
+  //         <meta charSet="utf-8" />
+  //         <meta name="viewport" content="width=device-width,initial-scale=1" />
+  //         <Meta />
+  //         <Links />
+  //       </head>
+  //       <body>
+  //         {/* MAIN */}
+  //         <div
+  //           data-name="root.tsx"
+  //           className="mx-auto grid h-full grid-rows-layout text-sfblue-300"
+  //         >
+  //           <main className="h-full ">
+  //             <ErrorDocument>
+  //               <p className="text-2xl">
+  //                 Something went wrong. Please try again later.
+  //               </p>
+  //               <BackToHomeButton />
+  //             </ErrorDocument>
+  //           </main>
+  //           <Footer />
+  //         </div>
+
+  //         <ScrollRestoration />
+  //         <Scripts />
+  //         <LiveReload />
+  //       </body>
+  //     </html>
+  //   )
+  // }
+}
+
+function BackToHomeButton() {
+  return (
+    <Link
+      to="/"
+      className={`btn btn-success btn-md hidden border-0 shadow-md hover:bg-opacity-70 sm:inline-flex`}
+    >
+      Back to Home
+    </Link>
+  )
 }
