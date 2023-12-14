@@ -1,5 +1,11 @@
 import { Renew, Time } from "~/components/icons"
-import { checkGoogleMimeType, dateFormat, stripText } from "~/lib/utils"
+import Tags from "~/components/tags"
+import {
+  checkGoogleMimeType,
+  dateFormat,
+  parseTags,
+  stripText,
+} from "~/lib/utils"
 import type { DriveFile } from "~/types"
 
 export default function StudentCard({
@@ -11,24 +17,38 @@ export default function StudentCard({
   thumbnailSize?: "small" | "big"
   size?: "small" | "big"
 }) {
+  const appProperties = driveFile.appProperties
+
+  const tags = appProperties?.tags ? parseTags(appProperties.tags) : null
+  const nendo = driveFile.appProperties?.nendo
+
   return (
     <>
       <div
         data-name="StudentCard"
-        className={`card bg-sfgreen-200 shadow-lg lg:card-side ${
-          size === "big"
-            ? "l transition-all duration-500 hover:-translate-y-1 hover:bg-sfred-50"
-            : null
-        }`}
+        className={`card bg-sfgreen-200 shadow-lg transition-all duration-500 lg:card-side hover:-translate-y-1 hover:bg-sfgreen-300`}
       >
         <div
-          className={`card-body p-6 sm:p-10  ${
+          className={`card-body ${
             size === "small" ? "p-2 sm:p-4" : "p-6 sm:p-10"
           }`}
         >
           <h2 className={`card-title ${size === "small" ? "text-sm" : null}`}>
             {stripText(driveFile.name)}
           </h2>
+
+          {/* NENDO & TAGS */}
+          <div className="flex gap-2">
+            {nendo && (
+              <span
+                className={`rounded-lg bg-slate-200  px-2 py-1 text-xs font-bold sm:text-sm`}
+              >
+                {nendo}
+              </span>
+            )}
+            {tags && <Tags tags={tags} />}
+          </div>
+
           <div className="flex items-center justify-center gap-2">
             <img
               src={driveFile.iconLink}

@@ -26,7 +26,6 @@ body {
   @apply bg-slate-300;
 }
 
-
 button.nendo-active {
   background-color: hsl(1, 64%, 72%);
 }
@@ -34,8 +33,36 @@ a.nendo-active {
   background-color: hsl(1, 64%, 72%);
 }
 button.tag-active {
-  background-color: #78C3C6;
+  background-color: hsl(182, 41%, 62%);
 }
 div.flex.gap-2 > button.btn.btn-sm:hover {
   background-color: hsl(1, 54%, 72%);
+}
+
+.nendo-active {
+  background-color: hsl(1, 64%, 72%);
+  text-decoration: underline solid #222 1px;
+  text-underline-offset: 2px;
+}
+
+.nendo-active-navigating{
+  background-color: hsl(1, 84%, 82%);
+
+}
+.tag-active {
+  background-color: hsl(182, 41%, 62%);
+  text-decoration: underline solid #222 1px;
+  text-underline-offset: 2px;
+}
+.tag-active-navigating {
+  background-color: hsl(182, 61%, 62%);
+}
+
+.segment-active {
+  background-color: hsl(33, 59%, 84%);
+  text-decoration: underline solid #222 1px;
+  text-underline-offset: 2px;
+}
+.segment-active-navigating {
+  background-color: hsl(33, 50%, 91%);
 }

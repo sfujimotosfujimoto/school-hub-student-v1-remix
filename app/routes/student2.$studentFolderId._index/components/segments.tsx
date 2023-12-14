@@ -1,65 +1,78 @@
-import type { DriveFile } from "~/types"
-import { useDriveFilesContext } from "~/context/drive-files-context"
+import { NavLink, useNavigation } from "@remix-run/react"
+import clsx from "clsx"
+
+function setSearchParams(url: string, key: string, value: string) {
+  const _url = new URL(url)
+  _url.searchParams.set(key, value ? value : "ALL")
+  return _url.href
+}
 
 export default function Segments({
-  baseDriveFiles,
+  url,
   extensions,
   segments,
 }: {
-  baseDriveFiles: DriveFile[]
+  url: string
   extensions: string[]
   segments: string[]
 }) {
-  const { driveFilesDispatch } = useDriveFilesContext()
+  const _url = new URL(url)
+  const currentSegment = _url.searchParams.get("segments")
+
+  const navigate = useNavigation()
+
+  const isNavigating = navigate.state !== "idle"
+  const navSearch = navigate.location?.search
 
   return (
     <div className="mt-4">
       <div className={`flex flex-wrap gap-2`}>
-        <span
-          onClick={() =>
-            driveFilesDispatch({
-              type: "SET",
-              payload: { driveFiles: baseDriveFiles },
-            })
-          }
+        <NavLink
+          to={`${_url.pathname}?extensions=ALL&segments=ALL`}
           key="ALL"
           className={`btn btn-xs border-none bg-sfred-200 shadow-md duration-200 hover:-translate-y-[1px] hover:bg-sfred-300`}
         >
           ALL
-        </span>
+        </NavLink>
         {extensions &&
           extensions.sort().map((ext, idx) => (
-            <span
-              onClick={() => {
-                driveFilesDispatch({
-                  type: "UPDATE_META_SELECTED",
-                  payload: { selected: true },
-                })
-                driveFilesDispatch({
-                  type: "FILTER_BY_EXTENSION",
-                  payload: { extension: ext, driveFiles: baseDriveFiles },
-                })
-              }}
+            <NavLink
+              to={`${setSearchParams(_url.href, "extensions", ext)}`}
               key={idx}
-              className={`btn btn-xs border-none bg-sky-300 shadow-md duration-200 hover:-translate-y-[1px] hover:bg-sky-400`}
+              className={({ isActive, isPending }) =>
+                clsx(
+                  `btn btn-xs border-none bg-sky-300 shadow-md duration-200 hover:-translate-y-[1px] hover:bg-sky-400`,
+                  { disabled: isPending },
+                  {
+                    "extension-active":
+                      _url.searchParams.get("extensions") === ext,
+                  },
+                )
+              }
             >
               {ext}
-            </span>
+            </NavLink>
           ))}
         {segments &&
           segments.sort().map((segment, idx) => (
-            <span
-              onClick={() =>
-                driveFilesDispatch({
-                  type: "FILTER_BY_SEGMENT",
-                  payload: { segment, driveFiles: baseDriveFiles },
-                })
-              }
+            <NavLink
+              to={`${setSearchParams(_url.href, "segments", segment)}`}
               key={idx}
-              className={`btn btn-warning btn-xs border-none shadow-md duration-200 hover:-translate-y-[1px] hover:bg-sfyellow-200`}
+              className={({ isActive, isPending }) =>
+                clsx(
+                  `btn btn-warning btn-xs border-none shadow-md duration-200 hover:-translate-y-[1px] hover:bg-sfyellow-200`,
+                  { disabled: isPending },
+                  { "segment-active": currentSegment === segment },
+                  {
+                    "segment-active-navigating":
+                      navSearch?.includes(`segments=${encodeURI(segment)}`) &&
+                      isNavigating,
+                  },
+                )
+              }
             >
               {segment}
-            </span>
+            </NavLink>
           ))}
       </div>
     </div>

@@ -1,9 +1,4 @@
-import {
-  isRouteErrorResponse,
-  useParams,
-  useRouteError,
-  useRouteLoaderData,
-} from "@remix-run/react"
+import { useParams, useRouteLoaderData } from "@remix-run/react"
 
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import ToFolderBtn from "./ToFolderBtn"
@@ -20,6 +15,7 @@ import React from "react"
 import StudentCard from "../student.$studentFolderId._index/StudentCard"
 import type { DriveFile } from "~/types"
 import { getUserFromSession } from "~/lib/session.server"
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
 
 /**
  * StudentFolderFileIdPage
@@ -102,27 +98,11 @@ export const meta: MetaFunction = () => {
   ]
 }
 
+/**
+ * Error Boundary
+ */
 export function ErrorBoundary() {
-  const error = useRouteError()
-  const { id } = useParams()
-  let heading = "Something went wrong"
-  let message = `Apologies, something went wrong on our end,
-  please try again.`
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    heading = "Expense not found"
-    message = `Apologies, the expense with the id ${id} cannot
-  be found.`
-  }
-  return (
-    <>
-      <div
-        className="m-auto flex w-full flex-col items-center
-  justify-center gap-5 lg:max-w-3xl"
-      >
-        <h2>{heading}</h2>
-        <p>{message}</p>
-      </div>
-      <BackButton to="/" />
-    </>
-  )
+  const { studentFolderId, fileId } = useParams()
+  let message = `フォルダID（${studentFolderId}）からファイル(${fileId})を取得できませんでした。`
+  return <ErrorBoundaryDocument message={message} />
 }

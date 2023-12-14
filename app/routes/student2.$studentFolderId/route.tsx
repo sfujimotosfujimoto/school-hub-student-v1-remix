@@ -4,14 +4,7 @@ import { filterSegments, getFolderId, parseTags } from "~/lib/utils"
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
 import { json, redirect } from "@remix-run/node"
-import {
-  Outlet,
-  isRouteErrorResponse,
-  useLoaderData,
-  useMatches,
-  useParams,
-  useRouteError,
-} from "@remix-run/react"
+import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 
 import StudentHeader from "./StudentHeader"
 
@@ -20,8 +13,7 @@ import { authenticate } from "~/lib/authenticate.server"
 import { requireUserRole } from "~/lib/require-roles.server"
 import { StudentSchema } from "~/schemas"
 import type { Student } from "~/types"
-import BackButton from "~/components/BackButton"
-import ErrorDocument from "~/root/ErrorDocument"
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
 
 /**
  * Meta Function
@@ -130,11 +122,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
  * path = /student.$studentFolderId
  */
 export default function StudentFolderIdLayout() {
-  const matches = useMatches()
-  console.log(
-    "✅ student2.$studentFolderId._index/route.tsx ~ 	🌈 matches ✅ ",
-    matches,
-  )
   console.log("✅ student2.$studentFolderId/route.tsx ~ 	😀 ")
   const { student } = useLoaderData<typeof loader>()
   const result = StudentSchema.safeParse(student)
@@ -146,8 +133,7 @@ export default function StudentFolderIdLayout() {
 
   // JSX -------------------------
   return (
-    <div className="container mx-auto h-screen p-8 pt-14 sm:pt-8">
-      Student2$StudentFolderId
+    <div className="container mx-auto h-full p-4 sm:p-8">
       <div className="mb-4 space-y-4">
         {resultStudent && <StudentHeader student={resultStudent} />}
       </div>
@@ -160,26 +146,7 @@ export default function StudentFolderIdLayout() {
  * Error Boundary
  */
 export function ErrorBoundary() {
-  const error = useRouteError()
-  const { id } = useParams()
-  let heading = "Something went wrong"
-  let message = `Apologies, something went wrong on our end,
-  please try again.`
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    heading = "Expense not found"
-    message = `Apologies, the expense with the id ${id} cannot
-  be found.`
-  }
-  return (
-    <ErrorDocument>
-      {/* <div
-        className="m-auto flex w-full flex-col items-center
-        justify-center gap-5 lg:max-w-3xl"
-      > */}
-      <h2 className="text-2xl">{heading}</h2>
-      <p className="text-lg">{message}</p>
-      {/* </div> */}
-      <BackButton to="/" />
-    </ErrorDocument>
-  )
+  const { studentFolderId } = useParams()
+  let message = `フォルダID（${studentFolderId}）からフォルダを取得できませんでした。`
+  return <ErrorBoundaryDocument message={message} />
 }

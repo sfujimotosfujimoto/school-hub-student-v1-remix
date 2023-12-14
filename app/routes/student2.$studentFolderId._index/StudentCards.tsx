@@ -20,7 +20,7 @@ export default function StudentCards({
             prefetch="intent"
             key={d.id}
             id="_StudentCard"
-            to={`/student/${studentFolderId}/${d.id}`}
+            to={`/student2/${studentFolderId}/${d.id}`}
           >
             <StudentCard driveFile={d} />
           </Link>

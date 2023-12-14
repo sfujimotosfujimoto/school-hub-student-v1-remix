@@ -44,7 +44,7 @@ export default function NavRight() {
             )}
             {studentLink && (
               <NavLink
-                to={`/student/${studentLink}`}
+                to={`/student2/${studentLink}`}
                 className={`btn btn-success btn-xs  border-0 shadow-md hover:bg-opacity-70 `}
               >
                 <UserIcon className="h-5 w-5 sm:hidden" />

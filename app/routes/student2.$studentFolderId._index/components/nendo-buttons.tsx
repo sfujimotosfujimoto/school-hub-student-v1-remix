@@ -1,25 +1,30 @@
-import { NavLink } from "@remix-run/react"
+import { NavLink, useNavigation } from "@remix-run/react"
 import React from "react"
 // import { useDriveFilesContext } from "~/context/drive-files-context"
 // import { useNendoTags } from "~/context/nendos-tags-context"
 import clsx from "clsx"
-import type { DriveFile } from "~/types"
 
 export default function NendoButtons({
+  url,
   studentFolderId,
-  driveFiles,
   nendos,
   nendo,
   color, // currentNendo,
-  showAll = false,
 }: {
+  url: string
   studentFolderId: string
-  driveFiles: DriveFile[]
   nendos: string[]
   nendo: string
   color: string
-  showAll?: boolean
 }) {
+  const _url = new URL(url)
+  const currentNendo = _url.searchParams.get("nendo")
+
+  const navigate = useNavigation()
+
+  const isNavigating = navigate.state !== "idle"
+  const navSearch = navigate.location?.search
+
   // let newestNendo
   // if (!showAll) {
   //   // get the newest nendo from the nendos set
@@ -64,9 +69,18 @@ export default function NendoButtons({
     <div data-name="NendoButtons.tsx" className={`flex gap-2`}>
       <NavLink
         to={`/student2/${studentFolderId}?nendo=ALL`}
-        className={` ${
-          nendo === "ALL" ? "nendo-active" : ""
-        } btn btn-xs border-none shadow-md ${color}   font-bold duration-300 hover:-translate-y-[1px] hover:bg-sfred-200`}
+        className={({ isActive, isPending }) =>
+          clsx(
+            `btn btn-xs border-none shadow-md ${color}   font-bold duration-300 hover:-translate-y-[1px] hover:bg-sfred-200`,
+            { disabled: isPending },
+            { "nendo-active": currentNendo === "ALL" },
+            {
+              "nendo-active-navigating":
+                navSearch?.includes(`nendo=${encodeURI(nendo)}`) &&
+                isNavigating,
+            },
+          )
+        }
       >
         ALL
       </NavLink>
@@ -78,7 +92,12 @@ export default function NendoButtons({
             clsx(
               `btn btn-xs border-none shadow-md ${color}   font-bold duration-300 hover:-translate-y-[1px] hover:bg-sfred-200`,
               { disabled: isPending },
-              { "nendo-active": _nendo === nendo },
+              { "nendo-active": currentNendo === _nendo },
+              {
+                "nendo-active-navigating":
+                  navSearch?.includes(`nendo=${encodeURI(_nendo)}`) &&
+                  isNavigating,
+              },
             )
           }
         >

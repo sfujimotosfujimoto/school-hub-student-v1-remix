@@ -27,19 +27,19 @@ import ErrorDocument from "./root/ErrorDocument"
  * LOADER function
  */
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await sessionS.getUserFromSession(request)
-
-  if (!user?.email) return { role: null, picture: null, folderLink: null }
-
-  // const student = await sheetsS.getStudentDatumByEmail(user?.email)
-
-  const student = user?.student
-  if (!student)
-    return { role: user.role, picture: user.picture, folderLink: null }
-
   const headers = new Headers()
 
   headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
+  const user = await sessionS.getUserFromSession(request)
+
+  if (!user?.email) return json({ role: null, picture: null, folderLink: null })
+
+  const student = user?.student
+  if (!student)
+    return json(
+      { role: user.role, picture: user.picture, folderLink: null },
+      { headers },
+    )
 
   return json(
     { role: user.role, picture: user.picture, folderLink: student.folderLink },
