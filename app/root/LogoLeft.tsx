@@ -7,7 +7,7 @@ export default function LogoLeft() {
 
   let loading = navigation.state !== "idle"
   return (
-    <div className="flex items-center flex-shrink-0 mr-6">
+    <div className="mr-6 flex flex-shrink-0 items-center">
       <Link to="/" aria-label="Go home" className="mr-2">
         <Logo
           className={`h-9 w-8 ease-in-out sm:h-12 ${
@@ -16,7 +16,7 @@ export default function LogoLeft() {
         />
       </Link>
       <Link to="/" aria-label="Go home" className="mr-2">
-        <LogoText className="w-20 h-10 sm:block" />
+        <LogoText className="h-10 w-20 sm:block" />
       </Link>
     </div>
   )
