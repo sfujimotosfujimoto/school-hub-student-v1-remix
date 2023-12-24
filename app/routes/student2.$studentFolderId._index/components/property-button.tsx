@@ -3,7 +3,6 @@ import React from "react"
 import { AddIcon } from "~/components/icons"
 import { useDriveFilesContext } from "~/context/drive-files-context"
 // import { useDriveFilesContext } from "~/context/drive-files-context"
-import { getSchoolYear } from "~/lib/utils"
 import type { DriveFile } from "~/types"
 
 export default function PropertyButton({
@@ -37,7 +36,7 @@ export default function PropertyButton({
         onClick={() => {
           if (dialogEl.current !== null) dialogEl.current.showModal()
         }}
-        className={`h-full rounded-lg bg-sfgreen-300 px-2 py-[0.05rem] shadow-md transition-all duration-500  hover:-translate-y-[1px] hover:bg-sfgreen-400`}
+        className={`bg-sfgreen-300 hover:bg-sfgreen-400 h-full rounded-lg px-2 py-[0.05rem] shadow-md transition-all  duration-500 hover:-translate-y-[1px]`}
       >
         <div className="flex items-center justify-center font-bold">
           <AddIcon className="mr-2 h-6 w-6" />
@@ -52,7 +51,7 @@ export default function PropertyButton({
           </h2>
 
           {/* TAGS INPUT LABEL */}
-          <label className="label my-2 text-sfblue-300" htmlFor="tagsString">
+          <label className="label text-sfblue-300 my-2" htmlFor="tagsString">
             <div className="text-base font-normal">
               <span>🗂️ チェックの入っているファイルに追加するタグ</span>
               <p className="text-xs">
@@ -91,7 +90,7 @@ export default function PropertyButton({
           </div>
 
           {/* NENDO SELECT LABEL */}
-          <label className="label mt-2 text-sfblue-300" htmlFor="nendoString">
+          <label className="label text-sfblue-300 mt-2" htmlFor="nendoString">
             <div>
               <span>🗂️ 年度を選択</span>
             </div>
@@ -122,7 +121,7 @@ export default function PropertyButton({
             type="submit"
             name="_action"
             value="property-execute"
-            className={`btn btn-sm mt-4 w-32 hover:bg-sfyellow-200 ${
+            className={`btn btn-sm hover:bg-sfyellow-200 mt-4 w-32 ${
               isExecuting
                 ? "btn-disabled animate-bounce !bg-slate-300"
                 : "btn-warning"

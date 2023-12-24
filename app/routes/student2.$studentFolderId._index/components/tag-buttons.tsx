@@ -1,12 +1,8 @@
 import { NavLink, useNavigation } from "@remix-run/react"
 import clsx from "clsx"
 import React from "react"
-
-function setSearchParams(url: string, tag: string) {
-  const _url = new URL(url)
-  _url.searchParams.set("tags", tag ? tag : "ALL")
-  return _url.href
-}
+import { NavLinkPill } from "~/components/buttons/button"
+import { setSearchParams } from "~/lib/utils"
 
 export default function TagButtons({
   url,
@@ -45,23 +41,16 @@ export default function TagButtons({
         ALL
       </NavLink>
       {tags.map((t) => (
-        <NavLink
+        <NavLinkPill
           to={`${setSearchParams(_url.href, t)}`}
           key={t}
-          className={({ isActive, isPending }) =>
-            clsx(
-              `btn btn-xs border-none shadow-md ${color}   font-bold duration-300 hover:-translate-y-[1px] hover:bg-sfgreen-200 `,
-              { disabled: isPending },
-              { "tag-active": currentTag === t },
-              {
-                "tag-active-navigating":
-                  navSearch?.includes(`tags=${encodeURI(t)}`) && isNavigating,
-              },
-            )
-          }
-        >
-          {t}
-        </NavLink>
+          url={_url}
+          hoverColor="bg-sfgreen-300"
+          navSearch={navSearch}
+          isNavigating={isNavigating}
+          name={t}
+          searchParam="tags"
+        />
       ))}
     </div>
   )

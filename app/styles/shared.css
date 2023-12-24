@@ -5,7 +5,7 @@ body {
 
 :root {
   background-color: theme("colors.slate.200");
-  color: theme("colors.sfblue.300");
+  color:hsl(215, 31%, 32%);
 }
 
 .join > li > button.active,
@@ -23,7 +23,7 @@ body {
 }
 
 .btn-disabled {
-  @apply bg-slate-300;
+  background-color: hsl(215, 31%, 32%)
 }
 
 button.nendo-active {
@@ -45,17 +45,16 @@ div.flex.gap-2 > button.btn.btn-sm:hover {
   text-underline-offset: 2px;
 }
 
-.nendo-active-navigating{
+.nendo-active-navigating {
   background-color: hsl(1, 84%, 82%);
+}
 
-}
+
 .tag-active {
-  background-color: hsl(182, 41%, 62%);
-  text-decoration: underline solid #222 1px;
-  text-underline-offset: 2px;
+  background-color: theme(colors.sfgreen.300);
 }
-.tag-active-navigating {
-  background-color: hsl(182, 61%, 62%);
+.tag-navigating {
+  background-color: theme(colors.sfgreen.200);
 }
 
 .segment-active {
