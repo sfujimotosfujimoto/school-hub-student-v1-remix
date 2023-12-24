@@ -1,4 +1,5 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node"
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { signin } from "~/lib/signinout.server"
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -14,4 +15,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Redirect() {
   return <div>Redirect</div>
+}
+
+/**
+ * Error Boundary
+ */
+export function ErrorBoundary() {
+  let message = `問題が起きました。`
+
+  return <ErrorBoundaryDocument toHome={true} message={message} />
 }

@@ -156,3 +156,34 @@ export function formatDate(date: Date, locals = "ja-JP") {
 export function parseTags(genres: string) {
   return genres.split(",").map((g) => g.trim())
 }
+
+type ErrorMessage =
+  | "expired"
+  | "unauthorized"
+  | "no-login"
+  | "not-parent-account"
+  | "no-folder"
+
+export function getErrorMessage(errorMessage: ErrorMessage): string {
+  console.log("✅ lib/utils.ts ~ 	😀 in getErrorMessage", errorMessage)
+  switch (errorMessage) {
+    case "expired":
+      return "アクセス期限が切れました。"
+    case "unauthorized":
+      return "アクセス権限がありません。"
+    case "no-login":
+      return "ログインをしてください。"
+    case "not-parent-account":
+      return "保護者・生徒Googleアカウントでログインをしてください。"
+    case "no-folder":
+      return "Googleフォルダがないか、名簿のGoogleSheetが共有されていません。"
+    default:
+      return "エラーが発生しました。"
+  }
+}
+
+export function setSearchParams(url: string, tag: string) {
+  const _url = new URL(url)
+  _url.searchParams.set("tags", tag ? tag : "ALL")
+  return _url.href
+}

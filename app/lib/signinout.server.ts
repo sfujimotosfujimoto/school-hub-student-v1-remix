@@ -266,7 +266,8 @@ export async function signin({ code }: { code: string }) {
   )
 
   if (!newUser?.student?.folderLink) {
-    throw redirect(`/?authstate=no-folder`)
+    // throw redirect(`/?authstate=no-folder`)
+    throw new Response(`no-folder`, { status: 401 })
   }
   const folderId = getFolderId(newUser?.student?.folderLink)
 
@@ -311,7 +312,8 @@ export async function getFolderIdFromEmail(
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
-    throw redirect(`/?authstate=no-folder`)
+    // throw redirect(`/?authstate=no-folder`)
+    throw Error(`no-folder`)
   }
 
   const folderId = getFolderId(student?.folderLink)
