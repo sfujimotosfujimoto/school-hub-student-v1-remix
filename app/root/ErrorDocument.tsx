@@ -1,4 +1,4 @@
-import ErrorIcon from "../components/icons/ErrorIcon"
+import ErrorIcon from "../components/icons/error-icon"
 
 export default function ErrorDocument({
   children,

@@ -1,4 +1,4 @@
-import { Renew, Time } from "~/components/icons"
+import { RenewIcon, TimeIcon } from "~/components/icons"
 import Tags from "~/components/tags"
 import {
   checkGoogleMimeType,
@@ -63,11 +63,11 @@ export default function StudentCard({
           {size === "big" && (
             <div className="flex gap-4">
               <div className="flex items-center gap-1">
-                <Time className="h-3 w-4" />
+                <TimeIcon className="h-3 w-4" />
                 <span>{dateFormat(driveFile.createdTime || "") || ""}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Renew className="h-3 w-3" />
+                <RenewIcon className="h-3 w-3" />
                 <span>{dateFormat(driveFile.modifiedTime || "") || ""}</span>
               </div>
             </div>

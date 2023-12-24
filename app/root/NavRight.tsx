@@ -1,7 +1,12 @@
 import { Form, useLoaderData } from "@remix-run/react"
 
 import ImageIcon from "./ImageIcon"
-import { Dashboard, Login, Logout, UserIcon } from "~/components/icons"
+import {
+  DashboardIcon,
+  LoginIcon,
+  LogoutIcon,
+  UserIcon,
+} from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
 import type { loader } from "~/root"
 import { Button, NavLinkButton } from "~/components/buttons/button"
@@ -20,7 +25,7 @@ export default function NavRight() {
         {!role && (
           <Form reloadDocument method="post" action="/auth/signin">
             <Button type="submit" variant="primary" size="xs">
-              <Login className="h-5 w-5 sm:hidden" />
+              <LoginIcon className="h-5 w-5 sm:hidden" />
               <span className="hidden sm:block">サインイン</span>
             </Button>
           </Form>
@@ -30,7 +35,7 @@ export default function NavRight() {
           <>
             {role === "ADMIN" && (
               <NavLinkButton to="/admin" size="xs">
-                <Dashboard className="h-5 w-5 sm:hidden " />
+                <DashboardIcon className="h-5 w-5 sm:hidden " />
                 <span className="hidden sm:block">ADMIN</span>
               </NavLinkButton>
             )}
@@ -42,7 +47,7 @@ export default function NavRight() {
             )}
             <Form method="post" action="/auth/signout">
               <Button type="submit" variant="secondary" size="xs">
-                <Logout className="h-5 w-5 sm:hidden" />
+                <LogoutIcon className="h-5 w-5 sm:hidden" />
                 <span className="hidden sm:block">サインアウト</span>
               </Button>
             </Form>

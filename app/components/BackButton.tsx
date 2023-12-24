@@ -1,4 +1,4 @@
-import { LeftArrow } from "~/components/icons"
+import { LeftArrowIcon } from "~/components/icons"
 
 import { useNavigate } from "@remix-run/react"
 import { Button, LinkButton } from "./buttons/button"
@@ -14,7 +14,7 @@ export default function BackButton({
   if (!isLink && to) {
     return (
       <LinkButton to={to} size="sm" className="text-sfblue-400">
-        <LeftArrow className="mr-2 h-5 w-5 " />
+        <LeftArrowIcon className="mr-2 h-5 w-5 " />
         Back
       </LinkButton>
     )
@@ -25,7 +25,7 @@ export default function BackButton({
         size="sm"
         className="text-sfblue-400"
       >
-        <LeftArrow className="mr-2 h-5 w-5" />
+        <LeftArrowIcon className="mr-2 h-5 w-5" />
         Back
       </Button>
     )
