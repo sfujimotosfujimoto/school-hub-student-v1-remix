@@ -2,4 +2,5 @@
 export default {
   ignoredRouteFiles: ["**/.*"],
   tailwind: true,
+  postcss: true,
 }
