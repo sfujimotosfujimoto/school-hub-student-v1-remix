@@ -1,6 +1,6 @@
 import { Link, useNavigation } from "@remix-run/react"
 
-import { LogoText, Logo } from "~/components/icons"
+import { LogoTextIcon, LogoIcon } from "~/components/icons"
 
 export default function LogoLeft() {
   let navigation = useNavigation()
@@ -9,14 +9,14 @@ export default function LogoLeft() {
   return (
     <div className="mr-6 flex flex-shrink-0 items-center">
       <Link to="/" aria-label="Go home" className="mr-2">
-        <Logo
+        <LogoIcon
           className={`h-9 w-8 ease-in-out sm:h-12 ${
             loading && "animate-bounce"
           }`}
         />
       </Link>
       <Link to="/" aria-label="Go home" className="mr-2">
-        <LogoText className="h-10 w-20 sm:block" />
+        <LogoTextIcon className="h-10 w-20 sm:block" />
       </Link>
     </div>
   )

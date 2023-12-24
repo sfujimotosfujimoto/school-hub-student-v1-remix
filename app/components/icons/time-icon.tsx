@@ -1,4 +1,4 @@
-export default function LeftArrow({ ...rest }) {
+export default function TimeIcon({ ...rest }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -9,10 +9,9 @@ export default function LeftArrow({ ...rest }) {
       {...rest}
     >
       <path
-        strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>
   )
