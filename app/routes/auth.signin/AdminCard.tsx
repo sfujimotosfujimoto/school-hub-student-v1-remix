@@ -1,6 +1,6 @@
 import { formatDate } from "~/lib/utils"
 import type { User } from "~/types"
-import AdminRow from "./AdminRow"
+import AdminRow from "../admin.$id._index/AdminRow"
 
 export default function AdminCard({ user }: { user: User }) {
   return (
@@ -10,9 +10,9 @@ export default function AdminCard({ user }: { user: User }) {
         user.activated ? "bg-sfgreen-200" : "bg-slate-400"
       } shadow-lg  lg:card-side `}
     >
-      <div className="p-4 card-body sm:p-8">
-        <div className="flex justify-between card-title">
-          <img src={user.picture} alt="icon" className="w-5 h-5 rounded-full" />
+      <div className="card-body p-4 sm:p-8">
+        <div className="card-title flex justify-between">
+          <img src={user.picture} alt="icon" className="h-5 w-5 rounded-full" />
           <h1 className="flex-grow">
             {user.last}
             {user.first}

@@ -1,6 +1,6 @@
 import { useLoaderData } from "@remix-run/react"
 import * as userS from "~/lib/user.server"
-import AdminCard from "./AdminCard"
+import AdminCard from "../auth.signin/AdminCard"
 import type { LoaderFunctionArgs } from "@remix-run/node"
 import { logger } from "~/lib/logger"
 import { authenticate } from "~/lib/authenticate.server"
@@ -23,7 +23,7 @@ export default function AdminIdIndexPage() {
   return (
     <article
       data-name="admin.$id._index"
-      className="mx-auto w-full max-w-xl rounded-md border-4 border-sfgreen-200 bg-slate-50 p-8"
+      className="border-sfgreen-200 mx-auto w-full max-w-xl rounded-md border-4 bg-slate-50 p-8"
     >
       <div className="grid grid-cols-1 place-content-center">
         {user && <AdminCard user={user} />}
