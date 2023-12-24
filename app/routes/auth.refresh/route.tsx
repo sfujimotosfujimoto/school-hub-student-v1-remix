@@ -6,7 +6,7 @@ import { prisma } from "~/lib/db.server"
 import { getRefreshedToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import { returnUser } from "~/lib/return-user"
-import { parseVerifyUserJWT } from "~/lib/session.server"
+import { parseVerifyUserJWT } from "~/lib/services/session.server"
 import { updateUserJWT } from "~/lib/signinout.server"
 
 /**

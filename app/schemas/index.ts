@@ -152,24 +152,47 @@ export const UserSchema = z.object({
   picture: z.string(),
   role: z.enum(["USER", "ADMIN"]),
   activated: z.boolean(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z
+    .string()
+    .or(z.date())
+    .transform((arg) => new Date(arg)),
+
+  updatedAt: z
+    .string()
+    .or(z.date())
+    .transform((arg) => new Date(arg)),
   credential: z
     .object({
       accessToken: z.string(),
       expiry: z.number(),
       refreshToken: z.string().nullable(),
       refreshTokenExpiry: z.number(),
-      createdAt: z.date(),
+      createdAt: z
+        .string()
+        .or(z.date())
+        .transform((arg) => new Date(arg)),
     })
     .nullable(),
   stats: z
     .object({
       count: z.number(),
-      lastVisited: z.date(),
+      lastVisited: z
+        .string()
+        .or(z.date())
+        .transform((arg) => new Date(arg)),
     })
     .nullable(),
-  student: StudentSchema.optional(),
+  student: StudentSchema.optional().nullable(),
 })
 
 export const UsersSchema = z.array(UserSchema)
+
+/*
+
+z
+    .string()
+    .or(z.date())
+    .transform((arg) => new Date(arg))
+    .optional(),
+
+*/

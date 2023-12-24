@@ -9,11 +9,12 @@ import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 import StudentHeader from "./StudentHeader"
 
 import { logger } from "~/lib/logger"
-import { authenticate } from "~/lib/authenticate.server"
+// import { authenticate } from "~/lib/authenticate.server"
 import { requireUserRole } from "~/lib/require-roles.server"
 import { StudentSchema } from "~/schemas"
 import type { Student } from "~/types"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import { getUserFromSession } from "~/lib/services/session.server"
 
 /**
  * Meta Function
@@ -35,10 +36,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student2.$studentFolderId ${request.url}`)
-  const { user } = await authenticate(request)
-  await requireUserRole(user)
+  const user = await getUserFromSession(request)
 
-  if (!user || !user.credential) throw redirect("/?authstate=unauthorized")
+  if (!user || !user.credential)
+    throw redirect(`/auth/signin?redirect=${request.url}`)
+
+  // const { user } = await authenticate(request)
+  await requireUserRole(user)
 
   const student = user.student
 

@@ -14,7 +14,7 @@ import { requireUserRole } from "~/lib/require-roles.server"
 import React from "react"
 import StudentCard from "../student.$studentFolderId._index/StudentCard"
 import type { DriveFile } from "~/types"
-import { getUserFromSession } from "~/lib/session.server"
+import { getUserFromSession } from "~/lib/services/session.server"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 
 export async function loader({ request }: LoaderFunctionArgs) {

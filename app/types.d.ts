@@ -36,6 +36,8 @@ export interface User {
   studentGakuseki?: number | null
 }
 
+export type ProviderUser = Pick<User, "id" | "role" | "email" | "picture">
+
 type Credential = {
   accessToken: string
   expiry: number

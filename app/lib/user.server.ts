@@ -51,9 +51,36 @@ const selectUser = {
 // Get UserBase
 // used in `getUserBaseFromSession`
 export async function getUserByEmail(email: string): Promise<User | null> {
+  logger.debug(`👑 getUserByEmail: email: ${email}`)
   const user = await prisma.user.findUnique({
     where: {
       email,
+      credential: {
+        expiry: { gt: new Date().getTime() },
+      },
+    },
+    select: {
+      ...selectUser,
+    },
+  })
+
+  if (!user || !user.credential) {
+    return null
+  }
+
+  if (!user.stats) user.stats = null
+
+  return returnUser(user)
+}
+export async function getRefreshExpiryByEmail(
+  email: string,
+): Promise<User | null> {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+      credential: {
+        refreshTokenExpiry: { gt: new Date().getTime() },
+      },
     },
     select: {
       ...selectUser,

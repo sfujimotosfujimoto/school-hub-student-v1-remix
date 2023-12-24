@@ -1,9 +1,9 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
-import { Outlet } from "@remix-run/react"
+import { Outlet, redirect } from "@remix-run/react"
 import BackButton from "~/components/BackButton"
-import { authenticate } from "~/lib/authenticate.server"
 import { logger } from "~/lib/logger"
 import { requireAdminRole } from "~/lib/require-roles.server"
+import { getUserFromSession } from "~/lib/services/session.server"
 import * as userS from "~/lib/user.server"
 
 export default function AdminIdLayoutPage() {
@@ -37,7 +37,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id ${request.url}`)
-  const { user } = await authenticate(request)
+  const user = await getUserFromSession(request)
+  if (!user || !user.credential)
+    throw redirect(`/auth/signin?redirect=${request.url}`)
+
   await requireAdminRole(user)
   const { id } = params
 

@@ -47,9 +47,9 @@ export default function StudentFolderIdLayout() {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId ${request.url}`)
   const { user } = await authenticate(request)
-  await requireUserRole(user)
-
+  // const user = await getUserFromSession(request)
   if (!user || !user.credential) throw redirect("/?authstate=unauthorized")
+  await requireUserRole(user)
 
   const student = user.student
   // const student = await sheetsS.getStudentByEmail(user.email)

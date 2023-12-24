@@ -1,10 +1,9 @@
 import * as jose from "jose"
-import invariant from "tiny-invariant"
 import type { Payload, User } from "~/types"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
-import { logger } from "./logger"
-import { getUserByEmail } from "./user.server"
+import { logger } from "../logger"
+import { getRefreshExpiryByEmail, getUserByEmail } from "../user.server"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
 
@@ -14,10 +13,11 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 14 // 14 days
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "__session",
-    httpOnly: true,
-    maxAge: SESSION_MAX_AGE,
     sameSite: "lax",
+    path: "/",
+    httpOnly: true,
     secrets: [SESSION_SECRET],
+    maxAge: SESSION_MAX_AGE,
     secure: process.env.NODE_ENV === "production",
   },
 })
@@ -59,6 +59,7 @@ export async function getUserFromSession(
   const payload = await parseVerifyUserJWT(userJWT)
 
   if (!payload) return null
+
   // get UserBase from Prisma
   const user = await getUserByEmail(payload.email)
   // if no user, create in prisma db
@@ -70,33 +71,45 @@ export async function getUserFromSession(
     )} -- requrest.url ${request.url}`,
   )
 
-  invariant(user, "Could not find user")
+  if (!user) {
+    return null
+  }
+
   return user
 }
 
-// Checks if Session has User -------------------------
-// used in loaders of
-// ["student.tsx", "student.$studentFolderId.tsx",
-// "student.$studentFolderId.$fileId.tsx"]
-// export async function requireUserSession(request: Request) {
-//   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
+export async function getRefreshUserFromSession(
+  request: Request,
+): Promise<User | null> {
+  logger.debug(
+    `👑 getRefreshUserFromSession: request ${request.url}, ${request.method}`,
+  )
+  const userJWT = await getUserJWTFromSession(request)
 
-//   const userJWT= session.get("userJWT") as string | null | undefined
+  if (!userJWT) return null
 
-//   if (!userJWT) {
-//     throw redirect("/?authstate=unauthorized")
-//   }
+  const payload = await parseVerifyUserJWT(userJWT)
 
-//   // get payload<email, exp>
-//   const payload = await verifyUserTokenJWT(userJWT)
-//   if (!payload) throw redirect("/?authstate=expired")
+  if (!payload) return null
 
-//   if (!payload || isExpired(payload.exp)) {
-//     throw redirect("/?expired=true")
-//   }
+  // get UserBase from Prisma
+  const user = await getRefreshExpiryByEmail(payload.email)
+  // if no user, create in prisma db
 
-//   return payload
-// }
+  logger.debug(
+    `👑 getRefreshUserFromSession: rexp ${new Date(
+      user?.credential?.refreshTokenExpiry || "",
+    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} -- requrest.url ${
+      request.url
+    }`,
+  )
+
+  if (!user) {
+    return null
+  }
+
+  return user
+}
 
 //-------------------------------------------
 // LOCAL FUNCTIONS
@@ -160,4 +173,47 @@ export async function parseVerifyUserJWT(
 //   } else {
 //     return false
 //   }
+// }
+
+// export async function getUserId(request: Request) {
+//   const authSession = await sessionStorage.getSession(
+//     request.headers.get("cookie"),
+//   )
+
+//   const session = await prisma.session.findUnique({
+//     select: { user: { select: { id: true } } },
+//     where: { id: sessionId, expirationDate: { gt: new Date() } },
+//   })
+//   if (!session?.user) {
+//     throw redirect("/", {
+//       headers: {
+//         "set-cookie": await authSessionStorage.destroySession(authSession),
+//       },
+//     })
+//   }
+//   return session.user.id
+// }
+
+// Checks if Session has User -------------------------
+// used in loaders of
+// ["student.tsx", "student.$studentFolderId.tsx",
+// "student.$studentFolderId.$fileId.tsx"]
+// export async function requireUserSession(request: Request) {
+//   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
+
+//   const userJWT= session.get("userJWT") as string | null | undefined
+
+//   if (!userJWT) {
+//     throw redirect("/?authstate=unauthorized")
+//   }
+
+//   // get payload<email, exp>
+//   const payload = await verifyUserTokenJWT(userJWT)
+//   if (!payload) throw redirect("/?authstate=expired")
+
+//   if (!payload || isExpired(payload.exp)) {
+//     throw redirect("/?expired=true")
+//   }
+
+//   return payload
 // }
