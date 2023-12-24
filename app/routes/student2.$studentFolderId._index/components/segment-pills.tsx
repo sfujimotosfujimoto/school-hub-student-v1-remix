@@ -7,7 +7,7 @@ function setSearchParams(url: string, key: string, value: string) {
   return _url.href
 }
 
-export default function Segments({
+export default function SegmentPills({
   url,
   extensions,
   segments,

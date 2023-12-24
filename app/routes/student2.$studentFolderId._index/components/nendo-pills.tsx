@@ -2,7 +2,7 @@ import { NavLink, useNavigation } from "@remix-run/react"
 
 import clsx from "clsx"
 
-export default function NendoButtons({
+export default function NendoPills({
   url,
   studentFolderId,
   nendos,

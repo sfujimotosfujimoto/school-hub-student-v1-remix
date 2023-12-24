@@ -4,9 +4,9 @@ import React from "react"
 import type { loader as parentLoader } from "../student.$studentFolderId/route"
 import BackButton from "~/components/BackButton"
 import FileCount from "./components/file-count"
-import NendoButtons from "./components/nendo-buttons"
-import TagButtons from "./components/tag-buttons"
-import Segments from "./components/segments"
+import NendoPills from "./components/nendo-pills"
+import TagPills from "./components/tag-pills"
+import SegmentPills from "./components/segment-pills"
 import StudentCards from "./StudentCards"
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
 import { createQuery, getDriveFiles } from "~/lib/google/drive.server"
@@ -117,20 +117,20 @@ export default function StudentFolderIdIndexPage() {
         <BackButton to="/" />
         <FileCount driveFiles={driveFiles} />
       </div>
-      <NendoButtons
+      <NendoPills
         url={url}
         studentFolderId={studentFolderId}
         nendos={nendos}
         nendo={nendoString || ""}
         color={"bg-slate-400"}
       />
-      <TagButtons
+      <TagPills
         url={url}
         tags={tags}
         tag={tagString || ""}
         color={"bg-slate-400"}
       />
-      <Segments url={url} extensions={extensions} segments={segments} />
+      <SegmentPills url={url} extensions={extensions} segments={segments} />
       <div className="mb-12 mt-4 overflow-x-auto px-2">
         {driveFiles && <StudentCards driveFiles={driveFiles} />}
       </div>

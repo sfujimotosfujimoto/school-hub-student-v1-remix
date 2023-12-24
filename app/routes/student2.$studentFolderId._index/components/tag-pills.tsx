@@ -4,7 +4,7 @@ import React from "react"
 import { NavLinkPill } from "~/components/buttons/button"
 import { setSearchParams } from "~/lib/utils"
 
-export default function TagButtons({
+export default function TagPills({
   url,
   tags,
   tag,
