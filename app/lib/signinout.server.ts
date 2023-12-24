@@ -3,7 +3,10 @@ import { z } from "zod"
 
 import { getPersonFromPeople } from "./google/people.server"
 import { getStudentByEmail } from "./google/sheets.server"
-import { createUserSession, destroyUserSession } from "./session.server"
+import {
+  createUserSession,
+  destroyUserSession,
+} from "./services/session.server"
 import {
   checkValidAdminEmail,
   checkValidStudentOrParentEmail,
@@ -38,7 +41,7 @@ export async function signin({ code }: { code: string }) {
 
   if (!result.success) {
     console.error(result.error.errors)
-    throw redirect(`/?authstate=unauthorized-001`)
+    throw redirect(`/auth/signin?authstate=unauthorized-001`)
   }
 
   let { access_token, expiry_date, scope, token_type, refresh_token } =
@@ -66,12 +69,12 @@ export async function signin({ code }: { code: string }) {
   )
 
   if (!access_token) {
-    throw redirect(`/?authstate=unauthorized-002`)
+    throw redirect(`/auth/signin?authstate=unauthorized-002`)
   }
 
   const person = await getPersonFromPeople(access_token)
   if (!person) {
-    throw redirect(`/?authstate=unauthorized`)
+    throw redirect(`/auth/signin?authstate=unauthorized`)
   }
 
   // check if email is valid or person is admin
@@ -79,7 +82,7 @@ export async function signin({ code }: { code: string }) {
     !checkValidStudentOrParentEmail(person.email) &&
     !checkValidAdminEmail(person.email)
   ) {
-    throw redirect(`/?authstate=not-parent-account`)
+    throw redirect(`/auth/signin?authstate=not-parent-account`)
   }
 
   // find if user is parent or student in db
@@ -240,7 +243,7 @@ export async function signin({ code }: { code: string }) {
   })
 
   if (!updatedUser) {
-    throw redirect(`/?authstate=not-seig-account`)
+    throw redirect(`/auth/signin?authstate=not-seig-account`)
   }
 
   const userJWT = await updateUserJWT(
@@ -248,7 +251,7 @@ export async function signin({ code }: { code: string }) {
     expiry_date,
     refreshTokenExpiry,
   )
-  if (userPrisma.role === "ADMIN") {
+  if (["ADMIN", "SUPER"].includes(userPrisma.role)) {
     return createUserSession(userJWT, `/admin`)
   }
 
@@ -271,7 +274,7 @@ export async function signin({ code }: { code: string }) {
   }
   const folderId = getFolderId(newUser?.student?.folderLink)
 
-  return createUserSession(userJWT, `/student/${folderId}`)
+  return createUserSession(userJWT, `/student2/${folderId}`)
 }
 
 // used in authenticate
