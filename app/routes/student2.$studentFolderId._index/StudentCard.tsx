@@ -26,7 +26,7 @@ export default function StudentCard({
     <>
       <div
         data-name="StudentCard"
-        className={`card bg-sfgreen-200 shadow-lg transition-all duration-500 lg:card-side hover:-translate-y-1 hover:bg-sfgreen-300`}
+        className={`card bg-sfgreen-300 shadow-lg transition-all duration-500 lg:card-side hover:-translate-y-1 hover:bg-sfgreen-400`}
       >
         <div
           className={`card-body ${

@@ -17,6 +17,34 @@ import type { DriveFile } from "~/types"
 import { getUserFromSession } from "~/lib/session.server"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
+  const user = await getUserFromSession(request)
+  if (!user) throw redirect("/?authstate=unauthorized")
+  await requireUserRole(user)
+
+  return json(null, {
+    headers: {
+      "Cache-Control": "max-age=300",
+    },
+  })
+}
+
+/**
+ * Meta Function
+ */
+export const meta: MetaFunction = () => {
+  // const title =
+  //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
+  //   ""
+
+  return [
+    {
+      title: `SCHOOL HUB`,
+    },
+  ]
+}
+
 /**
  * StudentFolderFileIdPage
  */
@@ -70,39 +98,11 @@ export default function StudentFolderIdFileIdPage() {
   )
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
-  const user = await getUserFromSession(request)
-  if (!user) throw redirect("/?authstate=unauthorized")
-  await requireUserRole(user)
-
-  return json(null, {
-    headers: {
-      "Cache-Control": "max-age=300",
-    },
-  })
-}
-
-/**
- * Meta Function
- */
-export const meta: MetaFunction = () => {
-  // const title =
-  //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
-  //   ""
-
-  return [
-    {
-      title: `SCHOOL HUB`,
-    },
-  ]
-}
-
 /**
  * Error Boundary
  */
 export function ErrorBoundary() {
   const { studentFolderId, fileId } = useParams()
-  let message = `フォルダID（${studentFolderId}）からファイル(${fileId})を取得できませんでした。`
+  let message = `フォルダID（${studentFolderId}）からファイル（${fileId}）を取得できませんでした。`
   return <ErrorBoundaryDocument message={message} />
 }

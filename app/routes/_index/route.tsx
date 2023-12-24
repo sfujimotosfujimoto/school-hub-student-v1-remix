@@ -107,7 +107,7 @@ function LoginButton() {
         ) : (
           <Form method="post" action="/auth/signout">
             <Button type="submit" variant="secondary">
-              <Logo className={`h-7 w-4 ${loading && "animate-spin"}`} />
+              <Logo className={`h-7 w-4 ${loading && "animate-wiggle"}`} />
               <span className="ml-1 sm:ml-2 sm:inline">
                 SCHOOL HUB サインアウト
               </span>

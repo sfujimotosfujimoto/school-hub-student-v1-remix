@@ -15,7 +15,7 @@ export default function StudentCard({
     <>
       <div
         data-name="StudentCard"
-        className={`card bg-sfgreen-200 shadow-lg lg:card-side ${
+        className={`card bg-sfgreen-300 shadow-lg lg:card-side ${
           size === "big"
             ? "l transition-all duration-500 hover:-translate-y-1 hover:bg-sfred-50"
             : null

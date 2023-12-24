@@ -33,7 +33,7 @@ export default function StudentFolderIdLayout() {
   return (
     <DriveFilesProvider>
       <NendoTagsProvider>
-        <div className="container mx-auto h-screen p-8 pt-14 sm:pt-8">
+        <div className="container mx-auto h-full p-8 pt-14 sm:pt-8">
           <div className="mb-4 space-y-4">
             {resultStudent && <StudentHeader student={resultStudent} />}
           </div>
