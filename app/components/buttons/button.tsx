@@ -1,4 +1,4 @@
-import { NavLink } from "@remix-run/react"
+import { Link, NavLink } from "@remix-run/react"
 import { clsx } from "clsx"
 import type { ButtonHTMLAttributes } from "react"
 import React from "react"
@@ -6,15 +6,6 @@ import React from "react"
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "info" | "secondary" | "success" | "error" | "warning"
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "wide"
-}
-
-type NavLinkProps = {
-  variant?: "primary" | "info" | "secondary" | "success" | "error" | "warning"
-  size?: "xs" | "sm" | "md" | "lg" | "xl" | "wide"
-  to: string
-  className?: string
-  children: React.ReactNode
-  disabled?: boolean
 }
 
 function setVariant(variant: string) {
@@ -97,6 +88,15 @@ const Button = React.forwardRef(function Button(
   )
 })
 
+type NavLinkProps = {
+  variant?: "primary" | "info" | "secondary" | "success" | "error" | "warning"
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "wide"
+  to: string
+  className?: string
+  children: React.ReactNode
+  disabled?: boolean
+}
+
 const NavLinkButton = function NavLinkButton({
   to,
   className,
@@ -126,9 +126,10 @@ const NavLinkButton = function NavLinkButton({
 type NavLinkPillProps = {
   to: string
   hoverColor?: string
+  baseColor?: string
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "wide"
   name: string
-  searchParam: "nendo" | "tags"
+  searchParam: "nendo" | "tags" | "segments" | "extensions" | "none"
   url: URL
   className?: string
   disabled?: boolean
@@ -143,27 +144,17 @@ const NavLinkPill = function NavLinkPill({
   url,
   className,
   disabled,
+  baseColor = "bg-slate-400",
   hoverColor = "bg-sfgreen-300",
   size = "xs",
   navSearch,
   isNavigating,
 }: NavLinkPillProps) {
+  // const bgHoverColor = `hover:bg-sfyellow-300`
   const bgHoverColor = `hover:${hoverColor}`
   const currentTag = url.searchParams.get(searchParam)
 
   let btnSize = setSize(size)
-
-  // const styles = {
-  //   tagActive: currentTag === name && {
-  //     backgroundColor: "hsl(182, 41%, 62%)",
-  //     textDecoration: "underline solid #222 1px",
-  //     textUnderlineOffset: "2px",
-  //   },
-  //   tagNavigating: navSearch?.includes(`tags=${encodeURI(name)}`) &&
-  //     isNavigating && {
-  //       backgroundColor: "hsl(182, 61%, 62%)",
-  //     },
-  // }
 
   return (
     <NavLink
@@ -171,14 +162,17 @@ const NavLinkPill = function NavLinkPill({
       className={({ isPending }) =>
         clsx(
           searchParam,
-          `btn ${btnSize} border-none bg-slate-400 
-          font-bold shadow-md duration-300 hover:scale-105 ${bgHoverColor} `,
+          { [baseColor]: true },
+          { [bgHoverColor]: true },
+          `btn ${btnSize} border-none 
+          font-bold shadow-md duration-300 hover:scale-105`,
           className,
-          { disabled: isPending || disabled },
-          { "tag-active": currentTag === name },
+          { disabled: isPending || isNavigating || disabled },
+          { [`${searchParam}-active`]: currentTag === name },
           {
-            "tag-navigating":
-              navSearch?.includes(`tags=${encodeURI(name)}`) && isNavigating,
+            [`${searchParam}-navigating`]:
+              navSearch?.includes(`${searchParam}=${encodeURI(name)}`) &&
+              isNavigating,
           },
         )
       }
@@ -188,64 +182,69 @@ const NavLinkPill = function NavLinkPill({
   )
 }
 
-export { Button, NavLinkButton, NavLinkPill }
+type LinkProps = {
+  variant?: "primary" | "info" | "secondary" | "success" | "error" | "warning"
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "wide"
+  to: string
+  className?: string
+  children: React.ReactNode
+  disabled?: boolean
+}
+
+const LinkButton = function LinkButton({
+  to,
+  className,
+  disabled,
+  variant = "success",
+  size = "md",
+  children,
+}: LinkProps) {
+  const btnVariant = setVariant(variant)
+
+  let btnSize = setSize(size)
+
+  return (
+    <Link
+      to={to}
+      className={clsx(
+        `btn btn-${variant} ${btnVariant} ${btnSize} shadow-lg hover:scale-[102%]`,
+        className,
+        { disabled: disabled },
+      )}
+    >
+      {children}
+    </Link>
+  )
+}
+
+export { Button, NavLinkButton, NavLinkPill, LinkButton }
 
 /*
 
-
-.tag-active {
-  background-color: hsl(182, 41%, 62%);
-  text-decoration: underline solid #222 1px;
-  text-underline-offset: 2px;
+export default function BackButton({
+  isLink = false,
+  to,
+}: {
+  isLink?: boolean
+  to?: string
+}) {
+  const navigate = useNavigate()
+  const btnCss = `btn-success btn btn-sm shadow-md hover:bg-sfgreen-400 hover:-translate-y-[1px] duration-300 text-sfblue-300}`
+  if (!isLink && to) {
+    return (
+      <Link to={to} className={btnCss}>
+        <LeftArrow className="mr-2 h-5 w-5" />
+        Back
+      </Link>
+    )
+  } else {
+    return (
+      <button onClick={() => navigate(-1)} className={btnCss}>
+        <LeftArrow className="mr-2 h-5 w-5" />
+        Back
+      </button>
+    )
+  }
 }
-.tag-active-navigating {
-  background-color: hsl(182, 61%, 62%);
-}
 
-  <NavLink
-        to={`${_url.pathname}?tags=ALL`}
-        className={({ isActive, isPending }) =>
-          clsx(
-            `btn btn-xs border-none shadow-md ${color}   font-bold duration-300 hover:-translate-y-[1px] hover:bg-sfgreen-300`,
-            { disabled: isPending },
-            { "tag-active": currentTag === "ALL" },
-            {
-              "tag-active-navigating":
-                navSearch?.includes(`tags=ALL`) && isNavigating,
-            },
-          )
-        }
-      >
-        ALL
-      </NavLink>
-      {tags.map((t) => (
-        <NavLink
-          to={`${setSearchParams(_url.href, t)}`}
-          key={t}
-          className={({ isActive, isPending }) =>
-            clsx(
-              `btn btn-xs border-none shadow-md ${color} font-bold duration-300 hover:-translate-y-[1px] hover:bg-sfgreen-200 `,
-              { disabled: isPending },
-              { "tag-active": currentTag === t },
-              {
-                "tag-active-navigating":
-                  navSearch?.includes(`tags=${encodeURI(t)}`) && isNavigating,
-              },
-            )
-          }
-        >
-          {t}
-        </NavLink>
-      ))}
-
-
-
-
-              <NavLink
-                to={`/student2/${studentLink}`}
-                className={`btn btn-success btn-xs  border-0 shadow-md hover:bg-opacity-70 `}
-              >
-                <UserIcon className="h-5 w-5 sm:hidden" />
-
-                <span className="hidden sm:block">生徒</span>
-              </NavLink> */
+*/
