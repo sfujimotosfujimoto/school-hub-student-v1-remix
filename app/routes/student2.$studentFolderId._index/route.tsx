@@ -1,5 +1,4 @@
 import { useLoaderData, useParams, useRouteLoaderData } from "@remix-run/react"
-import React from "react"
 
 import type { loader as parentLoader } from "../student.$studentFolderId/route"
 import BackButton from "~/components/BackButton"
@@ -13,6 +12,8 @@ import { createQuery, getDriveFiles } from "~/lib/google/drive.server"
 import { getUserFromSession } from "~/lib/session.server"
 import { parseTags } from "~/lib/utils"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import AllPill from "./components/all-pill"
+import ExtensionPills from "./components/extensions-pills"
 
 /**
  * LOADER function
@@ -29,6 +30,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const segmentsString = url.searchParams.get("segments")
   const extensionsString = url.searchParams.get("extensions")
 
+  // Get drive files for student folder
   const query =
     createQuery({
       folderId: studentFolderId,
@@ -42,18 +44,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let filteredDriveFiles = driveFiles
 
   // filter by nendo
-  if (nendoString && nendoString !== "ALL") {
+  if (nendoString) {
     filteredDriveFiles =
-      driveFiles?.filter((df) => {
+      filteredDriveFiles?.filter((df) => {
         if (df.appProperties?.nendo === nendoString) return true
         return false
       }) || []
   }
 
   // filter by tag
-  if (tagString && tagString !== "ALL") {
+  if (tagString) {
     filteredDriveFiles =
-      driveFiles?.filter((df) => {
+      filteredDriveFiles?.filter((df) => {
         if (df.appProperties?.tags) {
           const tagsArr = parseTags(df.appProperties.tags)
           return tagsArr.includes(tagString || "")
@@ -63,18 +65,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   // filter by extensions
-  if (extensionsString && extensionsString !== "ALL") {
+  if (extensionsString) {
     filteredDriveFiles =
-      driveFiles?.filter((df) => {
+      filteredDriveFiles?.filter((df) => {
         const ext = df.mimeType.split(/[/.]/).at(-1) || ""
         return ext === extensionsString
       }) || []
   }
 
   // filter by segments
-  if (segmentsString && segmentsString !== "ALL") {
+  if (segmentsString) {
     filteredDriveFiles =
-      driveFiles?.filter((df) => {
+      filteredDriveFiles?.filter((df) => {
         const segments = df.name.split(/[-_.]/)
         return segments.includes(segmentsString)
       }) || []
@@ -107,34 +109,41 @@ export default function StudentFolderIdIndexPage() {
   if (!data) throw Error("Could not load data")
 
   const { studentFolderId, nendos, tags, extensions, segments } = data
-  const { driveFiles, nendoString, tagString, url } =
-    useLoaderData<typeof loader>()
+  const { driveFiles, url } = useLoaderData<typeof loader>()
 
   // JSX -------------------------
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <BackButton to="/" />
-        <FileCount driveFiles={driveFiles} />
-      </div>
-      <NendoPills
-        url={url}
-        studentFolderId={studentFolderId}
-        nendos={nendos}
-        nendo={nendoString || ""}
-        color={"bg-slate-400"}
-      />
-      <TagPills
-        url={url}
-        tags={tags}
-        tag={tagString || ""}
-        color={"bg-slate-400"}
-      />
-      <SegmentPills url={url} extensions={extensions} segments={segments} />
-      <div className="mb-12 mt-4 overflow-x-auto px-2">
-        {driveFiles && <StudentCards driveFiles={driveFiles} />}
-      </div>
-    </section>
+    <>
+      <section className="flex h-full flex-col space-y-4">
+        <div className="flex flex-none items-center justify-between">
+          <BackButton />
+          <FileCount driveFiles={driveFiles} />
+        </div>
+        <div className="flex flex-none flex-wrap gap-1">
+          <AllPill url={url} studentFolderId={studentFolderId} />
+          <div className="divider divider-horizontal mx-0"></div>
+          <NendoPills url={url} nendos={nendos} />
+          <div className="divider divider-horizontal mx-0"></div>
+          <TagPills url={url} tags={tags} />
+          <div className="divider divider-horizontal mx-0"></div>
+          <ExtensionPills url={url} extensions={extensions} />
+          <div className="divider divider-horizontal mx-0"></div>
+          <SegmentPills url={url} segments={segments} />
+        </div>
+
+        {driveFiles && driveFiles.length ? (
+          <div className="mb-12 mt-4 flex-auto overflow-x-auto px-2">
+            {driveFiles && <StudentCards driveFiles={driveFiles} />}
+          </div>
+        ) : (
+          <div className="flex flex-auto items-center justify-center">
+            <h1 className="text-2xl font-bold">
+              ファイルが見つかりませんでした。
+            </h1>
+          </div>
+        )}
+      </section>
+    </>
   )
 }
 

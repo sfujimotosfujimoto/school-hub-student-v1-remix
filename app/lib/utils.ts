@@ -182,8 +182,8 @@ export function getErrorMessage(errorMessage: ErrorMessage): string {
   }
 }
 
-export function setSearchParams(url: string, tag: string) {
+export function setSearchParams(url: string, key: string, value: string) {
   const _url = new URL(url)
-  _url.searchParams.set("tags", tag ? tag : "ALL")
+  _url.searchParams.set(key, value ? value : "ALL")
   return _url.href
 }

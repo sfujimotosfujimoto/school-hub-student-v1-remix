@@ -8,12 +8,12 @@ function setSearchParams(url: string, key: string, value: string) {
   return _url.href
 }
 
-export default function SegmentPills({
+export default function ExtensionPills({
   url,
-  segments,
+  extensions,
 }: {
   url: string
-  segments: string[]
+  extensions: string[]
 }) {
   const _url = new URL(url)
   // const currentSegment = _url.searchParams.get("segments")
@@ -25,19 +25,19 @@ export default function SegmentPills({
 
   return (
     <>
-      {segments &&
-        segments
+      {extensions &&
+        extensions
           .sort()
-          .map((segment, idx) => (
+          .map((ext, idx) => (
             <NavLinkPill
-              to={`${setSearchParams(_url.href, "segments", segment)}`}
+              to={`${setSearchParams(_url.href, "extensions", ext)}`}
               key={idx}
               url={_url}
-              hoverColor="bg-sfyellow-300"
+              hoverColor="bg-sky-400"
               navSearch={navSearch}
               isNavigating={isNavigating}
-              name={segment}
-              searchParam="segments"
+              name={ext}
+              searchParam="extensions"
             />
           ))}
     </>
