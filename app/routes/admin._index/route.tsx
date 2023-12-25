@@ -9,7 +9,7 @@ import { requireAdminRole } from "~/lib/require-roles.server"
 import { getUsers } from "~/lib/user.server"
 import { getUserFromSession } from "~/lib/services/session.server"
 
-import Tables from "./tables2"
+import Tables from "./tables"
 
 /**
  * LOADER function
