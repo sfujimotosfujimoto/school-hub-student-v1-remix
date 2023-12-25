@@ -5,7 +5,7 @@ import {
   parseVerifyUserJWT,
   sessionStorage,
 } from "./services/session.server"
-import { getUserByEmail, returnUser } from "./user.server"
+import { getUserByEmail, returnUser } from "./services/user.server"
 import { isExpired } from "./utils.server"
 import { redirect } from "@remix-run/node"
 import { logger } from "./logger"
