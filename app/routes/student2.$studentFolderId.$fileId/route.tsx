@@ -49,10 +49,10 @@ export const meta: MetaFunction = () => {
  * StudentFolderFileIdPage
  */
 export default function StudentFolderIdFileIdPage() {
-  console.log("✅ student.$studentFolderId.$fileId/route.tsx ~ 	😀")
-  const { studentFolderId, fileId } = useParams()
+  console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
+  const { fileId } = useParams()
   const props = useRouteLoaderData<typeof studentFolderIdLoader>(
-    "routes/student.$studentFolderId",
+    "routes/student2.$studentFolderId",
   )
 
   if (!props) {
@@ -74,7 +74,8 @@ export default function StudentFolderIdFileIdPage() {
     <>
       {/* Buttons */}
       <div className="flex items-center gap-4">
-        <BackButton to={`/student/${studentFolderId}`} />
+        <BackButton />
+        {/* <BackButton to={`/student2/${studentFolderId}`} /> */}
 
         {driveFile && driveFile.parents && (
           <ToFolderBtn parentId={driveFile.parents[0]} />
