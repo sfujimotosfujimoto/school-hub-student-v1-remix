@@ -18,8 +18,8 @@ import {
   useRouteError,
 } from "@remix-run/react"
 
-import Navigation from "./root/navigation2"
-import Footer from "./root/footer2"
+import Navigation from "./root/navigation"
+import Footer from "./root/footer"
 import ErrorDocument from "./root/error-document"
 import { getUserFromSession } from "./lib/services/session.server"
 
