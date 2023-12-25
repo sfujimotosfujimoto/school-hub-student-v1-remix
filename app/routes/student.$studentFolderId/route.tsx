@@ -9,46 +9,23 @@ import { Outlet, useLoaderData } from "@remix-run/react"
 import StudentHeader from "./StudentHeader"
 
 import { logger } from "~/lib/logger"
-import { authenticate } from "~/lib/authenticate.server"
 import { requireUserRole } from "~/lib/require-roles.server"
 import { StudentSchema } from "~/schemas"
 import type { Student } from "~/types"
 import DriveFilesProvider from "~/context/drive-files-context"
 import NendoTagsProvider from "~/context/nendos-tags-context"
-
-/**
- * StudentFolderIdLayout
- * path = /student.$studentFolderId
- */
-export default function StudentFolderIdLayout() {
-  const { student } = useLoaderData<typeof loader>()
-  const result = StudentSchema.safeParse(student)
-
-  let resultStudent: Student | null = null
-  if (result.success) {
-    resultStudent = result.data
-  }
-
-  // JSX -------------------------
-  return (
-    <DriveFilesProvider>
-      <NendoTagsProvider>
-        <div className="container mx-auto h-full p-8 pt-14 sm:pt-8">
-          <div className="mb-4 space-y-4">
-            {resultStudent && <StudentHeader student={resultStudent} />}
-          </div>
-          <Outlet />
-        </div>
-      </NendoTagsProvider>
-    </DriveFilesProvider>
-  )
-}
+import { getUserFromSession } from "~/lib/services/session.server"
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId ${request.url}`)
-  const { user } = await authenticate(request)
-  // const user = await getUserFromSession(request)
-  if (!user || !user.credential) throw redirect("/?authstate=unauthorized")
+
+  const user = await getUserFromSession(request)
+  if (!user || !user.credential)
+    throw redirect(
+      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
+    )
+
+  // const { user } = await authenticate(request)
   await requireUserRole(user)
 
   const student = user.student
@@ -134,4 +111,32 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       title: `${title} | SCHOOL HUB`,
     },
   ]
+}
+
+/**
+ * StudentFolderIdLayout
+ * path = /student.$studentFolderId
+ */
+export default function StudentFolderIdLayout() {
+  const { student } = useLoaderData<typeof loader>()
+  const result = StudentSchema.safeParse(student)
+
+  let resultStudent: Student | null = null
+  if (result.success) {
+    resultStudent = result.data
+  }
+
+  // JSX -------------------------
+  return (
+    <DriveFilesProvider>
+      <NendoTagsProvider>
+        <div className="container mx-auto h-full p-8 pt-14 sm:pt-8">
+          <div className="mb-4 space-y-4">
+            {resultStudent && <StudentHeader student={resultStudent} />}
+          </div>
+          <Outlet />
+        </div>
+      </NendoTagsProvider>
+    </DriveFilesProvider>
+  )
 }

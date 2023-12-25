@@ -1,11 +1,11 @@
-import { useLoaderData } from "@remix-run/react"
+import { redirect, useLoaderData } from "@remix-run/react"
 import * as userS from "~/lib/user.server"
 import AdminCard from "../auth.signin/AdminCard"
 import type { LoaderFunctionArgs } from "@remix-run/node"
 import { logger } from "~/lib/logger"
-import { authenticate } from "~/lib/authenticate.server"
 import { requireAdminRole } from "~/lib/require-roles.server"
 import { UserSchema } from "~/schemas"
+import { getUserFromSession } from "~/lib/services/session.server"
 
 export default function AdminIdIndexPage() {
   let { targetUser } = useLoaderData<typeof loader>()
@@ -23,7 +23,7 @@ export default function AdminIdIndexPage() {
   return (
     <article
       data-name="admin.$id._index"
-      className="border-sfgreen-200 mx-auto w-full max-w-xl rounded-md border-4 bg-slate-50 p-8"
+      className="mx-auto w-full max-w-xl rounded-md border-4 border-sfgreen-200 bg-slate-50 p-8"
     >
       <div className="grid grid-cols-1 place-content-center">
         {user && <AdminCard user={user} />}
@@ -34,7 +34,11 @@ export default function AdminIdIndexPage() {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id._index ${request.url}`)
-  const { user } = await authenticate(request)
+  const user = await getUserFromSession(request)
+  if (!user || !user.credential)
+    throw redirect(
+      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
+    )
   await requireAdminRole(user)
   const { id } = params
 
