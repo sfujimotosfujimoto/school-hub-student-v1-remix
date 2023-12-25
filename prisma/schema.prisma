@@ -27,6 +27,8 @@ model User {
   stats           Stats?
   student         Student?    @relation(fields: [studentGakuseki], references: [gakuseki])
   studentGakuseki Int?
+
+  driveFileData DriveFileData[]
 }
 
 model Credential {
@@ -46,7 +48,7 @@ model Stats {
   id          Int      @id @default(autoincrement())
   count       Int      @default(0)
   lastVisited DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int      @unique
 }
 
@@ -65,6 +67,27 @@ model Student {
   expiry     BigInt   @default(0)
 
   users User[]
+}
+
+model DriveFileData {
+  fileId         String   @id @unique
+  name           String
+  mimeType       String
+  iconLink       String
+  hasThumbnail   Boolean
+  thumbnailLink  String?
+  webContentLink String?
+  createdTime    DateTime
+  modifiedTime   DateTime
+  parents        String[]
+  appProperties  Json?
+  metaData       Json?
+  views          Int      @default(0)
+  firstSeen      BigInt   @default(0)
+  lastSeen       BigInt   @default(0)
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
