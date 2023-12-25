@@ -4,7 +4,6 @@ import { formatDate } from "~/lib/utils"
 import type { User } from "~/types"
 
 export default function Tables({ users }: { users: User[] }) {
-  console.log("✅ admin._index/Tables.tsx ~ 	😀 users", users)
   return (
     <table className="table table-pin-rows table-xs rounded-lg border bg-slate-50 text-sm text-sfblue-400">
       <thead className="text-sfblue-300">

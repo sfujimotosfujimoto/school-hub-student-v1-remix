@@ -15,7 +15,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin._index ${request.url}`)
   const user = await getUserFromSession(request)
   if (!user || !user.credential)
-    throw redirect(`/auth/signin?redirect=${request.url}`)
+    throw redirect(
+      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
+    )
   await requireAdminRole(user)
 
   const users = await getUsers()

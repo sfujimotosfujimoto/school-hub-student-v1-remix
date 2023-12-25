@@ -35,11 +35,15 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
  * LOADER function
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  logger.debug(`🍿 loader: student2.$studentFolderId ${request.url}`)
+  logger.debug(
+    `🍿 loader: student2.$studentFolderId ${new URL(request.url).href}`,
+  )
   const user = await getUserFromSession(request)
 
   if (!user || !user.credential)
-    throw redirect(`/auth/signin?redirect=${request.url}`)
+    throw redirect(
+      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
+    )
 
   // const { user } = await authenticate(request)
   await requireUserRole(user)
