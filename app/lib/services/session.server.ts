@@ -3,7 +3,7 @@ import type { Payload, User } from "~/types"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
 import { logger } from "../logger"
-import { getRefreshExpiryByEmail, getUserByEmail } from "../user.server"
+import { getRefreshUserByEmail, getUserByEmail } from "./user.server"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
 
@@ -93,7 +93,7 @@ export async function getRefreshUserFromSession(
   if (!payload) return null
 
   // get UserBase from Prisma
-  const user = await getRefreshExpiryByEmail(payload.email)
+  const user = await getRefreshUserByEmail(payload.email)
   // if no user, create in prisma db
 
   logger.debug(

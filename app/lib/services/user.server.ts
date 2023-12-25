@@ -1,8 +1,9 @@
 import type { Credential, PrismaUserWithAll, Student, User } from "~/types"
 
-import { prisma } from "./db.server"
+import { prisma } from "../db.server"
 import { redirect } from "@remix-run/node"
-import { logger } from "./logger"
+import { logger } from "../logger"
+import { returnDriveFileData } from "./drive-file-data.server"
 
 const selectUser = {
   id: true,
@@ -47,6 +48,7 @@ const selectUser = {
     },
   },
   studentGakuseki: true,
+  driveFileData: true,
 }
 // Get UserBase
 // used in `getUserBaseFromSession`
@@ -72,7 +74,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
   return returnUser(user)
 }
-export async function getRefreshExpiryByEmail(
+export async function getRefreshUserByEmail(
   email: string,
 ): Promise<User | null> {
   const user = await prisma.user.findUnique({
@@ -162,6 +164,81 @@ export async function getUserById(id: number): Promise<User | null> {
 // LOCAL FUNCTIONS
 //-------------------------------------------
 export function returnUser(user: PrismaUserWithAll): User {
+  let student: Student | null = null
+
+  if (user.student) {
+    student = {
+      ...user.student,
+      expiry: Number(user.student.expiry),
+    }
+  }
+
+  let cred: Credential | null = null
+
+  if (user.credential) {
+    cred = {
+      accessToken: user.credential.accessToken,
+      expiry: Number(user.credential.expiry),
+      refreshToken: user.credential.refreshToken,
+      refreshTokenExpiry: Number(user.credential.refreshTokenExpiry),
+      createdAt: user.credential.createdAt,
+    }
+  }
+
+  if (!user.credential)
+    return {
+      ...user,
+
+      credential: null,
+      stats: user.stats || null,
+      student: student ? student : null,
+      driveFileData: returnDriveFileData(user.driveFileData || []),
+    }
+
+  if (!user.stats)
+    return {
+      ...user,
+      credential: cred || null,
+      stats: null,
+      student: student || null,
+      driveFileData: returnDriveFileData(user.driveFileData || []),
+    }
+
+  // const { accessToken, expiry } = user.credential
+  const { count, lastVisited } = user.stats
+
+  if (!user.driveFileData) {
+    return {
+      ...user,
+      credential: cred,
+      stats: {
+        count,
+        lastVisited,
+      },
+      student: student || null,
+      driveFileData: returnDriveFileData(user.driveFileData || []),
+    }
+  }
+
+  return {
+    ...user,
+    credential: cred,
+    stats: {
+      count,
+      lastVisited,
+    },
+    student: student || null,
+    driveFileData: returnDriveFileData(user.driveFileData),
+  }
+}
+
+function returnUsers(prismaUsers: PrismaUserWithAll[]) {
+  return prismaUsers.map((user) => returnUser(user))
+}
+
+/*
+
+export function returnUser(user: PrismaUserWithAll): User {
   const {
     id,
     last,
@@ -234,6 +311,27 @@ export function returnUser(user: PrismaUserWithAll): User {
   // const { accessToken, expiry } = user.credential
   const { count, lastVisited } = user.stats
 
+  if (!user.driveFileData) {
+    return {
+      id,
+      last,
+      first,
+      email,
+      picture,
+      activated,
+      createdAt,
+      updatedAt,
+      role,
+      credential: cred,
+      stats: {
+        count,
+        lastVisited,
+      },
+      student: student || null,
+      studentGakuseki,
+    }
+  }
+
   return {
     id,
     last,
@@ -251,15 +349,9 @@ export function returnUser(user: PrismaUserWithAll): User {
     },
     student: student || null,
     studentGakuseki,
+    driveFileData: returnDriveFileData(user.driveFileData),
   }
 }
-
-function returnUsers(prismaUsers: PrismaUserWithAll[]) {
-  return prismaUsers.map((user) => returnUser(user))
-}
-
-/*
-
 
 Type '
 { picture: string; 
