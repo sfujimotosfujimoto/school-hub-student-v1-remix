@@ -32,6 +32,27 @@ function setVariant(variant: string) {
   return btnVariant
 }
 
+function setHoverColor(color: string) {
+  let hoverColor = ""
+  switch (color) {
+    case "sfgreen":
+      hoverColor = `hover:bg-sfgreen-400`
+      break
+    case "sfred":
+      hoverColor = `hover:bg-sfred-300`
+      break
+    case "sfyellow":
+      hoverColor = `hover:bg-sfyellow-300`
+      break
+    case "sky":
+      hoverColor = `hover:bg-sky-400`
+      break
+    default:
+      hoverColor = "hober:bg-sfgreen-400"
+  }
+  return hoverColor
+}
+
 function setSize(size: string) {
   let btnSize = ""
   switch (size) {
@@ -145,13 +166,20 @@ const NavLinkPill = function NavLinkPill({
   className,
   disabled,
   baseColor = "bg-slate-400",
-  hoverColor = "bg-sfgreen-300",
+  hoverColor = "hover:bg-sfgreen-300",
   size = "xs",
   navSearch,
   isNavigating,
 }: NavLinkPillProps) {
   // const bgHoverColor = `hover:bg-sfyellow-300`
-  const bgHoverColor = `hover:${hoverColor}`
+  // const bgHoverColor = `hover:${hoverColor}`
+
+  // const [bgHoverColor, setBgHoverColor] = React.useState("")
+
+  // React.useEffect(() => {
+  //   setBgHoverColor(`hover:${hoverColor}`)
+  // }, [hoverColor])
+
   const currentTag = url.searchParams.get(searchParam)
 
   let btnSize = setSize(size)
@@ -162,10 +190,11 @@ const NavLinkPill = function NavLinkPill({
       className={({ isPending }) =>
         clsx(
           searchParam,
-          { [baseColor]: true },
-          { [bgHoverColor]: true },
-          `btn ${btnSize} border-none 
+          // { [bgHoverColor]: true },
+          `btn ${btnSize} ${baseColor} border-none 
           font-bold shadow-md duration-300 hover:scale-105`,
+          // `${baseColor}`,
+          `${setHoverColor(hoverColor)}`,
           className,
           { disabled: isPending || isNavigating || disabled },
           { [`${searchParam}-active`]: currentTag === name },

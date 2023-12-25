@@ -1,7 +1,8 @@
 import React from "react"
-import TableRow from "./TableRow"
 import { formatDate } from "~/lib/utils"
 import type { User } from "~/types"
+
+import TableRow from "./table-row"
 
 export default function Tables({ users }: { users: User[] }) {
   return (

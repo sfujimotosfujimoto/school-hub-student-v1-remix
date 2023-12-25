@@ -1,5 +1,5 @@
-import LogoLeft from "./LogoLeft"
-import NavRight from "./NavRight"
+import LogoLeft from "./logo-left"
+import NavRight from "./nav-right"
 
 export default function Navigation() {
   return (
