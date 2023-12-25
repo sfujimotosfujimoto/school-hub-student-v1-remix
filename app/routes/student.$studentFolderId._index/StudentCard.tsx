@@ -17,7 +17,7 @@ export default function StudentCard({
         data-name="StudentCard"
         className={`card bg-sfgreen-300 shadow-lg lg:card-side ${
           size === "big"
-            ? "l transition-all duration-500 hover:-translate-y-1 hover:bg-sfred-50"
+            ? "transition-all duration-500 hover:-translate-y-1 hover:bg-sfgreen-200"
             : null
         }`}
       >
