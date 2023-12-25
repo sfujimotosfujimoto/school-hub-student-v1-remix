@@ -16,6 +16,34 @@ import StudentCard from "../student.$studentFolderId._index/StudentCard"
 import type { DriveFile } from "~/types"
 import { getUserFromSession } from "~/lib/services/session.server"
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
+  const user = await getUserFromSession(request)
+  if (!user) throw redirect("/?authstate=unauthorized")
+  await requireUserRole(user)
+
+  return json(null, {
+    headers: {
+      "Cache-Control": "max-age=300",
+    },
+  })
+}
+
+/**
+ * Meta Function
+ */
+export const meta: MetaFunction = () => {
+  // const title =
+  //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
+  //   ""
+
+  return [
+    {
+      title: `SCHOOL HUB`,
+    },
+  ]
+}
+
 /**
  * StudentFolderFileIdPage
  */
@@ -67,32 +95,4 @@ export default function StudentFolderIdFileIdPage() {
       </div>
     </>
   )
-}
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
-  const user = await getUserFromSession(request)
-  if (!user) throw redirect("/?authstate=unauthorized")
-  await requireUserRole(user)
-
-  return json(null, {
-    headers: {
-      "Cache-Control": "max-age=300",
-    },
-  })
-}
-
-/**
- * Meta Function
- */
-export const meta: MetaFunction = () => {
-  // const title =
-  //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
-  //   ""
-
-  return [
-    {
-      title: `SCHOOL HUB`,
-    },
-  ]
 }
