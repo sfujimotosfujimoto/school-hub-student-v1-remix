@@ -1,11 +1,14 @@
 import { redirect, useLoaderData } from "@remix-run/react"
-import * as userS from "~/lib/user.server"
-import AdminCard from "../auth.signin/AdminCard"
 import type { LoaderFunctionArgs } from "@remix-run/node"
+
+import { UserSchema } from "~/schemas"
+
+import { getUserFromSession } from "~/lib/services/session.server"
+import * as userS from "~/lib/user.server"
 import { logger } from "~/lib/logger"
 import { requireAdminRole } from "~/lib/require-roles.server"
-import { UserSchema } from "~/schemas"
-import { getUserFromSession } from "~/lib/services/session.server"
+
+import AdminCard from "../auth.signin/admin-card"
 
 export default function AdminIdIndexPage() {
   let { targetUser } = useLoaderData<typeof loader>()

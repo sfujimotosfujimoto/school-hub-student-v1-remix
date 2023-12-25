@@ -1,9 +1,7 @@
 import { redirect } from "@remix-run/node"
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node"
 import { Form } from "@remix-run/react"
-import { Button } from "~/components/buttons/button"
-import { DriveLogoIcon, LogoIcon } from "~/components/icons"
-// import { authenticate } from "~/lib/authenticate.server"
+
 import { initializeClient } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import {
@@ -11,6 +9,10 @@ import {
   getUserFromSession,
   sessionStorage,
 } from "~/lib/services/session.server"
+
+import { Button } from "~/components/buttons/button"
+import { DriveLogoIcon, LogoIcon } from "~/components/icons"
+
 // import { getUserFromSession } from "~/lib/services/session.server"
 
 /**

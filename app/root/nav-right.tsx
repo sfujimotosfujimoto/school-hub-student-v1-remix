@@ -1,6 +1,6 @@
 import { Form, useLoaderData } from "@remix-run/react"
 
-import ImageIcon from "./ImageIcon"
+import ImageIcon from "./image-icon"
 import {
   DashboardIcon,
   LoginIcon,
@@ -40,7 +40,7 @@ export default function NavRight() {
               </NavLinkButton>
             )}
             {studentLink && (
-              <NavLinkButton to={`/student2/${studentLink}`} size="xs">
+              <NavLinkButton to={`/student/${studentLink}`} size="xs">
                 <UserIcon className="h-5 w-5 sm:hidden" />
                 <span className="hidden sm:block">生徒</span>
               </NavLinkButton>

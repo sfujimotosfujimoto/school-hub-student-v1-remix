@@ -1,11 +1,15 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
-import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
-import { logger } from "~/lib/logger"
-import { getUserFromSession } from "~/lib/services/session.server"
 import { useRouteLoaderData } from "@remix-run/react"
-import { NavLinkButton } from "~/components/buttons/button"
-import type { loader as rootLoader } from "~/root"
+
+import { logger } from "~/lib/logger"
 import { getFolderId } from "~/lib/utils"
+import { getUserFromSession } from "~/lib/services/session.server"
+
+import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
+import { NavLinkButton } from "~/components/buttons/button"
+
+import type { loader as rootLoader } from "~/root"
+
 /**
  * Root loader
  */
@@ -81,7 +85,7 @@ function LoginButton({
           <>
             <div className="mt-8 flex flex-col gap-4">
               <h3 className="text-xl ">Hello, </h3>
-              <h2 className="text-sfblue-400  text-2xl font-bold">{email}</h2>
+              <h2 className="text-2xl  font-bold text-sfblue-400">{email}</h2>
               <NavLinkButton
                 className="mt-4"
                 to={`/student/${folderId}`}

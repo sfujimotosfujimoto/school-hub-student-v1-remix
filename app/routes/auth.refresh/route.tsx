@@ -1,8 +1,7 @@
 import { json } from "@remix-run/node"
 import type { ActionFunctionArgs } from "@remix-run/node"
-import { prisma } from "~/lib/db.server"
 
-// functions
+import { prisma } from "~/lib/db.server"
 import { getRefreshedToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import { returnUser } from "~/lib/return-user"

@@ -1,102 +1,21 @@
-import invariant from "tiny-invariant"
-import * as driveS from "~/lib/google/drive.server"
-import { filterSegments, getFolderId, parseTags } from "~/lib/utils"
-
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
 import { json, redirect } from "@remix-run/node"
-import { Outlet, useLoaderData } from "@remix-run/react"
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
+import { Outlet, useLoaderData, useParams } from "@remix-run/react"
+import invariant from "tiny-invariant"
 
-import StudentHeader from "./StudentHeader"
-
-import { logger } from "~/lib/logger"
-import { requireUserRole } from "~/lib/require-roles.server"
 import { StudentSchema } from "~/schemas"
 import type { Student } from "~/types"
-import DriveFilesProvider from "~/context/drive-files-context"
-import NendoTagsProvider from "~/context/nendos-tags-context"
+
+import { requireUserRole } from "~/lib/require-roles.server"
+import { logger } from "~/lib/logger"
+import { filterSegments, getFolderId, parseTags } from "~/lib/utils"
 import { getUserFromSession } from "~/lib/services/session.server"
+import { getDriveFiles } from "~/lib/google/drive.server"
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  logger.debug(`🍿 loader: student.$studentFolderId ${request.url}`)
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import StudentHeader from "./student-header"
 
-  const user = await getUserFromSession(request)
-  if (!user || !user.credential)
-    throw redirect(
-      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
-    )
-
-  // const { user } = await authenticate(request)
-  await requireUserRole(user)
-
-  const student = user.student
-  // const student = await sheetsS.getStudentByEmail(user.email)
-
-  if (!student || !student.folderLink)
-    throw redirect("/?authstate=unauthorized")
-
-  if (getFolderId(student.folderLink) !== params.studentFolderId) {
-    throw redirect("/?authstate=unauthorized")
-  }
-
-  const studentFolderId = params.studentFolderId
-  invariant(studentFolderId, "studentFolder in params is required")
-
-  const driveFiles = await driveS.getDriveFiles(
-    user.credential.accessToken,
-    `trashed=false and '${studentFolderId}' in parents`,
-  )
-
-  let segments: string[] = Array.from(
-    new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
-  )
-
-  segments = filterSegments(segments, student)
-
-  const extensions: string[] =
-    Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
-      (ext) => ext.split(/[/.]/).at(-1) || "",
-    ) || []
-
-  const tags: Set<string> = new Set(
-    driveFiles
-      ?.map((df) => {
-        if (df.appProperties?.tags)
-          return parseTags(df.appProperties.tags) || null
-        return null
-      })
-      .filter((g): g is string[] => g !== null)
-      .flat(),
-  )
-  const nendos: Set<string> = new Set(
-    driveFiles
-      ?.map((df) => {
-        if (df.appProperties?.nendo)
-          return df.appProperties.nendo.trim() || null
-        return null
-      })
-      .filter((g): g is string => g !== null)
-      .flat(),
-  )
-
-  return json(
-    {
-      studentFolderId,
-      extensions,
-      segments,
-      driveFiles,
-      student,
-      tags: Array.from(tags),
-      nendos: Array.from(nendos),
-      role: user.role,
-    },
-    {
-      status: 200,
-      headers: {
-        "Cache-Control": `max-age=${60 * 10}`,
-      },
-    },
-  )
-}
+// import { authenticate } from "~/lib/authenticate.server"
 
 /**
  * Meta Function
@@ -114,10 +33,105 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 }
 
 /**
+ * LOADER function
+ */
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  logger.debug(
+    `🍿 loader: student.$studentFolderId ${new URL(request.url).href}`,
+  )
+  const user = await getUserFromSession(request)
+
+  if (!user || !user.credential)
+    throw redirect(
+      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
+    )
+
+  // const { user } = await authenticate(request)
+  await requireUserRole(user)
+
+  const student = user.student
+
+  if (!student || !student.folderLink)
+    throw redirect("/?authstate=unauthorized")
+
+  if (getFolderId(student.folderLink) !== params.studentFolderId) {
+    throw redirect("/?authstate=unauthorized")
+  }
+
+  const studentFolderId = params.studentFolderId
+  invariant(studentFolderId, "studentFolder in params is required")
+
+  const driveFiles = await getDriveFiles(
+    user.credential.accessToken,
+    `trashed=false and '${studentFolderId}' in parents`,
+  )
+
+  let segments: string[] = Array.from(
+    new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
+  )
+
+  segments = filterSegments(segments, student)
+
+  const extensions: string[] =
+    Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
+      (ext) => ext.split(/[/.]/).at(-1) || "",
+    ) || []
+
+  const tags: string[] = Array.from(
+    new Set(
+      driveFiles
+        ?.map((df) => {
+          if (df.appProperties?.tags)
+            return parseTags(df.appProperties.tags) || null
+          return null
+        })
+        .filter((g): g is string[] => g !== null)
+        .flat(),
+    ),
+  ).sort()
+
+  const nendos: string[] = Array.from(
+    new Set(
+      driveFiles
+        ?.map((df) => {
+          if (df.appProperties?.nendo)
+            return df.appProperties.nendo.trim() || null
+          return null
+        })
+        .filter((g): g is string => g !== null)
+        .flat(),
+    ),
+  )
+    .sort((a, b) => Number(b) - Number(a))
+    .filter((n): n is string => n !== null)
+
+  const headers = new Headers()
+
+  headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
+
+  return json(
+    {
+      studentFolderId: params.studentFolderId,
+      extensions,
+      segments,
+      driveFiles,
+      student,
+      tags,
+      nendos,
+      role: user.role,
+    },
+    {
+      headers,
+    },
+  )
+}
+
+/**
  * StudentFolderIdLayout
  * path = /student.$studentFolderId
  */
 export default function StudentFolderIdLayout() {
+  console.log("✅ student.$studentFolderId/route.tsx ~ 	😀 ")
   const { student } = useLoaderData<typeof loader>()
   const result = StudentSchema.safeParse(student)
 
@@ -128,15 +142,20 @@ export default function StudentFolderIdLayout() {
 
   // JSX -------------------------
   return (
-    <DriveFilesProvider>
-      <NendoTagsProvider>
-        <div className="container mx-auto h-full p-8 pt-14 sm:pt-8">
-          <div className="mb-4 space-y-4">
-            {resultStudent && <StudentHeader student={resultStudent} />}
-          </div>
-          <Outlet />
-        </div>
-      </NendoTagsProvider>
-    </DriveFilesProvider>
+    <div className="container mx-auto h-full p-4 sm:p-8">
+      <div className="mb-4 space-y-4">
+        {resultStudent && <StudentHeader student={resultStudent} />}
+      </div>
+      <Outlet />
+    </div>
   )
+}
+
+/**
+ * Error Boundary
+ */
+export function ErrorBoundary() {
+  const { studentFolderId } = useParams()
+  let message = `フォルダID（${studentFolderId}）からフォルダを取得できませんでした。`
+  return <ErrorBoundaryDocument message={message} />
 }

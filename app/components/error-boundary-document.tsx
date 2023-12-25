@@ -1,6 +1,6 @@
 import { isRouteErrorResponse, useRouteError } from "@remix-run/react"
 import { ErrorIcon } from "./icons"
-import BackButton from "./BackButton"
+import BackButton from "./back-button"
 import { getErrorMessage } from "~/lib/utils"
 
 export default function ErrorBoundaryDocument({

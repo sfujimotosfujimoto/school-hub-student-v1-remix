@@ -1,20 +1,24 @@
+import React from "react"
 import { useParams, useRouteLoaderData } from "@remix-run/react"
-
-import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
-import ToFolderBtn from "./ToFolderBtn"
-import BackButton from "~/components/BackButton"
 import {
   redirect,
   type MetaFunction,
   type LoaderFunctionArgs,
   json,
 } from "@remix-run/node"
-import { logger } from "~/lib/logger"
-import { requireUserRole } from "~/lib/require-roles.server"
-import React from "react"
-import StudentCard from "../student.$studentFolderId._index/StudentCard"
+
 import type { DriveFile } from "~/types"
 import { getUserFromSession } from "~/lib/services/session.server"
+import { logger } from "~/lib/logger"
+import { requireUserRole } from "~/lib/require-roles.server"
+
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
+
+import ToFolderBtn from "./to-folder-button"
+import BackButton from "~/components/back-button"
+import StudentCard from "../student.$studentFolderId._index/components/student-card"
+
+import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
@@ -48,8 +52,8 @@ export const meta: MetaFunction = () => {
  * StudentFolderFileIdPage
  */
 export default function StudentFolderIdFileIdPage() {
-  console.log("✅ student.$studentFolderId.$fileId/route.tsx ~ 	😀")
-  const { studentFolderId, fileId } = useParams()
+  console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
+  const { fileId } = useParams()
   const props = useRouteLoaderData<typeof studentFolderIdLoader>(
     "routes/student.$studentFolderId",
   )
@@ -73,7 +77,8 @@ export default function StudentFolderIdFileIdPage() {
     <>
       {/* Buttons */}
       <div className="flex items-center gap-4">
-        <BackButton to={`/student/${studentFolderId}`} />
+        <BackButton />
+        {/* <BackButton to={`/student/${studentFolderId}`} /> */}
 
         {driveFile && driveFile.parents && (
           <ToFolderBtn parentId={driveFile.parents[0]} />
@@ -95,4 +100,13 @@ export default function StudentFolderIdFileIdPage() {
       </div>
     </>
   )
+}
+
+/**
+ * Error Boundary
+ */
+export function ErrorBoundary() {
+  const { studentFolderId, fileId } = useParams()
+  let message = `フォルダID（${studentFolderId}）からファイル（${fileId}）を取得できませんでした。`
+  return <ErrorBoundaryDocument message={message} />
 }

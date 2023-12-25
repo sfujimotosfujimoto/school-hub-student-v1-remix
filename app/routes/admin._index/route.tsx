@@ -1,12 +1,15 @@
 import { redirect, useLoaderData } from "@remix-run/react"
-import Tables from "./Tables"
 import type { LoaderFunctionArgs } from "@remix-run/node"
-import { logger } from "~/lib/logger"
-import { requireAdminRole } from "~/lib/require-roles.server"
+
 import type { User } from "~/types"
 import { UsersSchema } from "~/schemas"
+import { logger } from "~/lib/logger"
+
+import { requireAdminRole } from "~/lib/require-roles.server"
 import { getUsers } from "~/lib/user.server"
 import { getUserFromSession } from "~/lib/services/session.server"
+
+import Tables from "./tables"
 
 /**
  * LOADER function

@@ -1,6 +1,8 @@
 import { type LoaderFunctionArgs, redirect } from "@remix-run/node"
-import ErrorBoundaryDocument from "~/components/error-boundary-document"
+
 import { signin } from "~/lib/signinout.server"
+
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // get code from url query

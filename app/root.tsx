@@ -18,9 +18,9 @@ import {
   useRouteError,
 } from "@remix-run/react"
 
-import Navigation from "./root/Navigation"
-import Footer from "./root/Footer"
-import ErrorDocument from "./root/ErrorDocument"
+import Navigation from "./root/navigation"
+import Footer from "./root/footer"
+import ErrorDocument from "./root/error-document"
 import { getUserFromSession } from "./lib/services/session.server"
 
 /**

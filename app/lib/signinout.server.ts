@@ -274,7 +274,7 @@ export async function signin({ code }: { code: string }) {
   }
   const folderId = getFolderId(newUser?.student?.folderLink)
 
-  return createUserSession(userJWT, `/student2/${folderId}`)
+  return createUserSession(userJWT, `/student/${folderId}`)
 }
 
 // used in authenticate
