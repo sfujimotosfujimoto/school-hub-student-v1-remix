@@ -1,6 +1,6 @@
 import { Link, NavLink } from "@remix-run/react"
 import { clsx } from "clsx"
-import type { ButtonHTMLAttributes } from "react"
+import type { ButtonHTMLAttributes, LinkHTMLAttributes } from "react"
 import React from "react"
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -78,7 +78,7 @@ const Button = React.forwardRef(function Button(
     <button
       ref={ref}
       className={clsx(
-        `btn btn-${variant} ${btnVariant} ${btnSize} shadow-lg hover:scale-[102%]`,
+        `btn ${btnVariant} ${btnSize} shadow-lg hover:scale-[102%]`,
         className,
       )}
       {...props}
@@ -217,7 +217,48 @@ const LinkButton = function LinkButton({
   )
 }
 
-export { Button, NavLinkButton, NavLinkPill, LinkButton }
+type AProps = LinkHTMLAttributes<HTMLAnchorElement> & {
+  variant?: "primary" | "info" | "secondary" | "success" | "error" | "warning"
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "wide"
+  href: string
+  className?: string
+  children: React.ReactNode
+  disabled?: boolean
+}
+
+const AButton = React.forwardRef(function AButton(
+  {
+    href,
+    className,
+    disabled,
+    variant = "success",
+    size = "md",
+    children,
+  }: AProps,
+  ref: React.ForwardedRef<HTMLAnchorElement>,
+) {
+  const btnVariant = setVariant(variant)
+
+  let btnSize = setSize(size)
+
+  return (
+    <a
+      ref={ref}
+      target="_blank"
+      rel="noopener noreferrer"
+      href={href}
+      className={clsx(
+        `btn btn-${variant} ${btnVariant} ${btnSize} shadow-lg hover:scale-[102%]`,
+        className,
+        { disabled: disabled },
+      )}
+    >
+      {children}
+    </a>
+  )
+})
+
+export { Button, NavLinkButton, NavLinkPill, LinkButton, AButton }
 
 /*
 
