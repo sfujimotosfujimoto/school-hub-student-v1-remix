@@ -6,7 +6,7 @@ import { UsersSchema } from "~/schemas"
 import { logger } from "~/lib/logger"
 
 import { requireAdminRole } from "~/lib/require-roles.server"
-import { getUsers } from "~/lib/user.server"
+import { getUsers } from "~/lib/services/user.server"
 import { getUserFromSession } from "~/lib/services/session.server"
 
 import Tables from "./tables"

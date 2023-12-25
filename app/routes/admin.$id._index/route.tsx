@@ -4,7 +4,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node"
 import { UserSchema } from "~/schemas"
 
 import { getUserFromSession } from "~/lib/services/session.server"
-import * as userS from "~/lib/user.server"
+import * as userS from "~/lib/services/user.server"
 import { logger } from "~/lib/logger"
 import { requireAdminRole } from "~/lib/require-roles.server"
 

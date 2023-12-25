@@ -5,7 +5,7 @@ import { logger } from "~/lib/logger"
 
 import { requireAdminRole } from "~/lib/require-roles.server"
 import { getUserFromSession } from "~/lib/services/session.server"
-import * as userS from "~/lib/user.server"
+import * as userS from "~/lib/services/user.server"
 
 import BackButton from "~/components/back-button"
 
