@@ -19,9 +19,9 @@ import {
 } from "@remix-run/react"
 
 import Navigation from "./root/Navigation"
-import * as sessionS from "./lib/services/session.server"
 import Footer from "./root/Footer"
 import ErrorDocument from "./root/ErrorDocument"
+import { getUserFromSession } from "./lib/services/session.server"
 
 /**
  * LOADER function
@@ -29,7 +29,7 @@ import ErrorDocument from "./root/ErrorDocument"
 export async function loader({ request }: LoaderFunctionArgs) {
   const headers = new Headers()
   headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
-  const user = await sessionS.getUserFromSession(request)
+  const user = await getUserFromSession(request)
 
   if (!user?.email)
     return json({ role: null, picture: null, folderLink: null, email: null })
