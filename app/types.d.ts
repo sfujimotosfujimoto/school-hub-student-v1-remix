@@ -1,4 +1,16 @@
-import type { Role, User as PrismaUser } from "@prisma/client"
+import type {
+  Role,
+  User as PrismaUser,
+  DriveFileData as PrismaDriveFileData,
+} from "@prisma/client"
+
+export type DriveFileData = Omit<
+  PrismaDriveFileData,
+  "firstSeen" | "lastSeen"
+> & {
+  firstSeen: number
+  lastSeen: number
+}
 
 export type Tokens = {
   access_token: string
@@ -34,6 +46,7 @@ export interface User {
   stats: Stats | null
   student?: Student | null
   studentGakuseki?: number | null
+  driveFileData?: DriveFileData[] | null
 }
 
 export type ProviderUser = Pick<User, "id" | "role" | "email" | "picture">
@@ -62,6 +75,7 @@ export type PrismaUserWithAll = PrismaUser & {
   credential: PrismaCredential | null
   stats: Stats | null
   student?: PrismaStudent | null
+  driveFileData?: PrismaDriveFileData[] | null
 }
 
 export type DriveFile = {
