@@ -12,6 +12,7 @@ import {
 
 import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
+import { getFolderId } from "~/lib/utils"
 
 // import { getUserFromSession } from "~/lib/services/session.server"
 
@@ -75,12 +76,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
     }
   }
-  return null
 
-  // return json({
-  //   role: user?.role || null,
-  //   picture: user?.picture || null,
-  // })
+  const folderId = getFolderId(user?.student?.folderLink || "")
+
+  if (folderId) {
+    throw redirect(`/student/${folderId}`)
+  } else {
+    throw redirect(`/`)
+  }
 }
 
 const scopes = [
@@ -90,6 +93,9 @@ const scopes = [
   "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
+/**
+ * ACTION
+ */
 export async function action({ request }: ActionFunctionArgs) {
   logger.debug(`🍺 action: auth.signin ${request.url}`)
 
@@ -131,13 +137,6 @@ export default function AuthSignin() {
 }
 
 function GoogleSigninButton() {
-  // const [params] = useSearchParams()
-
-  // let navigation = useNavigation()
-
-  // let loading = navigation.state === "loading"
-  // let authstate = params.get("authstate")
-
   return (
     <>
       <div className="relative flex w-full items-center justify-center gap-8 ">
