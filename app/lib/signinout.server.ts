@@ -16,6 +16,12 @@ import { getClientFromCode } from "./google/google.server"
 import { redirect } from "@remix-run/node"
 import { logger } from "./logger"
 import { prisma } from "./db.server"
+import {
+  createStudentDB,
+  getStudentDBByEmail,
+  updateStudentDB,
+} from "./services/student.server"
+import { updateUser } from "./services/user.server"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -168,40 +174,15 @@ export async function signin({ code }: { code: string }) {
   logger.debug(`✅ studentEmail ${studentEmail}`)
 
   // find student in prisma db with student email even if user is parent
-  const studentPrisma = await prisma.student.findUnique({
-    where: {
-      email: studentEmail,
-    },
-    include: {
-      users: true,
-    },
-  })
+  const studentPrisma = await getStudentDBByEmail(studentEmail)
 
   // if no student in db, create in prisma db
   if (!studentPrisma) {
     const student = await getStudentByEmail(studentEmail)
     logger.debug(`✅ in !studentPrisma`)
+
     if (student) {
-      await prisma.student.create({
-        data: {
-          gakuseki: student.gakuseki,
-          gakunen: student.gakunen,
-          hr: student.hr,
-          hrNo: student.hrNo,
-          last: student.last,
-          first: student.first,
-          sei: student.sei || "",
-          mei: student.mei || "",
-          email: student.email,
-          folderLink: student.folderLink,
-          expiry: EXPIRY_DATE,
-          users: {
-            connect: {
-              id: userPrisma.id,
-            },
-          },
-        },
-      })
+      await createStudentDB(student, userPrisma.id, EXPIRY_DATE)
     }
   } else {
     logger.debug(`✅ in else studentPrisma`)
@@ -209,38 +190,12 @@ export async function signin({ code }: { code: string }) {
     // create student abd relation to user
     const userIds = studentPrisma.users.map((u) => u.id)
     if (!userIds.includes(userPrisma.id) && userPrisma.studentGakuseki) {
-      await prisma.student.update({
-        where: {
-          gakuseki: userPrisma.studentGakuseki,
-        },
-        data: {
-          users: {
-            connect: {
-              id: userPrisma.id,
-            },
-          },
-        },
-      })
+      await updateStudentDB(userPrisma.studentGakuseki, userPrisma.id)
     }
   }
 
   // if user passes email check, set user.activated to true
-  const updatedUser = await prisma.user.update({
-    where: {
-      id: userPrisma.id,
-    },
-    data: {
-      activated: true,
-      stats: {
-        update: {
-          count: {
-            increment: 1,
-          },
-          lastVisited: new Date(),
-        },
-      },
-    },
-  })
+  const updatedUser = await updateUser(userPrisma.id)
 
   if (!updatedUser) {
     throw redirect(`/auth/signin?authstate=not-seig-account`)

@@ -160,6 +160,25 @@ export async function getUserById(id: number): Promise<User | null> {
   return returnUser(user)
 }
 
+export async function updateUser(userId: number) {
+  return await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      activated: true,
+      stats: {
+        update: {
+          count: {
+            increment: 1,
+          },
+          lastVisited: new Date(),
+        },
+      },
+    },
+  })
+}
+
 //-------------------------------------------
 // LOCAL FUNCTIONS
 //-------------------------------------------
