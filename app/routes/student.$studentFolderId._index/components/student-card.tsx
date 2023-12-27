@@ -6,7 +6,6 @@ import {
   stripText,
 } from "~/lib/utils"
 import type { DriveFile } from "~/types"
-import Tags from "./tags"
 
 export default function StudentCard({
   driveFile,
@@ -25,7 +24,7 @@ export default function StudentCard({
     <>
       <div
         data-name="student-card"
-        className={`card bg-sfgreen-300 shadow-lg lg:card-side ${
+        className={`card bg-sfgreen-400 shadow-lg lg:card-side ${
           size === "big"
             ? "transition-all duration-500 hover:-translate-y-1 hover:bg-sfgreen-200"
             : null
@@ -41,7 +40,7 @@ export default function StudentCard({
           </h2>
 
           {/* NENDO & TAGS */}
-          <div className="flex gap-2">
+          <div className="tags flex flex-wrap gap-1">
             {nendo && (
               <span
                 className={`rounded-lg bg-slate-200  px-2 py-1 text-xs font-bold `}
@@ -49,7 +48,15 @@ export default function StudentCard({
                 {nendo}
               </span>
             )}
-            {tags && <Tags tags={tags} />}
+            {tags &&
+              tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={`text-ellipsis rounded-lg bg-slate-200 px-2 py-1 text-xs font-bold `}
+                >
+                  {tag}
+                </span>
+              ))}
           </div>
 
           <div className="flex items-center justify-center gap-2">
