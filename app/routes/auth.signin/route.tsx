@@ -15,6 +15,7 @@ import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
 import type { User } from "~/types"
 import { redirectToSignin } from "~/lib/responses"
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
 
 /**
  * Root loader
@@ -106,6 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // create OAuth2 client with id and secret
   const oauth2Client = initializeClient()
+  throw new Response("login-error", { status: 401 })
 
   // get authorization URL from created client
   const authUrl = oauth2Client.generateAuthUrl({
@@ -154,4 +156,13 @@ function GoogleSigninButton() {
       </div>
     </>
   )
+}
+
+/**
+ * Error Boundary
+ */
+export function ErrorBoundary() {
+  let message = `問題が起きました。`
+
+  return <ErrorBoundaryDocument toHome={true} message={message} />
 }
