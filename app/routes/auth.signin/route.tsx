@@ -53,8 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
       logger.debug("👑 authenticate: request GET redirect")
-      throw redirectToSignin(redirectUrl ? redirectUrl : request.url, headers)
-      // throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
+      throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
     }
   }
 
