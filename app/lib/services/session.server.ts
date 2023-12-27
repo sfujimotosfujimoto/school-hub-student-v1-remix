@@ -204,7 +204,7 @@ export async function parseVerifyUserJWT(
 //     where: { id: sessionId, expirationDate: { gt: new Date() } },
 //   })
 //   if (!session?.user) {
-//     throw redirect("/", {
+//     redirectToSignin("/", {
 //       headers: {
 //         "set-cookie": await authSessionStorage.destroySession(authSession),
 //       },
@@ -223,15 +223,15 @@ export async function parseVerifyUserJWT(
 //   const userJWT= session.get("userJWT") as string | null | undefined
 
 //   if (!userJWT) {
-//     throw redirect("/auth/signin?authstate=unauthorized")
+//     redirectToSignin("/auth/signin?authstate=unauthorized")
 //   }
 
 //   // get payload<email, exp>
 //   const payload = await verifyUserTokenJWT(userJWT)
-//   if (!payload) throw redirect("/auth/signin?authstate=expired")
+//   if (!payload) redirectToSignin("/auth/signin?authstate=expired")
 
 //   if (!payload || isExpired(payload.exp)) {
-//     throw redirect("/auth/signin?expired=true")
+//     redirectToSignin("/auth/signin?expired=true")
 //   }
 
 //   return payload

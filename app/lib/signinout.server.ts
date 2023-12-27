@@ -13,7 +13,6 @@ import {
   getFolderId,
 } from "./utils"
 import { getClientFromCode } from "./google/google.server"
-import { redirect } from "@remix-run/node"
 import { logger } from "./logger"
 import { prisma } from "./db.server"
 import {
@@ -22,6 +21,7 @@ import {
   updateStudentDB,
 } from "./services/student.server"
 import { updateUser } from "./services/user.server"
+import { redirectToSignin } from "./responses"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -47,7 +47,7 @@ export async function signin({ code }: { code: string }) {
 
   if (!result.success) {
     console.error(result.error.errors)
-    throw redirect(`/auth/signin?authstate=unauthorized-001`)
+    throw redirectToSignin()
   }
 
   let { access_token, expiry_date, scope, token_type, refresh_token } =
@@ -75,12 +75,12 @@ export async function signin({ code }: { code: string }) {
   )
 
   if (!access_token) {
-    throw redirect(`/auth/signin?authstate=unauthorized-002`)
+    throw redirectToSignin(`/auth/signin?authstate=unauthorized-002`)
   }
 
   const person = await getPersonFromPeople(access_token)
   if (!person) {
-    throw redirect(`/auth/signin?authstate=unauthorized`)
+    throw redirectToSignin(`/auth/signin?authstate=unauthorized`)
   }
 
   // check if email is valid or person is admin
@@ -88,7 +88,7 @@ export async function signin({ code }: { code: string }) {
     !checkValidStudentOrParentEmail(person.email) &&
     !checkValidAdminEmail(person.email)
   ) {
-    throw redirect(`/auth/signin?authstate=not-parent-account`)
+    throw redirectToSignin(`/auth/signin?authstate=not-parent-account`)
   }
 
   // find if user is parent or student in db
@@ -198,7 +198,7 @@ export async function signin({ code }: { code: string }) {
   const updatedUser = await updateUser(userPrisma.id)
 
   if (!updatedUser) {
-    throw redirect(`/auth/signin?authstate=not-seig-account`)
+    throw redirectToSignin(`/auth/signin?authstate=not-seig-account`)
   }
 
   const userJWT = await updateUserJWT(
@@ -269,7 +269,7 @@ export async function getFolderIdFromEmail(
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
-    // throw redirect(`/auth/signin?authstate=no-folder`)
+    // redirectToSignin(`/auth/signin?authstate=no-folder`)
     throw Error(`no-folder`)
   }
 

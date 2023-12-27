@@ -14,6 +14,7 @@ import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
 import type { User } from "~/types"
+import { redirectToSignin } from "~/lib/responses"
 
 /**
  * Root loader
@@ -41,23 +42,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
     )
     if (!jsn.ok) {
-      throw redirect("/auth/signin?authstate=unauthorized-refresherror")
+      throw redirectToSignin("unauthorized-refresherror")
+      // throw redirect("/auth/signin?authstate=unauthorized-refresherror")
     }
 
     // update the session with the new values
-
     const headers = await updateSession("userJWT", jsn.data.userJWT)
-
-    // const session = await sessionStorage.getSession()
-    // session.set("userJWT", jsn.data.userJWT)
-    // // commit the session and append the Set-Cookie header
-    // const headers = new Headers()
-    // headers.append("Set-Cookie", await sessionStorage.commitSession(session))
 
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
       logger.debug("👑 authenticate: request GET redirect")
-      throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
+      throw redirectToSignin(redirectUrl ? redirectUrl : request.url, headers)
+      // throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
     }
   }
 

@@ -9,6 +9,7 @@ import { getUserByEmail, returnUser } from "./services/user.server"
 import { isExpired } from "./utils.server"
 import { redirect } from "@remix-run/node"
 import { logger } from "./logger"
+import { redirectToSignin } from "./responses"
 
 class AuthorizationError extends Error {
   constructor(message: string) {
@@ -39,18 +40,18 @@ export async function authenticate(
   const userJWT = await getUserJWTFromSession(request)
   // if not found, redirect to /, this means the user is not even logged-in
   if (!userJWT) {
-    throw redirect("/auth/signin?authstate=unauthorized")
+    redirectToSignin()
   }
   // if expired throw an error (we can extends Error to create this)
   const payload = await parseVerifyUserJWT(userJWT)
   if (!payload) {
-    throw redirect("/auth/signin?authstate=unauthorized")
+    redirectToSignin()
   }
 
   // get user from session
   const user = await getUserByEmail(payload.email)
   if (!user) {
-    throw redirect("/auth/signin?authstate=unauthorized")
+    redirectToSignin()
   }
 
   try {

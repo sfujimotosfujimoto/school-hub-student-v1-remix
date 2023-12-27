@@ -1,9 +1,9 @@
 import type { Credential, PrismaUserWithAll, Student, User } from "~/types"
 
 import { prisma } from "../db.server"
-import { redirect } from "@remix-run/node"
 import { logger } from "../logger"
 import { returnDriveFileData } from "./drive-file-data.server"
+import { redirectToSignin } from "../responses"
 
 const selectUser = {
   id: true,
@@ -102,7 +102,7 @@ export async function requireUserRole(user: User) {
   logger.debug("👑 requireUserRole start")
 
   if (user && !["SUPER", "ADMIN", "MODERATOR", "USER"].includes(user.role)) {
-    throw redirect("/auth/signin?authstate=unauthorized")
+    throw redirectToSignin()
   }
 }
 
@@ -110,7 +110,7 @@ export async function requireAdminRole(user: User) {
   logger.debug("👑 requireAdminRole start")
 
   if (user && !["SUPER", "ADMIN"].includes(user.role)) {
-    throw redirect("/auth/signin?authstate=unauthorized")
+    throw redirectToSignin()
   }
 }
 

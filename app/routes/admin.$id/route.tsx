@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
-import { Outlet, redirect } from "@remix-run/react"
+import { Outlet } from "@remix-run/react"
 
 import { logger } from "~/lib/logger"
 
@@ -8,6 +8,7 @@ import { getUserFromSession } from "~/lib/services/session.server"
 import * as userS from "~/lib/services/user.server"
 
 import BackButton from "~/components/back-button"
+import { redirectToSignin } from "~/lib/responses"
 
 export default function AdminIdLayoutPage() {
   return (
@@ -42,7 +43,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id ${request.url}`)
   const user = await getUserFromSession(request)
   if (!user || !user.credential)
-    throw redirect(
+    throw redirectToSignin(
       `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
     )
 

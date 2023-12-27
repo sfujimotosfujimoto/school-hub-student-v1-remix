@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node"
+import { json } from "@remix-run/node"
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
 import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 import invariant from "tiny-invariant"
@@ -14,6 +14,7 @@ import { getDriveFiles } from "~/lib/google/drive.server"
 
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import StudentHeader from "./student-header"
+import { redirectToSignin } from "~/lib/responses"
 
 // import { authenticate } from "~/lib/authenticate.server"
 
@@ -42,7 +43,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const user = await getUserFromSession(request)
 
   if (!user || !user.credential)
-    throw redirect(
+    throw redirectToSignin(
       `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
     )
 
@@ -51,11 +52,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const student = user.student
 
-  if (!student || !student.folderLink)
-    throw redirect("/auth/signin?authstate=unauthorized")
+  if (!student || !student.folderLink) throw redirectToSignin()
 
   if (getFolderId(student.folderLink) !== params.studentFolderId) {
-    throw redirect("/auth/signin?authstate=unauthorized")
+    throw redirectToSignin()
   }
 
   const studentFolderId = params.studentFolderId

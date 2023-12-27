@@ -1,8 +1,9 @@
-import { type LoaderFunctionArgs, redirect } from "@remix-run/node"
+import { type LoaderFunctionArgs } from "@remix-run/node"
 
 import { signin } from "~/lib/signinout.server"
 
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import { redirectToSignin } from "~/lib/responses"
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // get code from url query
@@ -10,7 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const code = parsedUrl.searchParams.get("code")
 
   // if no "code" , do not touch and resolve
-  if (!code) throw redirect("/auth/signin?authstate=unauthorized")
+  if (!code) throw redirectToSignin()
 
   return signin({ code })
 }

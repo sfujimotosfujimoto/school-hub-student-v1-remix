@@ -1,5 +1,4 @@
 import {
-  redirect,
   type MetaFunction,
   type LoaderFunctionArgs,
   json,
@@ -20,6 +19,7 @@ import StudentCard from "../student.$studentFolderId._index/components/student-c
 
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import { useParams, useRouteLoaderData } from "@remix-run/react"
+import { redirectToSignin } from "~/lib/responses"
 
 /**
  * Loader Function
@@ -27,7 +27,7 @@ import { useParams, useRouteLoaderData } from "@remix-run/react"
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
   const user = await getUserFromSession(request)
-  if (!user) throw redirect("/auth/signin?authstate=unauthorized")
+  if (!user) throw redirectToSignin()
   await requireUserRole(user)
 
   return json(null, {
