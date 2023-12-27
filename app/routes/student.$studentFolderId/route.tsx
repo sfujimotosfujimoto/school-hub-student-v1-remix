@@ -52,10 +52,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const student = user.student
 
   if (!student || !student.folderLink)
-    throw redirect("/?authstate=unauthorized")
+    throw redirect("/auth/signin?authstate=unauthorized")
 
   if (getFolderId(student.folderLink) !== params.studentFolderId) {
-    throw redirect("/?authstate=unauthorized")
+    throw redirect("/auth/signin?authstate=unauthorized")
   }
 
   const studentFolderId = params.studentFolderId

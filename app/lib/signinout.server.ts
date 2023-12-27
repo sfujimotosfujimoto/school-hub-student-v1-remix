@@ -269,7 +269,7 @@ export async function getFolderIdFromEmail(
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
-    // throw redirect(`/?authstate=no-folder`)
+    // throw redirect(`/auth/signin?authstate=no-folder`)
     throw Error(`no-folder`)
   }
 

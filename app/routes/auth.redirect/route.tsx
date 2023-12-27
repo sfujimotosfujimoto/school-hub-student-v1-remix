@@ -10,7 +10,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const code = parsedUrl.searchParams.get("code")
 
   // if no "code" , do not touch and resolve
-  if (!code) throw redirect("/?authstate=unauthorized")
+  if (!code) throw redirect("/auth/signin?authstate=unauthorized")
 
   return signin({ code })
 }

@@ -204,15 +204,15 @@ export async function parseVerifyUserJWT(
 //   const userJWT= session.get("userJWT") as string | null | undefined
 
 //   if (!userJWT) {
-//     throw redirect("/?authstate=unauthorized")
+//     throw redirect("/auth/signin?authstate=unauthorized")
 //   }
 
 //   // get payload<email, exp>
 //   const payload = await verifyUserTokenJWT(userJWT)
-//   if (!payload) throw redirect("/?authstate=expired")
+//   if (!payload) throw redirect("/auth/signin?authstate=expired")
 
 //   if (!payload || isExpired(payload.exp)) {
-//     throw redirect("/?expired=true")
+//     throw redirect("/auth/signin?expired=true")
 //   }
 
 //   return payload

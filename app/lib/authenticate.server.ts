@@ -76,7 +76,7 @@ export async function authenticate(
         })
       }
 
-      // throw redirect("/?authstate=unauthorized-rexpExpired")
+      // throw redirect("/auth/signin?authstate=unauthorized-rexpExpired")
     } else if (expExpired) {
       // 4-2. if exp expired, try to refresh token
       logger.debug("👑 authenticate: expired")

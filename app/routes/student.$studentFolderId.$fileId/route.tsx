@@ -21,10 +21,13 @@ import StudentCard from "../student.$studentFolderId._index/components/student-c
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import { useParams, useRouteLoaderData } from "@remix-run/react"
 
+/**
+ * Loader Function
+ */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
   const user = await getUserFromSession(request)
-  if (!user) throw redirect("/?authstate=unauthorized")
+  if (!user) throw redirect("/auth/signin?authstate=unauthorized")
   await requireUserRole(user)
 
   return json(null, {
