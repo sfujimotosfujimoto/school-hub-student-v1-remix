@@ -111,6 +111,25 @@ export async function getRefreshUserFromSession(
   return user
 }
 
+export async function updateSession(
+  key: string,
+  value: string,
+  headers = new Headers(),
+) {
+  logger.debug("✅ updateSession")
+  try {
+    // update the session with the new values
+    const session = await sessionStorage.getSession()
+    session.set(key, value)
+    // commit the session and append the Set-Cookie header
+    headers.append("Set-Cookie", await sessionStorage.commitSession(session))
+    return headers
+  } catch (error) {
+    if (error instanceof Error) throw error
+    throw new Error("Error updating session")
+  }
+}
+
 //-------------------------------------------
 // LOCAL FUNCTIONS
 //-------------------------------------------
