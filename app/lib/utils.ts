@@ -163,6 +163,7 @@ type ErrorMessage =
   | "no-login"
   | "not-parent-account"
   | "no-folder"
+  | "login-error"
 
 export function getErrorMessage(errorMessage: ErrorMessage): string {
   console.log("✅ lib/utils.ts ~ 	😀 in getErrorMessage", errorMessage)
@@ -177,6 +178,8 @@ export function getErrorMessage(errorMessage: ErrorMessage): string {
       return "保護者・生徒Googleアカウントでログインをしてください。"
     case "no-folder":
       return "Googleフォルダがないか、名簿のGoogleSheetが共有されていません。"
+    case "login-error":
+      return "ログインに失敗しました。"
     default:
       return "エラーが発生しました。"
   }
