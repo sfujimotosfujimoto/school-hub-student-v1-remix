@@ -18,6 +18,7 @@ import ExtensionPills from "./components/extensions-pills"
 import StudentCards from "./components/student-cards"
 
 import type { loader as parentLoader } from "../student.$studentFolderId/route"
+
 /**
  * LOADER function
  */
@@ -124,13 +125,21 @@ export default function StudentFolderIdIndexPage() {
         </div>
         <div className="flex flex-none flex-wrap gap-1">
           <AllPill url={url} studentFolderId={studentFolderId} />
-          <div className="divider divider-horizontal mx-0"></div>
+          {nendos.length > 0 && (
+            <div className="divider divider-horizontal mx-0"></div>
+          )}
           <NendoPills url={url} nendos={nendos} />
-          <div className="divider divider-horizontal mx-0"></div>
+          {tags.length > 0 && (
+            <div className="divider divider-horizontal mx-0"></div>
+          )}
           <TagPills url={url} tags={tags} />
-          <div className="divider divider-horizontal mx-0"></div>
+          {extensions.length > 0 && (
+            <div className="divider divider-horizontal mx-0"></div>
+          )}
           <ExtensionPills url={url} extensions={extensions} />
-          <div className="divider divider-horizontal mx-0"></div>
+          {segments.length > 0 && (
+            <div className="divider divider-horizontal mx-0"></div>
+          )}
           <SegmentPills url={url} segments={segments} />
         </div>
 
