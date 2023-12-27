@@ -75,12 +75,12 @@ export async function signin({ code }: { code: string }) {
   )
 
   if (!access_token) {
-    throw redirectToSignin(`/auth/signin?authstate=unauthorized-002`)
+    throw redirectToSignin(`authstate=unauthorized-002`)
   }
 
   const person = await getPersonFromPeople(access_token)
   if (!person) {
-    throw redirectToSignin(`/auth/signin?authstate=unauthorized`)
+    throw redirectToSignin(`authstate=unauthorized`)
   }
 
   // check if email is valid or person is admin
@@ -88,7 +88,7 @@ export async function signin({ code }: { code: string }) {
     !checkValidStudentOrParentEmail(person.email) &&
     !checkValidAdminEmail(person.email)
   ) {
-    throw redirectToSignin(`/auth/signin?authstate=not-parent-account`)
+    throw redirectToSignin(`authstate=not-parent-account`)
   }
 
   // find if user is parent or student in db
@@ -198,7 +198,7 @@ export async function signin({ code }: { code: string }) {
   const updatedUser = await updateUser(userPrisma.id)
 
   if (!updatedUser) {
-    throw redirectToSignin(`/auth/signin?authstate=not-seig-account`)
+    throw redirectToSignin(`authstate=not-seig-account`)
   }
 
   const userJWT = await updateUserJWT(
@@ -269,7 +269,6 @@ export async function getFolderIdFromEmail(
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
-    // redirectToSignin(`/auth/signin?authstate=no-folder`)
     throw Error(`no-folder`)
   }
 
