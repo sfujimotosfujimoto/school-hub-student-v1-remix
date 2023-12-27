@@ -37,6 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
  * Meta Function
  */
 export const meta: MetaFunction = () => {
+  // added
   // const title =
   //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
   //   ""
