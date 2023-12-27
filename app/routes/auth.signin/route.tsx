@@ -14,8 +14,6 @@ import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
 
-// import { getUserFromSession } from "~/lib/services/session.server"
-
 /**
  * Root loader
  */
