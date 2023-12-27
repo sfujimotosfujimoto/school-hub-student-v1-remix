@@ -1,12 +1,16 @@
-
-🌼   daisyUI 4.4.24
-├─ ✔︎ 1 theme added		https://daisyui.com/docs/themes
-╰─ ★ Star daisyUI on GitHub	https://github.com/saadeghi/daisyui
-
-// todo
 import type { ActionFunctionArgs } from "@remix-run/node"
-import { signout } from "~/lib/signinout.server"
+import { area120tables } from "googleapis/build/src/apis/area120tables"
 
-export function action({ request }: ActionFunctionArgs) {
+
+
+
+
+
+import    { signout } from "~/lib/signinout.server"
+
+
+
+
+export     function action   ({ request }: ActionFunctionArgs) {
   return signout({ request })
 }
