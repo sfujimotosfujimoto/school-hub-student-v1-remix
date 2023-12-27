@@ -1,4 +1,4 @@
-import { json } from "@remix-run/node"
+import { defer } from "@remix-run/node"
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
 import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 import invariant from "tiny-invariant"
@@ -15,6 +15,8 @@ import { getDriveFiles } from "~/lib/google/drive.server"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import StudentHeader from "./student-header"
 import { redirectToSignin } from "~/lib/responses"
+import { saveDriveFileData } from "~/lib/services/drive-file-data.server"
+import type { DriveFileData } from "@prisma/client"
 
 // import { authenticate } from "~/lib/authenticate.server"
 
@@ -43,9 +45,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const user = await getUserFromSession(request)
 
   if (!user || !user.credential)
-    throw redirectToSignin(
-      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
-    )
+    throw redirectToSignin(`redirect=${encodeURI(new URL(request.url).href)}`)
 
   // const { user } = await authenticate(request)
   await requireUserRole(user)
@@ -65,6 +65,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     user.credential.accessToken,
     `trashed=false and '${studentFolderId}' in parents`,
   )
+
+  // TODO: Save DriveFile to DriveFileData in DB
+  let dfPromises: Promise<DriveFileData | null>[] = []
+  if (driveFiles && driveFiles.length > 0) {
+    dfPromises = saveDriveFileData(user.id, driveFiles)
+  }
 
   let segments: string[] = Array.from(
     new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
@@ -109,7 +115,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
 
-  return json(
+  return defer(
     {
       studentFolderId: params.studentFolderId,
       extensions,
@@ -119,6 +125,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       tags,
       nendos,
       role: user.role,
+      driveFilesDB: dfPromises,
     },
     {
       headers,
@@ -132,7 +139,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
  */
 export default function StudentFolderIdLayout() {
   console.log("✅ student.$studentFolderId/route.tsx ~ 	😀 ")
-  const { student } = useLoaderData<typeof loader>()
+  const { student, driveFilesDB } = useLoaderData<typeof loader>()
+
+  console.log(
+    "✅ student.$studentFolderId/route.tsx ~ 	🌈 driveFilesDB ✅ ",
+    driveFilesDB,
+  )
   const result = StudentSchema.safeParse(student)
 
   let resultStudent: Student | null = null
