@@ -81,12 +81,11 @@ model DriveFileData {
   modifiedTime   DateTime
   parents        String[]
   appProperties  Json?
-  metaData       Json?
   views          Int      @default(0)
   firstSeen      BigInt   @default(0)
   lastSeen       BigInt   @default(0)
 
-  userId Int  @unique
+  userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
