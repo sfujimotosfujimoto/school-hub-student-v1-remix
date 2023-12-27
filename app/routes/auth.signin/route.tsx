@@ -13,6 +13,7 @@ import {
 import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
+import type { User } from "~/types"
 
 /**
  * Root loader
@@ -32,26 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const redirectUrl = new URL(request.url).searchParams.get("redirect")
 
-    const jsn = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user,
-        email: refreshUser.email,
-        accessToken: refreshUser.credential?.accessToken,
-        refreshToken: refreshUser.credential?.refreshToken,
-      }),
-    })
-      .then((res) => {
-        logger.debug("👑 authenticate: fetch res")
-        return res.json()
-      })
-      .catch((err) => {
-        console.error(`❌ authenticate: fetch error`, err.message, err)
-        return { error: "error in fetch" }
-      })
+    const jsn = await fetchRefresh(refreshUser)
 
     logger.info(
       `👑 authenticate: expiry: ${new Date(
@@ -147,4 +129,29 @@ function GoogleSigninButton() {
       </div>
     </>
   )
+}
+
+async function fetchRefresh(user: User) {
+  logger.debug("🍺 fetchRefresh: ", user)
+  const jsn = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      user,
+      email: user.email,
+      accessToken: user.credential?.accessToken,
+      refreshToken: user.credential?.refreshToken,
+    }),
+  })
+    .then((res) => {
+      logger.debug("👑 authenticate: fetch res")
+      return res.json()
+    })
+    .catch((err) => {
+      console.error(`❌ authenticate: fetch error`, err.message, err)
+      return { error: "error in fetch" }
+    })
+  return jsn
 }
