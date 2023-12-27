@@ -7,7 +7,7 @@ import { logger } from "~/lib/logger"
 import {
   getRefreshUserFromSession,
   getUserFromSession,
-  sessionStorage,
+  updateSession,
 } from "~/lib/services/session.server"
 
 import { Button } from "~/components/buttons/button"
@@ -43,12 +43,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!jsn.ok) {
       throw redirect("/auth/signin?authstate=unauthorized-refresherror")
     }
+
     // update the session with the new values
-    const session = await sessionStorage.getSession()
-    session.set("userJWT", jsn.data.userJWT)
-    // commit the session and append the Set-Cookie header
-    const headers = new Headers()
-    headers.append("Set-Cookie", await sessionStorage.commitSession(session))
+
+    const headers = await updateSession("userJWT", jsn.data.userJWT)
+
+    // const session = await sessionStorage.getSession()
+    // session.set("userJWT", jsn.data.userJWT)
+    // // commit the session and append the Set-Cookie header
+    // const headers = new Headers()
+    // headers.append("Set-Cookie", await sessionStorage.commitSession(session))
 
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
@@ -64,6 +68,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } else {
     throw redirect(`/`)
   }
+}
+
+async function fetchRefresh(user: User) {
+  logger.debug("🍺 fetchRefresh: ", user)
+  const jsn = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      user,
+      email: user.email,
+      accessToken: user.credential?.accessToken,
+      refreshToken: user.credential?.refreshToken,
+    }),
+  })
+    .then((res) => {
+      logger.debug("👑 authenticate: fetch res")
+      return res.json()
+    })
+    .catch((err) => {
+      console.error(`❌ authenticate: fetch error`, err.message, err)
+      return { error: "error in fetch" }
+    })
+  return jsn
 }
 
 const scopes = [
@@ -93,7 +122,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect(authUrl, { status: 302 })
 }
 
-export default function AuthSignin() {
+export default function AuthSigninPage() {
   console.log("✅ auth.signin/route.tsx ~ 	😀 ")
   return (
     <>
@@ -129,29 +158,4 @@ function GoogleSigninButton() {
       </div>
     </>
   )
-}
-
-async function fetchRefresh(user: User) {
-  logger.debug("🍺 fetchRefresh: ", user)
-  const jsn = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      user,
-      email: user.email,
-      accessToken: user.credential?.accessToken,
-      refreshToken: user.credential?.refreshToken,
-    }),
-  })
-    .then((res) => {
-      logger.debug("👑 authenticate: fetch res")
-      return res.json()
-    })
-    .catch((err) => {
-      console.error(`❌ authenticate: fetch error`, err.message, err)
-      return { error: "error in fetch" }
-    })
-  return jsn
 }
