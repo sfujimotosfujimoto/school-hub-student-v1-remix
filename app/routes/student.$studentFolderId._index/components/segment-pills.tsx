@@ -33,6 +33,7 @@ export default function SegmentPills({
               to={`${setSearchParams(_url.href, "segments", segment)}`}
               key={idx}
               url={_url}
+              baseColor="bg-sfyellow-200"
               hoverColor="sfyellow"
               navSearch={navSearch}
               isNavigating={isNavigating}

@@ -23,6 +23,7 @@ export default function TagPills({
           to={`${setSearchParams(_url.href, "tags", t)}`}
           key={t}
           url={_url}
+          baseColor="bg-sfgreen-400"
           hoverColor="sfgreen"
           navSearch={navSearch}
           isNavigating={isNavigating}

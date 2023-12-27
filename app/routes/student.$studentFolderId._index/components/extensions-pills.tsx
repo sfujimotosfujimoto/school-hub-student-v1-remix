@@ -33,6 +33,7 @@ export default function ExtensionPills({
               to={`${setSearchParams(_url.href, "extensions", ext)}`}
               key={ext}
               url={_url}
+              baseColor="bg-sky-400"
               hoverColor="sky"
               navSearch={navSearch}
               isNavigating={isNavigating}

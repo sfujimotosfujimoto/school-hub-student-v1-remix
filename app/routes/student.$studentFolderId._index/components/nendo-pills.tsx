@@ -24,7 +24,8 @@ export default function NendoPills({
           to={`${setSearchParams(_url.href, "nendo", _nendo)}`}
           key={_nendo}
           url={_url}
-          hoverColor={"sfgreen"}
+          baseColor="bg-sfred-300"
+          hoverColor={"sfred"}
           navSearch={navSearch}
           isNavigating={isNavigating}
           name={_nendo}
