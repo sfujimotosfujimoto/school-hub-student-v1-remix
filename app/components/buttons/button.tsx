@@ -36,16 +36,16 @@ function setHoverColor(color: string) {
   let hoverColor = ""
   switch (color) {
     case "sfgreen":
-      hoverColor = `hover:bg-sfgreen-400`
+      hoverColor = `hover:bg-sfgreen-300`
       break
     case "sfred":
-      hoverColor = `hover:bg-sfred-300`
+      hoverColor = `hover:bg-sfred-200`
       break
     case "sfyellow":
-      hoverColor = `hover:bg-sfyellow-300`
+      hoverColor = `hover:bg-sfyellow-100`
       break
     case "sky":
-      hoverColor = `hover:bg-sky-400`
+      hoverColor = `hover:bg-sky-300`
       break
     default:
       hoverColor = "hober:bg-sfgreen-400"
