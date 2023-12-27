@@ -102,7 +102,7 @@ export async function requireUserRole(user: User) {
   logger.debug("👑 requireUserRole start")
 
   if (user && !["SUPER", "ADMIN", "MODERATOR", "USER"].includes(user.role)) {
-    throw redirect("/?authstate=unauthorized")
+    throw redirect("/auth/signin?authstate=unauthorized")
   }
 }
 
@@ -110,7 +110,7 @@ export async function requireAdminRole(user: User) {
   logger.debug("👑 requireAdminRole start")
 
   if (user && !["SUPER", "ADMIN"].includes(user.role)) {
-    throw redirect("/?authstate=unauthorized")
+    throw redirect("/auth/signin?authstate=unauthorized")
   }
 }
 
