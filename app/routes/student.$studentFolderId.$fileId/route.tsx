@@ -2,6 +2,7 @@ import {
   type MetaFunction,
   type LoaderFunctionArgs,
   json,
+  defer,
 } from "@remix-run/node"
 
 import React from "react"
@@ -20,15 +21,35 @@ import StudentCard from "../student.$studentFolderId._index/components/student-c
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
 import { useParams, useRouteLoaderData } from "@remix-run/react"
 import { redirectToSignin } from "~/lib/responses"
+import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
+import type { DriveFileData } from "@prisma/client"
 
 /**
  * Loader Function
  */
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
   const user = await getUserFromSession(request)
   if (!user) throw redirectToSignin()
   await requireUserRole(user)
+
+  const { fileId } = params
+
+  let dfp: Promise<DriveFileData | undefined>
+  if (fileId) {
+    dfp = updateDriveFileData(fileId)
+
+    return defer(
+      {
+        driveFileDatum: dfp,
+      },
+      {
+        headers: {
+          "Cache-Control": "max-age=300",
+        },
+      },
+    )
+  }
 
   return json(null, {
     headers: {
