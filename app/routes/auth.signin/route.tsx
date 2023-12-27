@@ -107,7 +107,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // create OAuth2 client with id and secret
   const oauth2Client = initializeClient()
-  throw new Response("login-error", { status: 401 })
 
   // get authorization URL from created client
   const authUrl = oauth2Client.generateAuthUrl({
