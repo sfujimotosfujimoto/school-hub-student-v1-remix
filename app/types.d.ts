@@ -46,7 +46,7 @@ export interface User {
   stats: Stats | null
   student?: Student | null
   studentGakuseki?: number | null
-  driveFileData?: DriveFileData[] | null
+  driveFileData?: PrismaDriveFileData[] | null
 }
 
 export type ProviderUser = Pick<User, "id" | "role" | "email" | "picture">
