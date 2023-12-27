@@ -103,7 +103,7 @@ export function checkValidStudentSeigEmail(email: string) {
 }
 
 export function stripText(name: string) {
-  const regex = /^([0-9]{1,8}_)/g
+  const regex = /^b*([0-9]{1,8}_)|b([0-9]{1,8}_)/g
   const str = name.replace(regex, "")
   if (str) return str
   return null
