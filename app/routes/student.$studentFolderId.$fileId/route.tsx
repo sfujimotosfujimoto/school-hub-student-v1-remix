@@ -1,9 +1,3 @@
-
-🌼   daisyUI 4.4.24
-├─ ✔︎ 1 theme added		https://daisyui.com/docs/themes
-╰─ ★ Star daisyUI on GitHub	https://github.com/saadeghi/daisyui
-
-import { useParams, useRouteLoaderData } from "@remix-run/react"
 import {
   redirect,
   type MetaFunction,
@@ -25,6 +19,7 @@ import BackButton from "~/components/back-button"
 import StudentCard from "../student.$studentFolderId._index/components/student-card"
 
 import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
+import { useParams, useRouteLoaderData } from "@remix-run/react"
 
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
