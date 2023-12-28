@@ -57,37 +57,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const studentFolderId = params.studentFolderId
   invariant(studentFolderId, "studentFolder in params is required")
 
-  // Get drive files from Google Drive API
-  // const driveFiles = await getDriveFiles(
-  //   user.credential.accessToken,
-  //   `trashed=false and '${studentFolderId}' in parents`,
-  // )
-
-  // // Save DriveFile to DriveFileData in DB
-  // let dfd: DriveFileData[] = []
-  // if (driveFiles && driveFiles.length > 0) {
-  //   dfd = await saveDriveFileData(user.id, driveFiles)
-  // }
-
-  // const { nendos, segments, extensions, tags } =
-  //   getNendosSegmentsExtensionsTags(dfd, student)
-
   const headers = new Headers()
 
   headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
 
   return defer(
     {
-      // data: dataPromises,
       studentFolderId: params.studentFolderId,
-      // extensions,
-      // segments,
-      // driveFiles,
       student,
-      // tags,
-      // nendos,
       role: user.role,
-      // driveFileData: dfd,
     },
     {
       headers,
