@@ -41,7 +41,7 @@ div.flex.gap-2 > button.btn.btn-sm:hover {
 }
 
 .nendo-active {
-  background-color: theme(colors.sfgreen.300);
+  background-color: theme(colors.sfred.100);
 }
 
 .nendo-navigating {
@@ -50,14 +50,14 @@ div.flex.gap-2 > button.btn.btn-sm:hover {
 
 
 .tags-active {
-  background-color: theme(colors.sfgreen.300);
+  background-color: theme(colors.sfgreen.100);
 }
 .tags-navigating {
   background-color: theme(colors.sfgreen.200);
 }
 
 .segments-active {
-  background-color: theme(colors.sfyellow.300);
+  background-color: theme(colors.sfyellow.100);
 
 }
 .segments-navigating {
@@ -65,7 +65,7 @@ div.flex.gap-2 > button.btn.btn-sm:hover {
 }
 
 .extensions-active {
-  background-color: theme(colors.sky.300);
+  background-color: theme(colors.sky.100);
 
 }
 .extensions-navigating {

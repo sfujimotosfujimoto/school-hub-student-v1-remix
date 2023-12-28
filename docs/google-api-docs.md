@@ -2,7 +2,7 @@
 
 [link to google api docs](https://developers.google.com/drive/api/v3/reference/files#resource)
 
-* metadata for file
+- metadata for file
 
 ```json
 {
@@ -249,8 +249,7 @@
 }
 ```
 
-
-* permissions
+- permissions
 
 ```json
 {

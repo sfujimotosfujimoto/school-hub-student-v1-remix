@@ -36,8 +36,6 @@ export async function getRefreshedToken(
   return credentials
 }
 
-
-
 export async function getClient(accessToken: string) {
   logger.debug(`✅ getClient`)
   const client = initializeClient()
@@ -47,7 +45,7 @@ export async function getClient(accessToken: string) {
 }
 
 export function initializeClient(): Auth.OAuth2Client {
-  logger.debug(`✅ initializeClient`)
+  // logger.debug(`✅ initializeClient`)
   const client = new google.auth.OAuth2(
     process.env.GOOGLE_API_CLIENT_ID,
     process.env.GOOGLE_API_CLIENT_SECRET,
