@@ -2,7 +2,7 @@ import invariant from "tiny-invariant"
 import type { Student } from "~/types"
 import { getFolderId } from "../utils"
 import { getServiceAccountClient } from "./google.server"
-import { kv } from "@vercel/kv"
+import { createClient } from "@vercel/kv"
 import { logger } from "../logger"
 import { google } from "googleapis"
 
@@ -50,6 +50,13 @@ export async function getStudentDataWithServiceAccount() {
     invariant(sheets, "Unauthorized google account")
 
     let studentData: Student[]
+
+    const kv = createClient({
+      url: process.env.KV_V1S_REST_API_URL || "",
+      token: process.env.KV_V1S_REST_API_TOKEN || "",
+    })
+
+    if (!kv) throw new Error("Could not create KV client")
 
     const cache = await kv.get<Student[] | null>("studentData")
 
