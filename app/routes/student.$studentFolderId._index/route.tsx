@@ -1,9 +1,8 @@
-import { useLoaderData, useParams, useRouteLoaderData } from "@remix-run/react"
+import { Await, useLoaderData, useParams } from "@remix-run/react"
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
 
-import { createQuery, getDriveFiles } from "~/lib/google/drive.server"
 import { getUserFromSession } from "~/lib/services/session.server"
-import { parseTags } from "~/lib/utils"
+import { filterSegments, parseTags } from "~/lib/utils"
 
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import BackButton from "~/components/back-button"
@@ -14,10 +13,12 @@ import TagPills from "./components/tag-pills"
 import SegmentPills from "./components/segment-pills"
 import AllPill from "./components/all-pill"
 import ExtensionPills from "./components/extensions-pills"
-
 import StudentCards from "./components/student-cards"
 
-import type { loader as parentLoader } from "../student.$studentFolderId/route"
+import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
+import { redirectToSignin } from "~/lib/responses"
+import { Suspense } from "react"
+import type { DriveFileData, Student } from "~/types"
 
 /**
  * LOADER function
@@ -27,6 +28,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!studentFolderId) throw Error("id route parameter must be defined")
 
   const user = await getUserFromSession(request)
+  if (!user || !user.credential) throw redirectToSignin()
+
+  const student = user.student
+  if (!student || !student.folderLink) throw redirectToSignin()
 
   const url = new URL(request.url)
   const nendoString = url.searchParams.get("nendo")
@@ -34,23 +39,55 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const segmentsString = url.searchParams.get("segments")
   const extensionsString = url.searchParams.get("extensions")
 
-  // Get drive files for student folder
-  const query =
-    createQuery({
-      folderId: studentFolderId,
-    }) || ""
+  // Get DriveFileData from DB
+  let driveFileData = await getDriveFileDataByFolderId(studentFolderId)
 
-  const driveFiles = await getDriveFiles(
-    user?.credential?.accessToken || "",
-    query,
+  // Filter by nendo, tags, segments, extensions
+  driveFileData = getFilteredDriveFiles(
+    driveFileData || [],
+    nendoString,
+    tagString,
+    segmentsString,
+    extensionsString,
   )
+  const { nendos, segments, extensions, tags } =
+    getNendosSegmentsExtensionsTags(driveFileData, student)
 
-  let filteredDriveFiles = driveFiles
+  const headers = new Headers()
+
+  headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
+
+  return json(
+    {
+      nendoString,
+      tagString,
+      url: request.url,
+      nendos,
+      segments,
+      extensions,
+      tags,
+      studentFolderId,
+      driveFileData,
+    },
+    {
+      headers,
+    },
+  )
+}
+
+function getFilteredDriveFiles(
+  driveFiles: DriveFileData[],
+  nendoString: string | null,
+  tagString: string | null,
+  segmentsString: string | null,
+  extensionsString: string | null,
+) {
+  console.log("✅ in  getFilteredDriveFiles: driveFiles", driveFiles?.length)
 
   // filter by nendo
   if (nendoString) {
-    filteredDriveFiles =
-      filteredDriveFiles?.filter((df) => {
+    driveFiles =
+      driveFiles?.filter((df) => {
         if (df.appProperties?.nendo === nendoString) return true
         return false
       }) || []
@@ -58,8 +95,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   // filter by tag
   if (tagString) {
-    filteredDriveFiles =
-      filteredDriveFiles?.filter((df) => {
+    driveFiles =
+      driveFiles?.filter((df) => {
         if (df.appProperties?.tags) {
           const tagsArr = parseTags(df.appProperties.tags)
           return tagsArr.includes(tagString || "")
@@ -70,8 +107,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   // filter by extensions
   if (extensionsString) {
-    filteredDriveFiles =
-      filteredDriveFiles?.filter((df) => {
+    driveFiles =
+      driveFiles?.filter((df) => {
         const ext = df.mimeType.split(/[/.]/).at(-1) || ""
         return ext === extensionsString
       }) || []
@@ -79,41 +116,93 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   // filter by segments
   if (segmentsString) {
-    filteredDriveFiles =
-      filteredDriveFiles?.filter((df) => {
+    driveFiles =
+      driveFiles?.filter((df) => {
         const segments = df.name.split(/[-_.]/)
         return segments.includes(segmentsString)
       }) || []
   }
+  console.log("✅ driveFiles after filtering", driveFiles?.length)
 
-  const headers = new Headers()
+  return driveFiles || []
+}
 
-  headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
-
-  return json(
-    {
-      driveFiles: filteredDriveFiles,
-      nendoString,
-      tagString,
-      url: request.url,
-    },
-    {
-      headers,
-    },
+function getNendosSegmentsExtensionsTags(
+  driveFiles: DriveFileData[],
+  student: Student,
+) {
+  console.log(
+    "✅ in getNendosSegmentsExtensionsTags: driveFiles",
+    driveFiles.length,
+    "student",
+    student.email,
   )
+  let segments: string[] = Array.from(
+    new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
+  )
+
+  segments = filterSegments(segments, student)
+
+  const extensions: string[] =
+    Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
+      (ext) => ext.split(/[/.]/).at(-1) || "",
+    ) || []
+
+  const tags: string[] = Array.from(
+    new Set(
+      driveFiles
+        ?.map((df) => {
+          if (df.appProperties?.tags)
+            return parseTags(df.appProperties.tags) || null
+          return null
+        })
+        .filter((g): g is string[] => g !== null)
+        .flat(),
+    ),
+  ).sort()
+
+  const nendos: string[] = Array.from(
+    new Set(
+      driveFiles
+        ?.map((df) => {
+          if (df.appProperties?.nendo)
+            return df.appProperties.nendo.trim() || null
+          return null
+        })
+        .filter((g): g is string => g !== null)
+        .flat(),
+    ),
+  )
+    .sort((a, b) => Number(b) - Number(a))
+    .filter((n): n is string => n !== null)
+
+  return {
+    nendos,
+    segments,
+    extensions,
+    tags,
+  }
 }
 
 /**
  * StudentFolderIndexPage Component
  */
 export default function StudentFolderIdIndexPage() {
-  const data = useRouteLoaderData<typeof parentLoader>(
-    "routes/student.$studentFolderId",
-  )
-  if (!data) throw Error("Could not load data")
+  // const data = useRouteLoaderData<typeof parentLoader>(
+  //   "routes/student.$studentFolderId",
+  // )
+  // if (!data) throw Error("Could not load data")
 
-  const { studentFolderId, nendos, tags, extensions, segments } = data
-  const { driveFiles, url } = useLoaderData<typeof loader>()
+  // const { studentFolderId, nendos, tags, extensions, segments } = data
+  const {
+    studentFolderId,
+    url,
+    nendos,
+    tags,
+    extensions,
+    segments,
+    driveFileData,
+  } = useLoaderData<typeof loader>()
 
   // JSX -------------------------
   return (
@@ -121,7 +210,8 @@ export default function StudentFolderIdIndexPage() {
       <section className="flex h-full flex-col space-y-4">
         <div className="flex flex-none items-center justify-between">
           <BackButton />
-          <FileCount driveFiles={driveFiles} />
+
+          <FileCount driveFiles={driveFileData} />
         </div>
         <div className="flex flex-none flex-wrap gap-1">
           <AllPill url={url} studentFolderId={studentFolderId} />
@@ -143,17 +233,28 @@ export default function StudentFolderIdIndexPage() {
           <SegmentPills url={url} segments={segments} />
         </div>
 
-        {driveFiles && driveFiles.length ? (
-          <div className="mb-12 mt-4 flex-auto overflow-x-auto px-2">
-            {driveFiles && <StudentCards driveFiles={driveFiles} />}
-          </div>
-        ) : (
-          <div className="flex flex-auto items-center justify-center">
-            <h1 className="text-2xl font-bold">
-              ファイルが見つかりませんでした。
-            </h1>
-          </div>
-        )}
+        {/* {driveFiles && driveFiles.length ? ( */}
+        <div className="mb-12 mt-4 flex-auto overflow-x-auto px-2">
+          <Suspense
+            fallback={
+              <h1 className="text3xl font-bold">ファイルを検索中...</h1>
+            }
+            key={Math.random()}
+          >
+            <Await
+              resolve={driveFileData}
+              errorElement={
+                <ErrorBoundaryDocument
+                  toHome={true}
+                  message="ファイルが見つかりませんでした。"
+                />
+              }
+            >
+              {(resolved) => <StudentCards driveFiles={resolved} />}
+              {/* {driveFiles && <StudentCards driveFiles={driveFiles} />} */}
+            </Await>
+          </Suspense>
+        </div>
       </section>
     </>
   )
@@ -167,3 +268,36 @@ export function ErrorBoundary() {
   let message = `フォルダID（${studentFolderId}）からフォルダを取得できませんでした。`
   return <ErrorBoundaryDocument message={message} />
 }
+
+/*
+          <Suspense
+            fallback={<h1 className="text3xl font-bold">Counting...</h1>}
+            key={Math.random()}
+          >
+            <Await resolve={driveFiles} errorElement={<span></span>}>
+              {(resolved) => <FileCount driveFiles={resolved} />}
+            </Await>
+          </Suspense>
+
+
+                    <Suspense
+            fallback={
+              <h1 className="text3xl font-bold">ファイルを検索中...</h1>
+            }
+            key={Math.random()}
+          >
+            <Await
+              resolve={driveFiles}
+              errorElement={
+                <ErrorBoundaryDocument
+                  toHome={true}
+                  message="ファイルが見つかりませんでした。"
+                />
+              }
+            >
+              {(resolved) => <StudentCards driveFiles={resolved} />}
+              {/* {driveFiles && <StudentCards driveFiles={driveFiles} />} 
+              </Await>
+              </Suspense>
+
+*/
