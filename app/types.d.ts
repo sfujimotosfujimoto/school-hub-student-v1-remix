@@ -6,10 +6,15 @@ import type {
 
 export type DriveFileData = Omit<
   PrismaDriveFileData,
-  "firstSeen" | "lastSeen"
+  "createdTime" | "modifiedTime" | "firstSeen" | "lastSeen" | "appProperties"
 > & {
+  createdTime: number
+  modifiedTime: number
   firstSeen: number
   lastSeen: number
+  appProperties: {
+    [key: string]: string | null
+  } | null
 }
 
 export type Tokens = {
