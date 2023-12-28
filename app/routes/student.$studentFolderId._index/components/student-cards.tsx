@@ -23,7 +23,7 @@ export default function StudentCards({
             id="_StudentCard"
             to={`/student/${studentFolderId}/${d.fileId}`}
           >
-            <StudentCard driveFile={d} />
+            <StudentCard driveFile={d} isViewed={d.views > 0} />
           </Link>
         ))}
     </div>
