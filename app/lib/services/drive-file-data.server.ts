@@ -10,9 +10,6 @@ export async function getDriveFileDataByFileId(
     where: {
       fileId,
     },
-    // select: {
-    //   ...selectDriveFileData,
-    // },
   })
 
   if (!driveFileData) {
@@ -22,50 +19,128 @@ export async function getDriveFileDataByFileId(
   return returnDriveFileDatum(driveFileData)
 }
 
-export async function updateDriveFileData(fileId: string) {
+// export async function getFilteredDriveFileData({
+//   nendoString,
+//   // tagString,
+//   // extensionString,
+//   // segmentString,
+//   fileId,
+// }: {
+//   nendoString: string
+//   // tagString: string
+//   // extensionString: string
+//   // segmentString: string
+//   fileId: string
+// }) {
+//   const driveFileData = await prisma.driveFileData.findMany({
+//     where: {
+//       AND: [
+//         {
+//           fileId,
+//         },
+//         {
+//           appProperties: {
+//             equals: { nendo: null },
+//           },
+//         },
+//       ],
+//     },
+//   })
+
+//   if (!driveFileData) {
+//     return null
+//   }
+
+//   return returnDriveFileData(driveFileData)
+// }
+
+export async function getDriveFileDataByFolderId(
+  folderId: string,
+): Promise<DriveFileData[]> {
+  const driveFileData = await prisma.driveFileData.findMany({
+    where: {
+      parents: {
+        has: folderId,
+      },
+    },
+  })
+
+  if (!driveFileData) {
+    return []
+  }
+
+  return returnDriveFileData(driveFileData)
+}
+
+export async function updateDriveFileData(
+  fileId: string,
+): Promise<DriveFileData> {
   // only update if lastSeen is more than 1 hour ago
   const dfd = await prisma.driveFileData.findUnique({
     where: {
       fileId,
-      lastSeen: {
-        lt: new Date().getTime() - 1000 * 60,
-      },
+      // lastSeen: {
+      //   lt: new Date().getTime() - 1000 * 60,
+      // },
     },
   })
 
   if (!dfd) {
-    return
+    throw new Error("DriveFileData not found")
   }
 
-  return await prisma.driveFileData.update({
+  if (dfd.lastSeen < new Date().getTime() - 1000 * 60) {
+    console.log("✅ lastSeen is more than 1 hour ago")
+    const dfp = await prisma.driveFileData.update({
+      where: {
+        fileId,
+      },
+      data: {
+        firstSeen: dfd.views > 0 ? dfd.firstSeen : new Date().getTime(),
+        lastSeen: new Date().getTime(),
+        views: {
+          increment: 1,
+        },
+      },
+    })
+    return returnDriveFileDatum(dfp)
+  } else {
+    console.log("✅ lastSeen is less than 1 hour ago")
+    return returnDriveFileDatum(dfd)
+  }
+}
+
+async function updateThumbnail(fileId: string, thumbnailLink: string) {
+  const dfd = await prisma.driveFileData.update({
     where: {
       fileId,
     },
     data: {
-      firstSeen: dfd.views > 0 ? dfd.firstSeen : new Date().getTime(),
-      lastSeen: new Date().getTime(),
-      views: {
-        increment: 1,
-      },
+      thumbnailLink,
     },
   })
+
+  return dfd
 }
 
 export async function saveDriveFileDatum(
   userId: number,
   driveFile: DriveFile,
-): Promise<PrismaDriveFileData | null> {
+): Promise<PrismaDriveFileData> {
   const df = await prisma.driveFileData.findUnique({
     where: {
       fileId: driveFile.id,
     },
   })
 
-  if (df) {
-    return null
+  if (df && driveFile.thumbnailLink) {
+    const dfd = await updateThumbnail(driveFile.id, driveFile.thumbnailLink)
+    return dfd
+  } else if (df) {
+    return df
   }
 
-  return await prisma.driveFileData.create({
+  const dfd = await prisma.driveFileData.create({
     data: {
       fileId: driveFile.id,
       name: driveFile.name,
@@ -73,6 +148,7 @@ export async function saveDriveFileDatum(
       iconLink: driveFile.iconLink,
       hasThumbnail: driveFile.hasThumbnail,
       thumbnailLink: driveFile.thumbnailLink,
+      webViewLink: driveFile.link,
       webContentLink: driveFile.webContentLink,
       createdTime: driveFile.createdTime || new Date(),
       modifiedTime: driveFile.modifiedTime || new Date(),
@@ -83,16 +159,27 @@ export async function saveDriveFileDatum(
       userId,
     },
   })
+  console.log("✅ in saveDriveFileDatum: dfd", dfd)
+  return dfd
 }
 
-export function saveDriveFileData(
+export async function saveDriveFileData(
   userId: number,
   driveFiles: DriveFile[],
-): Promise<PrismaDriveFileData | null>[] {
-  const driveFileDataPromises: Promise<PrismaDriveFileData | null>[] =
-    driveFiles.map((driveFile) => saveDriveFileDatum(userId, driveFile))
+): Promise<DriveFileData[]> {
+  console.log("✅ in saveDriveFileData: driveFiles", driveFiles.length)
 
-  return driveFileDataPromises
+  const driveFileDataP: Promise<PrismaDriveFileData>[] = []
+  for (const driveFile of driveFiles) {
+    const df = saveDriveFileDatum(userId, driveFile)
+    if (!df) {
+      continue
+    }
+    driveFileDataP.push(df)
+  }
+
+  const dfd = await Promise.all(driveFileDataP)
+  return returnDriveFileData(dfd)
 }
 
 export function returnDriveFileDatum(
@@ -105,8 +192,13 @@ export function returnDriveFileDatum(
 
   return {
     ...prismaDriveFileData,
+    createdTime: prismaDriveFileData.createdTime.getTime(),
+    modifiedTime: prismaDriveFileData.modifiedTime.getTime(),
     firstSeen: firstSeen2,
     lastSeen: lastSeen2,
+    appProperties: prismaDriveFileData.appProperties as {
+      [key: string]: string | null
+    } | null,
   }
 }
 
