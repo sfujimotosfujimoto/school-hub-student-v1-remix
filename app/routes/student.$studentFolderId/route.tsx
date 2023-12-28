@@ -8,17 +8,12 @@ import type { Student } from "~/types"
 
 import { requireUserRole } from "~/lib/require-roles.server"
 import { logger } from "~/lib/logger"
-import { filterSegments, getFolderId, parseTags } from "~/lib/utils"
+import { getFolderId } from "~/lib/utils"
 import { getUserFromSession } from "~/lib/services/session.server"
-import { getDriveFiles } from "~/lib/google/drive.server"
 
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import StudentHeader from "./student-header"
 import { redirectToSignin } from "~/lib/responses"
-import { saveDriveFileData } from "~/lib/services/drive-file-data.server"
-import type { DriveFileData } from "@prisma/client"
-
-// import { authenticate } from "~/lib/authenticate.server"
 
 /**
  * Meta Function
@@ -54,6 +49,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   if (!student || !student.folderLink) throw redirectToSignin()
 
+  // Check if studentFolderId is the same as the student's folder
   if (getFolderId(student.folderLink) !== params.studentFolderId) {
     throw redirectToSignin()
   }
@@ -61,55 +57,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const studentFolderId = params.studentFolderId
   invariant(studentFolderId, "studentFolder in params is required")
 
-  const driveFiles = await getDriveFiles(
-    user.credential.accessToken,
-    `trashed=false and '${studentFolderId}' in parents`,
-  )
+  // Get drive files from Google Drive API
+  // const driveFiles = await getDriveFiles(
+  //   user.credential.accessToken,
+  //   `trashed=false and '${studentFolderId}' in parents`,
+  // )
 
-  // TODO: Save DriveFile to DriveFileData in DB
-  let dfPromises: Promise<DriveFileData | null>[] = []
-  if (driveFiles && driveFiles.length > 0) {
-    dfPromises = saveDriveFileData(user.id, driveFiles)
-  }
+  // // Save DriveFile to DriveFileData in DB
+  // let dfd: DriveFileData[] = []
+  // if (driveFiles && driveFiles.length > 0) {
+  //   dfd = await saveDriveFileData(user.id, driveFiles)
+  // }
 
-  let segments: string[] = Array.from(
-    new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
-  )
-
-  segments = filterSegments(segments, student)
-
-  const extensions: string[] =
-    Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
-      (ext) => ext.split(/[/.]/).at(-1) || "",
-    ) || []
-
-  const tags: string[] = Array.from(
-    new Set(
-      driveFiles
-        ?.map((df) => {
-          if (df.appProperties?.tags)
-            return parseTags(df.appProperties.tags) || null
-          return null
-        })
-        .filter((g): g is string[] => g !== null)
-        .flat(),
-    ),
-  ).sort()
-
-  const nendos: string[] = Array.from(
-    new Set(
-      driveFiles
-        ?.map((df) => {
-          if (df.appProperties?.nendo)
-            return df.appProperties.nendo.trim() || null
-          return null
-        })
-        .filter((g): g is string => g !== null)
-        .flat(),
-    ),
-  )
-    .sort((a, b) => Number(b) - Number(a))
-    .filter((n): n is string => n !== null)
+  // const { nendos, segments, extensions, tags } =
+  //   getNendosSegmentsExtensionsTags(dfd, student)
 
   const headers = new Headers()
 
@@ -117,15 +78,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   return defer(
     {
+      // data: dataPromises,
       studentFolderId: params.studentFolderId,
-      extensions,
-      segments,
-      driveFiles,
+      // extensions,
+      // segments,
+      // driveFiles,
       student,
-      tags,
-      nendos,
+      // tags,
+      // nendos,
       role: user.role,
-      driveFilesDB: dfPromises,
+      // driveFileData: dfd,
     },
     {
       headers,
@@ -139,12 +101,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
  */
 export default function StudentFolderIdLayout() {
   console.log("✅ student.$studentFolderId/route.tsx ~ 	😀 ")
-  const { student, driveFilesDB } = useLoaderData<typeof loader>()
+  const { student } = useLoaderData<typeof loader>()
+  // const { student, driveFilesDB } = useLoaderData<typeof loader>()
 
-  console.log(
-    "✅ student.$studentFolderId/route.tsx ~ 	🌈 driveFilesDB ✅ ",
-    driveFilesDB,
-  )
   const result = StudentSchema.safeParse(student)
 
   let resultStudent: Student | null = null
@@ -158,6 +117,22 @@ export default function StudentFolderIdLayout() {
       <div className="mb-4 space-y-4">
         {resultStudent && <StudentHeader student={resultStudent} />}
       </div>
+      {/* <Suspense
+        fallback={<h1 className="text3xl font-bold">ファイルを検索中...</h1>}
+        key={Math.random()}
+      >
+        <Await
+          resolve={driveFilesDB}
+          errorElement={
+            <ErrorBoundaryDocument
+              toHome={true}
+              message="ファイルが見つかりませんでした。"
+            />
+          }
+        >
+          {(resolved) => <Outlet />}
+        </Await>
+      </Suspense> */}
       <Outlet />
     </div>
   )
@@ -171,3 +146,118 @@ export function ErrorBoundary() {
   let message = `フォルダID（${studentFolderId}）からフォルダを取得できませんでした。`
   return <ErrorBoundaryDocument message={message} />
 }
+
+// function getNendosSegmentsExtensionsTags(
+//   driveFiles: DriveFileData[],
+//   student: Student,
+// ) {
+//   let segments: string[] = Array.from(
+//     new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
+//   )
+
+//   segments = filterSegments(segments, student)
+
+//   const extensions: string[] =
+//     Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
+//       (ext) => ext.split(/[/.]/).at(-1) || "",
+//     ) || []
+
+//   const tags: string[] = Array.from(
+//     new Set(
+//       driveFiles
+//         ?.map((df) => {
+//           if (df.appProperties?.tags)
+//             return parseTags(df.appProperties.tags) || null
+//           return null
+//         })
+//         .filter((g): g is string[] => g !== null)
+//         .flat(),
+//     ),
+//   ).sort()
+
+//   const nendos: string[] = Array.from(
+//     new Set(
+//       driveFiles
+//         ?.map((df) => {
+//           if (df.appProperties?.nendo)
+//             return df.appProperties.nendo.trim() || null
+//           return null
+//         })
+//         .filter((g): g is string => g !== null)
+//         .flat(),
+//     ),
+//   )
+//     .sort((a, b) => Number(b) - Number(a))
+//     .filter((n): n is string => n !== null)
+
+//   return {
+//     nendos,
+//     segments,
+//     extensions,
+//     tags,
+//   }
+// }
+
+// async function getDriveFilesPromises(
+//   accessToken: string,
+//   userId: number,
+//   studentFolderId: string,
+//   student: Student,
+// ) {
+//   const driveFiles = await getDriveFiles(
+//     accessToken,
+//     `trashed=false and '${studentFolderId}' in parents`,
+//   )
+
+//   let dfPromises: Promise<DriveFileData | null>[] = []
+//   if (driveFiles && driveFiles.length > 0) {
+//     dfPromises = saveDriveFileData(userId, driveFiles)
+//   }
+
+//   let segments: string[] = Array.from(
+//     new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
+//   )
+
+//   segments = filterSegments(segments, student)
+
+//   const extensions: string[] =
+//     Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
+//       (ext) => ext.split(/[/.]/).at(-1) || "",
+//     ) || []
+
+//   const tags: string[] = Array.from(
+//     new Set(
+//       driveFiles
+//         ?.map((df) => {
+//           if (df.appProperties?.tags)
+//             return parseTags(df.appProperties.tags) || null
+//           return null
+//         })
+//         .filter((g): g is string[] => g !== null)
+//         .flat(),
+//     ),
+//   ).sort()
+
+//   const nendos: string[] = Array.from(
+//     new Set(
+//       driveFiles
+//         ?.map((df) => {
+//           if (df.appProperties?.nendo)
+//             return df.appProperties.nendo.trim() || null
+//           return null
+//         })
+//         .filter((g): g is string => g !== null)
+//         .flat(),
+//     ),
+//   )
+//     .sort((a, b) => Number(b) - Number(a))
+//     .filter((n): n is string => n !== null)
+//   return {
+//     driveFiles,
+//     dfPromises,
+//     segments,
+//     extensions,
+//     tags,
+//     nendos,
+//   }
+// }
