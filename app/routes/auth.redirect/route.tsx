@@ -11,6 +11,11 @@ import {
   updateThumbnails,
 } from "~/lib/services/drive-file-data.server"
 
+export const config = {
+  // TODO: set maxDuration for production
+  maxDuration: 60,
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   // get code from url query
   const parsedUrl = new URL(request.url)

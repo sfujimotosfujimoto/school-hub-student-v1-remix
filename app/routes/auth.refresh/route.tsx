@@ -14,6 +14,11 @@ import { parseVerifyUserJWT } from "~/lib/services/session.server"
 import { updateUserJWT } from "~/lib/signinout.server"
 import { getFolderId } from "~/lib/utils"
 
+export const config = {
+  // TODO: set maxDuration for production
+  maxDuration: 60,
+}
+
 /**
  * Loader function
  */
