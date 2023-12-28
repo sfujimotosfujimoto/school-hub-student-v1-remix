@@ -14,7 +14,7 @@ export async function getStudentDBByEmail(email: string) {
   return studentPrisma
 }
 
-export async function createStudentDB(
+export async function upsertStudentDB(
   student: Student,
   userId: number,
   expiry: number,
