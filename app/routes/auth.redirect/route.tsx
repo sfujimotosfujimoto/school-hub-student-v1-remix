@@ -11,6 +11,7 @@ import {
   updateThumbnails,
 } from "~/lib/services/drive-file-data.server"
 
+//update timeout
 export const config = {
   // TODO: set maxDuration for production
   maxDuration: 60,
