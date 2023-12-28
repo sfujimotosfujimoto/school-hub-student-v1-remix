@@ -42,13 +42,13 @@ export function createQuery({
 export async function getDriveFiles(
   accessToken: string,
   query: string,
-): Promise<DriveFile[] | null> {
+): Promise<DriveFile[]> {
   const drive = await getDrive(accessToken)
   if (!drive) throw new Error("Couldn't get drive")
 
   const files: drive_v3.Schema$File[] = await execFilesList(drive, query)
 
-  if (!files) return null
+  if (!files) return []
   // if (!list.data.files) return null
 
   return mapFilesToDriveFiles(files)
