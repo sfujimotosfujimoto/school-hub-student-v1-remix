@@ -3,10 +3,7 @@ import { z } from "zod"
 
 import { getPersonFromPeople } from "./google/people.server"
 import { getStudentByEmail } from "./google/sheets.server"
-import {
-  createUserSession,
-  destroyUserSession,
-} from "./services/session.server"
+import { destroyUserSession } from "./services/session.server"
 import {
   checkValidAdminEmail,
   checkValidStudentOrParentEmail,
@@ -91,106 +88,91 @@ export async function signin({ code }: { code: string }) {
     throw redirectToSignin(`authstate=not-parent-account`)
   }
 
-  // find if user is parent or student in db
-  let userPrisma = await prisma.user.findUnique({
+  let userPrisma = await prisma.user.upsert({
     where: {
       email: person.email,
     },
+    update: {},
+    create: {
+      first: person.first,
+      last: person.last,
+      email: person.email,
+      picture: person.picture,
+      role: "USER",
+    },
   })
 
-  // if no user, create in prisma db
-  // this can be parent or student
-
-  if (!userPrisma) {
-    userPrisma = await prisma.user.create({
-      data: {
-        first: person.first,
-        last: person.last,
-        email: person.email,
-        picture: person.picture,
-        role: "USER",
-      },
-    })
-  }
-
-  // find stats in prisma db
-  // there can be one for perent and student
-  let stats = await prisma.stats.findUnique({
+  await prisma.stats.upsert({
     where: {
+      userId: userPrisma.id,
+    },
+    update: {},
+    create: {
       userId: userPrisma.id,
     },
   })
 
-  // if no stats, create in prisma db
-  if (!stats) {
-    stats = await prisma.stats.create({
-      data: {
-        userId: userPrisma.id,
-      },
-    })
-  }
-
-  // find credential in prisma db
-  // there can be one for perent and student
-  let cred = await prisma.credential.findUnique({
+  await prisma.credential.upsert({
     where: {
       userId: userPrisma.id,
     },
+    update: {
+      accessToken: access_token,
+      scope: scope,
+      tokenType: token_type,
+      expiry: expiry_date,
+      refreshToken: refresh_token,
+      refreshTokenExpiry: refreshTokenExpiry,
+    },
+    create: {
+      accessToken: access_token,
+      scope: scope,
+      tokenType: token_type,
+      expiry: expiry_date,
+      userId: userPrisma.id,
+      refreshToken: refresh_token,
+      refreshTokenExpiry: refreshTokenExpiry,
+    },
   })
-
-  // if no credential, create in prisma db
-  // use data from google endpoint
-  if (!cred) {
-    cred = await prisma.credential.create({
-      data: {
-        accessToken: access_token,
-        scope: scope,
-        tokenType: token_type,
-        expiry: expiry_date,
-        userId: userPrisma.id,
-        refreshToken: refresh_token,
-        refreshTokenExpiry: refreshTokenExpiry,
-      },
-    })
-  } else {
-    // else update credential in prisma db
-    cred = await prisma.credential.update({
-      where: {
-        userId: userPrisma.id,
-      },
-      data: {
-        accessToken: access_token,
-        scope: scope,
-        tokenType: token_type,
-        expiry: expiry_date,
-        refreshToken: refresh_token,
-        refreshTokenExpiry: refreshTokenExpiry,
-      },
-    })
-  }
 
   // convert parent email to student email
   let studentEmail = person.email.replace(/^p/, "b")
-  logger.debug(`✅ studentEmail ${studentEmail}`)
+  logger.debug(`🍓 signin: studentEmail ${studentEmail}`)
 
   // find student in prisma db with student email even if user is parent
   const studentPrisma = await getStudentDBByEmail(studentEmail)
+  console.log("🍓 signin: studentPrisma", studentPrisma)
 
   // if no student in db, create in prisma db
-  if (!studentPrisma) {
+  if (!studentPrisma || studentPrisma.users.length === 0) {
+    console.log(
+      "🍓 signin:in !studentPrisma || studentPrisma.users.length === 0",
+    )
     const student = await getStudentByEmail(studentEmail)
-    logger.debug(`✅ in !studentPrisma`)
+    logger.debug(`🍓 signin:in !studentPrisma`)
 
     if (student) {
+      console.log("🍓 signin: in student")
       await createStudentDB(student, userPrisma.id, EXPIRY_DATE)
     }
   } else {
-    logger.debug(`✅ in else studentPrisma`)
+    logger.debug(`🍓 signin: in else studentPrisma`)
     // if there is student in db, and user's id is not in student.users,
     // create student abd relation to user
     const userIds = studentPrisma.users.map((u) => u.id)
-    if (!userIds.includes(userPrisma.id) && userPrisma.studentGakuseki) {
-      await updateStudentDB(userPrisma.studentGakuseki, userPrisma.id)
+    console.log(
+      "🍓 signin: userIds",
+      userIds,
+      "userPrisma.id",
+      userPrisma.id,
+      "studentPrisma.gakuseki",
+      studentPrisma.gakuseki,
+    )
+    if (!userIds.includes(userPrisma.id)) {
+      console.log(
+        "🍓 signin: in !userIds.includes(userPrisma.id) && userPrisma.studentGakuseki",
+      )
+      await updateStudentDB(userPrisma.id, studentPrisma.gakuseki)
     }
   }
 
@@ -207,7 +189,13 @@ export async function signin({ code }: { code: string }) {
     refreshTokenExpiry,
   )
   if (["ADMIN", "SUPER"].includes(userPrisma.role)) {
-    return createUserSession(userJWT, `/admin`)
+    return {
+      userId: userPrisma.id,
+      folderId: null,
+      userJWT,
+      accessToken: access_token,
+    }
+    // return createUserSession(userJWT, `/admin`)
   }
 
   const newUser = await prisma.user.findUnique({
@@ -220,7 +208,11 @@ export async function signin({ code }: { code: string }) {
   })
 
   logger.debug(
-    `✅ newUser ${JSON.stringify(newUser?.student?.folderLink, null, 2)}`,
+    `🍓 signin: newUser ${JSON.stringify(
+      newUser?.student?.folderLink,
+      null,
+      2,
+    )}`,
   )
 
   if (!newUser?.student?.folderLink) {
@@ -228,7 +220,12 @@ export async function signin({ code }: { code: string }) {
   }
   const folderId = getFolderId(newUser?.student?.folderLink)
 
-  return createUserSession(userJWT, `/student/${folderId}`)
+  return {
+    folderId,
+    userJWT,
+    accessToken: access_token,
+    userId: newUser?.id,
+  }
 }
 
 // used in authenticate
@@ -266,6 +263,7 @@ export async function signout({ request }: { request: Request }) {
 export async function getFolderIdFromEmail(
   email: string,
 ): Promise<string | null> {
+  console.log("✅ getFolderIdFromEmail", email)
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
