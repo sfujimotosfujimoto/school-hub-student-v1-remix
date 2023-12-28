@@ -2,11 +2,17 @@ import { json } from "@remix-run/node"
 import type { ActionFunctionArgs } from "@remix-run/node"
 
 import { prisma } from "~/lib/db.server"
+import { getDriveFiles } from "~/lib/google/drive.server"
 import { getRefreshedToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import { returnUser } from "~/lib/return-user"
+import {
+  saveDriveFileData,
+  updateThumbnails,
+} from "~/lib/services/drive-file-data.server"
 import { parseVerifyUserJWT } from "~/lib/services/session.server"
 import { updateUserJWT } from "~/lib/signinout.server"
+import { getFolderId } from "~/lib/utils"
 
 /**
  * Loader function
@@ -66,7 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
           accessToken: newAccessToken,
           expiry: Number(expiry_date),
           refreshToken: newRefreshToken,
-          refreshTokenExpiry: Number(Date.now() + 1000 * 60 * 60 * 24 * 7),
+          refreshTokenExpiry: Number(Date.now() + 1000 * 60 * 60 * 24),
         },
       },
     },
@@ -78,6 +84,19 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!updatedUser) {
     return json({ ok: false }, { status: 400 })
   }
+  const folderId = getFolderId(updatedUser.student?.folderLink || "")
+  // TODO: update error response
+  if (!folderId) {
+    return json({ ok: false }, { status: 400 })
+  }
+
+  // Update drive file data in Database
+  const driveFiles = await getDriveFiles(
+    accessToken,
+    `trashed=false and '${folderId}' in parents`,
+  )
+  await saveDriveFileData(updatedUser.id, driveFiles)
+  await updateThumbnails(driveFiles)
 
   try {
     // 3. update userJWT in session
