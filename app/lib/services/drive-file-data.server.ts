@@ -110,76 +110,115 @@ export async function updateDriveFileData(
   }
 }
 
-async function updateThumbnail(fileId: string, thumbnailLink: string) {
-  const dfd = await prisma.driveFileData.update({
-    where: {
-      fileId,
-    },
-    data: {
-      thumbnailLink,
-    },
-  })
-
-  return dfd
+export async function updateThumbnails(driveFiles: DriveFile[]) {
+  await prisma.$transaction([
+    ...driveFiles.map((driveFile) =>
+      prisma.driveFileData.update({
+        where: {
+          fileId: driveFile.id,
+        },
+        data: {
+          thumbnailLink: driveFile.thumbnailLink,
+        },
+      }),
+    ),
+  ])
 }
 
-export async function saveDriveFileDatum(
-  userId: number,
-  driveFile: DriveFile,
-): Promise<PrismaDriveFileData> {
-  const df = await prisma.driveFileData.findUnique({
-    where: {
-      fileId: driveFile.id,
-    },
-  })
+// async function updateThumbnail(fileId: string, thumbnailLink: string) {
+//   const dfd = await prisma.driveFileData.update({
+//     where: {
+//       fileId,
+//     },
+//     data: {
+//       thumbnailLink,
+//     },
+//   })
 
-  if (df && driveFile.thumbnailLink) {
-    const dfd = await updateThumbnail(driveFile.id, driveFile.thumbnailLink)
-    return dfd
-  } else if (df) {
-    return df
-  }
+//   return dfd
+// }
 
-  const dfd = await prisma.driveFileData.create({
-    data: {
-      fileId: driveFile.id,
-      name: driveFile.name,
-      mimeType: driveFile.mimeType,
-      iconLink: driveFile.iconLink,
-      hasThumbnail: driveFile.hasThumbnail,
-      thumbnailLink: driveFile.thumbnailLink,
-      webViewLink: driveFile.link,
-      webContentLink: driveFile.webContentLink,
-      createdTime: driveFile.createdTime || new Date(),
-      modifiedTime: driveFile.modifiedTime || new Date(),
-      parents: driveFile.parents,
-      appProperties: driveFile.appProperties,
-      firstSeen: new Date().getTime(),
-      lastSeen: new Date().getTime(),
-      userId,
-    },
-  })
-  console.log("✅ in saveDriveFileDatum: dfd", dfd)
-  return dfd
-}
+// export async function saveDriveFileDatum(
+//   userId: number,
+//   driveFile: DriveFile,
+// ): Promise<PrismaDriveFileData> {
+//   const df = await prisma.driveFileData.findUnique({
+//     where: {
+//       fileId: driveFile.id,
+//     },
+//   })
+
+//   if (df && driveFile.thumbnailLink) {
+//     const dfd = await updateThumbnail(driveFile.id, driveFile.thumbnailLink)
+//     return dfd
+//   } else if (df) {
+//     return df
+//   }
+
+//   const dfd = await prisma.driveFileData.create({
+//     data: {
+//       fileId: driveFile.id,
+//       name: driveFile.name,
+//       mimeType: driveFile.mimeType,
+//       iconLink: driveFile.iconLink,
+//       hasThumbnail: driveFile.hasThumbnail,
+//       thumbnailLink: driveFile.thumbnailLink,
+//       webViewLink: driveFile.link,
+//       webContentLink: driveFile.webContentLink,
+//       createdTime: driveFile.createdTime || new Date(),
+//       modifiedTime: driveFile.modifiedTime || new Date(),
+//       parents: driveFile.parents,
+//       appProperties: driveFile.appProperties,
+//       firstSeen: new Date().getTime(),
+//       lastSeen: new Date().getTime(),
+//       userId,
+//     },
+//   })
+//   console.log("✅ in saveDriveFileDatum: dfd", dfd)
+//   return dfd
+// }
 
 export async function saveDriveFileData(
   userId: number,
   driveFiles: DriveFile[],
-): Promise<DriveFileData[]> {
+) {
   console.log("✅ in saveDriveFileData: driveFiles", driveFiles.length)
 
-  const driveFileDataP: Promise<PrismaDriveFileData>[] = []
-  for (const driveFile of driveFiles) {
-    const df = saveDriveFileDatum(userId, driveFile)
-    if (!df) {
-      continue
-    }
-    driveFileDataP.push(df)
-  }
+  const data = driveFiles.map((driveFile) => ({
+    fileId: driveFile.id,
+    name: driveFile.name,
+    mimeType: driveFile.mimeType,
+    iconLink: driveFile.iconLink,
+    hasThumbnail: driveFile.hasThumbnail,
+    thumbnailLink: driveFile.thumbnailLink,
+    webViewLink: driveFile.link,
+    webContentLink: driveFile.webContentLink,
+    createdTime: driveFile.createdTime || new Date(),
+    modifiedTime: driveFile.modifiedTime || new Date(),
+    parents: driveFile.parents,
+    appProperties: driveFile.appProperties || undefined,
+    firstSeen: new Date().getTime(),
+    lastSeen: new Date().getTime(),
+    userId,
+  }))
 
-  const dfd = await Promise.all(driveFileDataP)
-  return returnDriveFileData(dfd)
+  const countMany = await prisma.driveFileData.createMany({
+    data,
+    skipDuplicates: true,
+  })
+  return countMany
+
+  // const driveFileDataP: Promise<PrismaDriveFileData>[] = []
+  // for (const driveFile of driveFiles) {
+  //   const df = saveDriveFileDatum(userId, driveFile)
+  //   if (!df) {
+  //     continue
+  //   }
+  //   driveFileDataP.push(df)
+  // }
+
+  // const dfd = await Promise.all(driveFileDataP)
+  // return returnDriveFileData(dfd)
 }
 
 export function returnDriveFileDatum(
