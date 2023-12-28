@@ -2,12 +2,11 @@ import {
   type MetaFunction,
   type LoaderFunctionArgs,
   json,
-  defer,
 } from "@remix-run/node"
 
 import React from "react"
 
-import type { DriveFile } from "~/types"
+import type { DriveFileData } from "~/types"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { logger } from "~/lib/logger"
 import { requireUserRole } from "~/lib/require-roles.server"
@@ -18,11 +17,9 @@ import ToFolderBtn from "./to-folder-button"
 import BackButton from "~/components/back-button"
 import StudentCard from "../student.$studentFolderId._index/components/student-card"
 
-import type { loader as studentFolderIdLoader } from "../student.$studentFolderId/route"
-import { useParams, useRouteLoaderData } from "@remix-run/react"
+import { useLoaderData, useParams } from "@remix-run/react"
 import { redirectToSignin } from "~/lib/responses"
 import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
-import type { DriveFileData } from "@prisma/client"
 
 /**
  * Loader Function
@@ -34,28 +31,21 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserRole(user)
 
   const { fileId } = params
+  if (!fileId) throw redirectToSignin()
 
-  let dfp: Promise<DriveFileData | undefined>
-  if (fileId) {
-    dfp = updateDriveFileData(fileId)
+  let dfd: DriveFileData | undefined
+  dfd = await updateDriveFileData(fileId)
 
-    return defer(
-      {
-        driveFileDatum: dfp,
-      },
-      {
-        headers: {
-          "Cache-Control": "max-age=300",
-        },
-      },
-    )
-  }
-
-  return json(null, {
-    headers: {
-      "Cache-Control": "max-age=300",
+  return json(
+    {
+      driveFileDatum: dfd,
     },
-  })
+    {
+      headers: {
+        "Cache-Control": "max-age=300",
+      },
+    },
+  )
 }
 
 /**
@@ -79,24 +69,26 @@ export const meta: MetaFunction = () => {
  */
 export default function StudentFolderIdFileIdPage() {
   console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
-  const { fileId } = useParams()
-  const props = useRouteLoaderData<typeof studentFolderIdLoader>(
-    "routes/student.$studentFolderId",
-  )
+  const { driveFileDatum } = useLoaderData<typeof loader>()
+  console.log("✅ driveFileDatum", driveFileDatum)
 
-  if (!props) {
-    console.error(`🚨 `)
-    throw new Error("no props")
-  }
+  // const props = useRouteLoaderData<typeof studentFolderIdLoader>(
+  //   "routes/student.$studentFolderId",
+  // )
 
-  const { driveFiles } = props
+  // if (!props) {
+  //   console.error(`🚨 `)
+  //   throw new Error("no props")
+  // }
 
-  const dfs = React.useMemo(() => {
-    return driveFiles
-  }, [driveFiles])
+  // const { driveFiles } = props
 
-  // find driveFileDatum from driveFileData[]
-  const driveFile: DriveFile | undefined = dfs?.find((r) => r.id === fileId)
+  // const dfs = React.useMemo(() => {
+  //   return driveFiles
+  // }, [driveFiles])
+
+  // // find driveFileDatum from driveFileData[]
+  // const driveFile: DriveFile | undefined = dfs?.find((r) => r.id === fileId)
 
   // JSX -------------------------
   return (
@@ -106,21 +98,21 @@ export default function StudentFolderIdFileIdPage() {
         <BackButton />
         {/* <BackButton to={`/student/${studentFolderId}`} /> */}
 
-        {driveFile && driveFile.parents && (
-          <ToFolderBtn parentId={driveFile.parents[0]} />
+        {driveFileDatum && driveFileDatum.parents && (
+          <ToFolderBtn parentId={driveFileDatum.parents[0]} />
         )}
       </div>
 
       {/* Student file card */}
       <div className="mt-4">
-        {driveFile && (
+        {driveFileDatum && (
           <a
             id="_StudentCard"
             target="_blank"
             rel="noopener noreferrer"
-            href={`${driveFile.link}`}
+            href={`${driveFileDatum.webViewLink}`}
           >
-            <StudentCard driveFile={driveFile} thumbnailSize={"big"} />
+            <StudentCard driveFile={driveFileDatum} thumbnailSize={"big"} />
           </a>
         )}
       </div>
