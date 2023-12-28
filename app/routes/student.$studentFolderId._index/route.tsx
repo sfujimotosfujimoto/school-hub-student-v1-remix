@@ -124,7 +124,7 @@ function getFilteredDriveFiles(
   }
   console.log("✅ driveFiles after filtering", driveFiles?.length)
 
-  return driveFiles || []
+  return driveFiles.sort((a, b) => b.modifiedTime - a.modifiedTime) || []
 }
 
 function getNendosSegmentsExtensionsTags(
