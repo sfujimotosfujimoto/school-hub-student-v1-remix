@@ -12,11 +12,7 @@ import {
 import { getClientFromCode } from "./google/google.server"
 import { logger } from "./logger"
 import { prisma } from "./db.server"
-import {
-  createStudentDB,
-  getStudentDBByEmail,
-  updateStudentDB,
-} from "./services/student.server"
+// import { getStudentDBByEmail } from "./services/student.server"
 import { updateUser } from "./services/user.server"
 import { redirectToSignin } from "./responses"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
@@ -75,10 +71,14 @@ export async function signin({ code }: { code: string }) {
     throw redirectToSignin(`authstate=unauthorized-002`)
   }
 
+  console.log(`🔥 getPersomFromPeople`)
+  let start = performance.now()
   const person = await getPersonFromPeople(access_token)
   if (!person) {
     throw redirectToSignin(`authstate=unauthorized`)
   }
+  let end = performance.now()
+  console.log(`🔥 getPersomFromPeople time: ${end - start} ms`)
 
   // check if email is valid or person is admin
   if (
@@ -102,79 +102,86 @@ export async function signin({ code }: { code: string }) {
     },
   })
 
-  await prisma.stats.upsert({
-    where: {
-      userId: userPrisma.id,
-    },
-    update: {},
-    create: {
-      userId: userPrisma.id,
-    },
-  })
-
-  await prisma.credential.upsert({
-    where: {
-      userId: userPrisma.id,
-    },
-    update: {
-      accessToken: access_token,
-      scope: scope,
-      tokenType: token_type,
-      expiry: expiry_date,
-      refreshToken: refresh_token,
-      refreshTokenExpiry: refreshTokenExpiry,
-    },
-    create: {
-      accessToken: access_token,
-      scope: scope,
-      tokenType: token_type,
-      expiry: expiry_date,
-      userId: userPrisma.id,
-      refreshToken: refresh_token,
-      refreshTokenExpiry: refreshTokenExpiry,
-    },
-  })
-
   // convert parent email to student email
   let studentEmail = person.email.replace(/^p/, "b")
   logger.debug(`🍓 signin: studentEmail ${studentEmail}`)
 
   // find student in prisma db with student email even if user is parent
-  const studentPrisma = await getStudentDBByEmail(studentEmail)
-  console.log("🍓 signin: studentPrisma", studentPrisma)
+  // const studentPrisma = await getStudentDBByEmail(studentEmail)
 
-  // if no student in db, create in prisma db
-  if (!studentPrisma || studentPrisma.users.length === 0) {
-    console.log(
-      "🍓 signin:in !studentPrisma || studentPrisma.users.length === 0",
-    )
-    const student = await getStudentByEmail(studentEmail)
-    logger.debug(`🍓 signin:in !studentPrisma`)
-
-    if (student) {
-      console.log("🍓 signin: in student")
-      await createStudentDB(student, userPrisma.id, EXPIRY_DATE)
-    }
-  } else {
-    logger.debug(`🍓 signin: in else studentPrisma`)
-    // if there is student in db, and user's id is not in student.users,
-    // create student abd relation to user
-    const userIds = studentPrisma.users.map((u) => u.id)
-    console.log(
-      "🍓 signin: userIds",
-      userIds,
-      "userPrisma.id",
-      userPrisma.id,
-      "studentPrisma.gakuseki",
-      studentPrisma.gakuseki,
-    )
-    if (!userIds.includes(userPrisma.id)) {
-      console.log(
-        "🍓 signin: in !userIds.includes(userPrisma.id) && userPrisma.studentGakuseki",
-      )
-      await updateStudentDB(userPrisma.id, studentPrisma.gakuseki)
-    }
+  const student = await getStudentByEmail(studentEmail)
+  if (!student) {
+    throw redirectToSignin(`authstate=not-seig-account`)
   }
+
+  console.log("🍓 signin: before transaction")
+  start = performance.now()
+
+  await prisma.$transaction([
+    prisma.stats.upsert({
+      where: {
+        userId: userPrisma.id,
+      },
+      update: {},
+      create: {
+        userId: userPrisma.id,
+      },
+    }),
+    prisma.credential.upsert({
+      where: {
+        userId: userPrisma.id,
+      },
+      update: {
+        accessToken: access_token,
+        scope: scope,
+        tokenType: token_type,
+        expiry: expiry_date,
+        refreshToken: refresh_token,
+        refreshTokenExpiry: refreshTokenExpiry,
+      },
+      create: {
+        accessToken: access_token,
+        scope: scope,
+        tokenType: token_type,
+        expiry: expiry_date,
+        userId: userPrisma.id,
+        refreshToken: refresh_token,
+        refreshTokenExpiry: refreshTokenExpiry,
+      },
+    }),
+    prisma.student.upsert({
+      where: {
+        gakuseki: student.gakuseki,
+      },
+      update: {
+        users: {
+          connect: {
+            id: userPrisma.id,
+          },
+        },
+      },
+      create: {
+        gakuseki: student.gakuseki,
+        gakunen: student.gakunen,
+        hr: student.hr,
+        hrNo: student.hrNo,
+        last: student.last,
+        first: student.first,
+        sei: student.sei || "",
+        mei: student.mei || "",
+        email: student.email,
+        folderLink: student.folderLink,
+        expiry: EXPIRY_DATE,
+        users: {
+          connect: {
+            id: userPrisma.id,
+          },
+        },
+      },
+    }),
+  ])
+  end = performance.now()
+  console.log(`✨ after transaction time: ${end - start} ms`)
 
   // if user passes email check, set user.activated to true
   const updatedUser = await updateUser(userPrisma.id)
@@ -195,36 +202,18 @@ export async function signin({ code }: { code: string }) {
       userJWT,
       accessToken: access_token,
     }
-    // return createUserSession(userJWT, `/admin`)
   }
 
-  const newUser = await prisma.user.findUnique({
-    where: {
-      email: userPrisma.email,
-    },
-    include: {
-      student: true,
-    },
-  })
-
-  logger.debug(
-    `🍓 signin: newUser ${JSON.stringify(
-      newUser?.student?.folderLink,
-      null,
-      2,
-    )}`,
-  )
-
-  if (!newUser?.student?.folderLink) {
+  if (!student.folderLink) {
     throw new Response(`no-folder`, { status: 401 })
   }
-  const folderId = getFolderId(newUser?.student?.folderLink)
+  const folderId = getFolderId(student.folderLink)
 
   return {
     folderId,
     userJWT,
     accessToken: access_token,
-    userId: newUser?.id,
+    userId: userPrisma.id,
   }
 }
 
