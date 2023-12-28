@@ -76,6 +76,7 @@ model DriveFileData {
   iconLink       String
   hasThumbnail   Boolean
   thumbnailLink  String?
+  webViewLink    String?
   webContentLink String?
   createdTime    DateTime
   modifiedTime   DateTime
