@@ -32,8 +32,19 @@ export async function createStudentDB(
   createdAt: Date
   expiry: bigint
 }> {
-  return await prisma.student.create({
-    data: {
+  console.log("✅ in createStudentDB before upsert")
+  return await prisma.student.upsert({
+    where: {
+      gakuseki: student.gakuseki,
+    },
+    update: {
+      users: {
+        connect: {
+          id: userId,
+        },
+      },
+    },
+    create: {
       gakuseki: student.gakuseki,
       gakunen: student.gakunen,
       hr: student.hr,
@@ -52,6 +63,26 @@ export async function createStudentDB(
       },
     },
   })
+  // return await prisma.student.create({
+  //   data: {
+  //     gakuseki: student.gakuseki,
+  //     gakunen: student.gakunen,
+  //     hr: student.hr,
+  //     hrNo: student.hrNo,
+  //     last: student.last,
+  //     first: student.first,
+  //     sei: student.sei || "",
+  //     mei: student.mei || "",
+  //     email: student.email,
+  //     folderLink: student.folderLink,
+  //     expiry: expiry,
+  //     users: {
+  //       connect: {
+  //         id: userId,
+  //       },
+  //     },
+  //   },
+  // })
 }
 
 export async function updateStudentDB(userId: number, gakuseki: number) {
