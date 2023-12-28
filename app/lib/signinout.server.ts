@@ -47,12 +47,12 @@ export async function signin({ code }: { code: string }) {
     result.data
 
   // TODO: !!DEBUG!!: setting expiryDateDummy to 10 seconds
-  const expiryDummy = new Date().getTime() + 1000 * 15
-  expiry_date = expiryDummy
+  // const expiryDummy = new Date().getTime() + 1000 * 15
+  // expiry_date = expiryDummy
 
   // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
   // let refreshTokenExpiry = refreshTokenExpiryDummy
-  let refreshTokenExpiry = Date.now() + 1000 * 60 * 60 * 24 * 14 // 14 days
+  let refreshTokenExpiry = Date.now() + 1000 * 60 * 60 * 24 // 1 days
 
   logger.info(
     `🍓 signin: new expiry_date ${new Date(expiry_date || 0).toLocaleString(
