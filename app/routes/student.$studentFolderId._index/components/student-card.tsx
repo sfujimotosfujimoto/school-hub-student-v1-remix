@@ -5,16 +5,18 @@ import {
   parseTags,
   stripText,
 } from "~/lib/utils"
-import type { DriveFile } from "~/types"
+import type { DriveFileData } from "~/types"
 
 export default function StudentCard({
   driveFile,
   thumbnailSize = "small",
   size = "big",
+  isViewed = false,
 }: {
-  driveFile: DriveFile
+  driveFile: DriveFileData
   thumbnailSize?: "small" | "big"
   size?: "small" | "big"
+  isViewed?: boolean
 }) {
   const appProperties = driveFile.appProperties
 
@@ -30,6 +32,9 @@ export default function StudentCard({
             : null
         }`}
       >
+        {!isViewed && (
+          <span className="absolute -right-2 -top-2 z-10 rounded-full bg-gradient-to-r from-sfred-200 to-sfred-600  p-3 shadow-md"></span>
+        )}
         <div
           className={`card-body p-6 sm:p-10  ${
             size === "small" ? "p-2 sm:p-4" : "p-6 sm:p-10"
@@ -74,28 +79,32 @@ export default function StudentCard({
             <div className="flex gap-4">
               <div className="flex items-center gap-1">
                 <TimeIcon className="h-3 w-4" />
-                <span>{dateFormat(driveFile.createdTime || "") || ""}</span>
+
+                <span>{dateFormat(driveFile.createdTime) || ""}</span>
               </div>
               <div className="flex items-center gap-1">
                 <RenewIcon className="h-3 w-3" />
-                <span>{dateFormat(driveFile.modifiedTime || "") || ""}</span>
+                <span>{dateFormat(driveFile.modifiedTime) || ""}</span>
               </div>
             </div>
           )}
           {driveFile && size === "big" && (
             <figure className="!rounded-2xl">
-              {driveFile.hasThumbnail && !checkGoogleMimeType(driveFile) && (
-                <img
-                  className="object-contain"
-                  src={
-                    thumbnailSize === "small"
-                      ? driveFile.thumbnailLink
-                      : driveFile.thumbnailLink?.split("=")[0]
-                  }
-                  alt={driveFile.name}
-                  referrerPolicy="no-referrer"
-                />
-              )}
+              {driveFile.hasThumbnail &&
+                driveFile.thumbnailLink &&
+                !checkGoogleMimeType(driveFile) && (
+                  <img
+                    className="object-contain"
+                    // src={`https://drive.google.com/uc?id=${driveFile.fileId}`}
+                    src={
+                      thumbnailSize === "small"
+                        ? driveFile.thumbnailLink
+                        : driveFile.thumbnailLink?.split("=")[0]
+                    }
+                    alt={driveFile.name}
+                    referrerPolicy="no-referrer"
+                  />
+                )}
             </figure>
           )}
         </div>

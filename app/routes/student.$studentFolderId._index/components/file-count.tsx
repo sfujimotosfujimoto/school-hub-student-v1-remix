@@ -1,9 +1,9 @@
-import type { DriveFile } from "~/types"
+import type { DriveFileData } from "~/types"
 
 export default function FileCount({
   driveFiles,
 }: {
-  driveFiles?: DriveFile[] | null
+  driveFiles?: DriveFileData[] | null
 }) {
   return (
     <>
