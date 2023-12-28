@@ -1,6 +1,6 @@
-import type { DriveFile, Student } from "~/types"
+import type { DriveFileData, Student } from "~/types"
 
-export function dateFormat(dateString: string) {
+export function dateFormat(dateString: string | number) {
   const date = new Date(dateString)
 
   const output = new Intl.DateTimeFormat("ja", {
@@ -109,7 +109,7 @@ export function stripText(name: string) {
   return null
 }
 
-export function checkGoogleMimeType(rowData: DriveFile) {
+export function checkGoogleMimeType(rowData: DriveFileData) {
   const regex = RegExp(/^application\/vnd\.google-apps.*/)
 
   const matches = rowData.mimeType.match(regex)
