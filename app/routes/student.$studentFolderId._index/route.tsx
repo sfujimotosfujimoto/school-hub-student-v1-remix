@@ -1,5 +1,10 @@
-import { Await, useLoaderData, useParams } from "@remix-run/react"
-import { json, type LoaderFunctionArgs } from "@remix-run/node"
+import {
+  Await,
+  useLoaderData,
+  useNavigation,
+  useParams,
+} from "@remix-run/react"
+import { defer, type LoaderFunctionArgs } from "@remix-run/node"
 
 import { getUserFromSession } from "~/lib/services/session.server"
 import { filterSegments, parseTags } from "~/lib/utils"
@@ -18,7 +23,7 @@ import StudentCards from "./components/student-cards"
 import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
 import { redirectToSignin } from "~/lib/responses"
 import { Suspense } from "react"
-import type { DriveFileData, Student } from "~/types"
+import type { DriveFileData, Student } from "~/type.d"
 
 /**
  * LOADER function
@@ -28,10 +33,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!studentFolderId) throw Error("id route parameter must be defined")
 
   const user = await getUserFromSession(request)
-  if (!user || !user.credential) throw redirectToSignin()
+  if (!user || !user.credential) throw redirectToSignin(request)
 
   const student = user.student
-  if (!student || !student.folderLink) throw redirectToSignin()
+  if (!student || !student.folderLink) throw redirectToSignin(request)
 
   const url = new URL(request.url)
   const nendoString = url.searchParams.get("nendo")
@@ -55,9 +60,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const headers = new Headers()
 
-  headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
+  headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
 
-  return json(
+  return defer(
     {
       nendoString,
       tagString,
@@ -88,7 +93,8 @@ function getFilteredDriveFiles(
   if (nendoString) {
     driveFiles =
       driveFiles?.filter((df) => {
-        if (df.appProperties?.nendo === nendoString) return true
+        const props = JSON.parse(df.appProperties || "[]")
+        if (props.nendo === nendoString) return true
         return false
       }) || []
   }
@@ -97,8 +103,9 @@ function getFilteredDriveFiles(
   if (tagString) {
     driveFiles =
       driveFiles?.filter((df) => {
-        if (df.appProperties?.tags) {
-          const tagsArr = parseTags(df.appProperties.tags)
+        const props = JSON.parse(df.appProperties || "[]")
+        if (props.tags) {
+          const tagsArr = parseTags(props.tags)
           return tagsArr.includes(tagString || "")
         }
         return false
@@ -124,12 +131,17 @@ function getFilteredDriveFiles(
   }
   console.log("✅ driveFiles after filtering", driveFiles?.length)
 
-  return driveFiles.sort((a, b) => b.modifiedTime - a.modifiedTime) || []
+  return (
+    driveFiles.sort(
+      (a, b) =>
+        new Date(b.modifiedTime).getTime() - new Date(a.modifiedTime).getTime(),
+    ) || []
+  )
 }
 
 function getNendosSegmentsExtensionsTags(
   driveFiles: DriveFileData[],
-  student: Student,
+  student: Omit<Student, "users">,
 ) {
   console.log(
     "✅ in getNendosSegmentsExtensionsTags: driveFiles",
@@ -152,8 +164,8 @@ function getNendosSegmentsExtensionsTags(
     new Set(
       driveFiles
         ?.map((df) => {
-          if (df.appProperties?.tags)
-            return parseTags(df.appProperties.tags) || null
+          const appProps = JSON.parse(df.appProperties || "[]")
+          if (appProps.tags) return parseTags(appProps.tags) || null
           return null
         })
         .filter((g): g is string[] => g !== null)
@@ -165,8 +177,8 @@ function getNendosSegmentsExtensionsTags(
     new Set(
       driveFiles
         ?.map((df) => {
-          if (df.appProperties?.nendo)
-            return df.appProperties.nendo.trim() || null
+          const appProps = JSON.parse(df.appProperties || "[]")
+          if (appProps.nendo) return appProps.nendo.trim() || null
           return null
         })
         .filter((g): g is string => g !== null)
@@ -188,12 +200,9 @@ function getNendosSegmentsExtensionsTags(
  * StudentFolderIndexPage Component
  */
 export default function StudentFolderIdIndexPage() {
-  // const data = useRouteLoaderData<typeof parentLoader>(
-  //   "routes/student.$studentFolderId",
-  // )
-  // if (!data) throw Error("Could not load data")
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== "idle"
 
-  // const { studentFolderId, nendos, tags, extensions, segments } = data
   const {
     studentFolderId,
     url,
@@ -233,7 +242,6 @@ export default function StudentFolderIdIndexPage() {
           <SegmentPills url={url} segments={segments} />
         </div>
 
-        {/* {driveFiles && driveFiles.length ? ( */}
         <div className="mb-12 mt-4 flex-auto overflow-x-auto px-2">
           <Suspense
             fallback={
@@ -250,8 +258,12 @@ export default function StudentFolderIdIndexPage() {
                 />
               }
             >
-              {(resolved) => <StudentCards driveFiles={resolved} />}
-              {/* {driveFiles && <StudentCards driveFiles={driveFiles} />} */}
+              {(resolved) => (
+                <StudentCards
+                  driveFiles={resolved}
+                  isNavigating={isNavigating}
+                />
+              )}
             </Await>
           </Suspense>
         </div>
