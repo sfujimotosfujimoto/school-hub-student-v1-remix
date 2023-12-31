@@ -1,9 +1,9 @@
 import * as jose from "jose"
-import type { Payload, User } from "~/types"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
 import { logger } from "../logger"
 import { getRefreshUserByEmail, getUserByEmail } from "./user.server"
+import type { User, Payload } from "~/type.d"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
 
@@ -98,7 +98,7 @@ export async function getRefreshUserFromSession(
 
   logger.debug(
     `👑 getRefreshUserFromSession: rexp ${new Date(
-      user?.credential?.refreshTokenExpiry || "",
+      Number(user?.credential?.refreshTokenExpiry) || "",
     ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} -- requrest.url ${
       request.url
     }`,
@@ -136,7 +136,9 @@ export async function updateSession(
 // Gets session in Request Headers -------------------------
 // then gets "userJWT"
 // Also check if token is expired
-export async function getUserJWTFromSession(request: Request) {
+export async function getUserJWTFromSession(
+  request: Request,
+): Promise<string | null> {
   logger.debug("👑 getUserJWTFromSession")
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
@@ -152,6 +154,8 @@ export async function getUserJWTFromSession(request: Request) {
 export async function parseVerifyUserJWT(
   userJWT: string,
 ): Promise<Payload | null> {
+  logger.debug("✨ parseVerifyUserJWT")
+
   // decode the JWT and get payload<email,exp>
   const secret = new TextEncoder().encode(process.env.SESSION_SECRET)
   const { payload } = await jose.jwtVerify(userJWT, secret)

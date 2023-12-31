@@ -1,8 +1,8 @@
 import { type drive_v3, google } from "googleapis"
-import type { DriveFile } from "~/types"
 import { getClient } from "./google.server"
 import { logger } from "../logger"
 import { QUERY_FILES_FIELDS } from "../config"
+import type { DriveFile } from "~/type.d"
 
 export function createQuery({
   folderId,
@@ -129,11 +129,13 @@ function mapFilesToDriveFile(file: drive_v3.Schema$File): DriveFile {
     iconLink: file.iconLink || "",
     hasThumbnail: file.hasThumbnail || false,
     thumbnailLink: file.thumbnailLink || undefined,
-    createdTime: file.createdTime || undefined,
-    modifiedTime: file.modifiedTime || undefined,
+    createdTime: file.createdTime ? new Date(file.createdTime) : undefined,
+    modifiedTime: file.modifiedTime ? new Date(file.modifiedTime) : undefined,
     webContentLink: file.webContentLink || undefined,
     parents: file.parents || undefined,
-    appProperties: file.appProperties || undefined,
+    appProperties: file.appProperties
+      ? JSON.stringify(file.appProperties)
+      : undefined,
     // permissions: permissions,
   }
 }

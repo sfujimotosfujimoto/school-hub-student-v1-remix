@@ -1,7 +1,7 @@
 import type { DriveFileData as PrismaDriveFileData } from "@prisma/client"
 
-import type { DriveFile, DriveFileData } from "~/types"
 import { prisma } from "../db.server"
+import type { DriveFile, DriveFileData } from "~/type.d"
 
 export async function getDriveFileDataByFileId(
   fileId: string,
@@ -53,6 +53,7 @@ export async function getDriveFileDataByFileId(
 
 //   return returnDriveFileData(driveFileData)
 // }
+//
 
 export async function getDriveFileDataByFolderId(
   folderId: string,
@@ -89,15 +90,15 @@ export async function updateDriveFileData(
     throw new Error("DriveFileData not found")
   }
 
-  if (dfd.lastSeen < new Date().getTime() - 1000 * 60) {
+  if (dfd.lastSeen < new Date(new Date().getTime() - 1000 * 60)) {
     console.log("✅ lastSeen is more than 1 hour ago")
     const dfp = await prisma.driveFileData.update({
       where: {
         fileId,
       },
       data: {
-        firstSeen: dfd.views > 0 ? dfd.firstSeen : new Date().getTime(),
-        lastSeen: new Date().getTime(),
+        firstSeen: dfd.views > 0 ? dfd.firstSeen : new Date(),
+        lastSeen: new Date(),
         views: {
           increment: 1,
         },
@@ -196,9 +197,11 @@ export async function saveDriveFileData(
     createdTime: driveFile.createdTime || new Date(),
     modifiedTime: driveFile.modifiedTime || new Date(),
     parents: driveFile.parents,
-    appProperties: driveFile.appProperties || undefined,
-    firstSeen: new Date().getTime(),
-    lastSeen: new Date().getTime(),
+    appProperties: driveFile.appProperties
+      ? JSON.stringify(driveFile.appProperties)
+      : undefined,
+    firstSeen: new Date(),
+    lastSeen: new Date(),
     userId,
   }))
 
@@ -224,20 +227,10 @@ export async function saveDriveFileData(
 export function returnDriveFileDatum(
   prismaDriveFileData: PrismaDriveFileData,
 ): DriveFileData {
-  const { firstSeen, lastSeen } = prismaDriveFileData
-
-  const firstSeen2 = Number(firstSeen)
-  const lastSeen2 = Number(lastSeen)
-
   return {
     ...prismaDriveFileData,
-    createdTime: prismaDriveFileData.createdTime.getTime(),
-    modifiedTime: prismaDriveFileData.modifiedTime.getTime(),
-    firstSeen: firstSeen2,
-    lastSeen: lastSeen2,
-    appProperties: prismaDriveFileData.appProperties as {
-      [key: string]: string | null
-    } | null,
+    createdTime: prismaDriveFileData.createdTime,
+    modifiedTime: prismaDriveFileData.modifiedTime,
   }
 }
 
@@ -246,3 +239,30 @@ export function returnDriveFileData(
 ): DriveFileData[] {
   return prismaDriveFileData.map(returnDriveFileDatum)
 }
+/*
+type PrismaDriveFileData = {
+    createdTime: Date;
+    modifiedTime: Date;
+    parents: string[];
+    appProperties: Prisma.JsonValue | null;
+    views: number;
+    firstSeen: bigint;
+    lastSeen: bigint;
+    userId: number;
+}
+type DriveFileData = {
+    fileId: string;
+    name: string;
+    mimeType: string;
+    iconLink: string;
+    hasThumbnail: boolean;
+    parents: string[];
+    createdTime: string;
+    modifiedTime: string;
+    views: number;
+    firstSeen: number;
+    lastSeen: number;
+    ... 4 more ...;
+    appProperties?: Record<...> | undefined;
+}
+*/

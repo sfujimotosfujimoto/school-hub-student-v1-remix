@@ -1,4 +1,4 @@
-import type { Student } from "~/types"
+import type { Student } from "~/type.d"
 import { prisma } from "../db.server"
 
 export async function getStudentDBByEmail(email: string) {
@@ -17,7 +17,7 @@ export async function getStudentDBByEmail(email: string) {
 export async function upsertStudentDB(
   student: Student,
   userId: number,
-  expiry: number,
+  expiry: Date,
 ): Promise<{
   gakuseki: number
   gakunen: string
@@ -30,7 +30,7 @@ export async function upsertStudentDB(
   email: string
   folderLink: string | null
   createdAt: Date
-  expiry: bigint
+  expiry: Date
 }> {
   console.log("✅ in createStudentDB before upsert")
   return await prisma.student.upsert({

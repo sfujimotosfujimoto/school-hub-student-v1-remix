@@ -1,11 +1,11 @@
-import type { PrismaUser } from "~/types"
-
 // used in session.server.ts
 //-------------------------------------------
 // LOCAL FUNCTIONS
 //-------------------------------------------
 
-export function returnUser(user: PrismaUser) {
+import type { User } from "~/type.d"
+
+export function returnUser(user: User) {
   const {
     id,
     last,
@@ -46,9 +46,9 @@ export function returnUser(user: PrismaUser) {
       credential:
         {
           accessToken: user.credential.accessToken,
-          expiry: Number(user.credential.expiry),
+          expiry: user.credential.expiry,
           refreshToken: user.credential.refreshToken,
-          refreshTokenExpiry: Number(user.credential.refreshTokenExpiry),
+          refreshTokenExpiry: user.credential.refreshTokenExpiry,
           createdAt: user.credential.createdAt,
         } || null,
       stats: null,
@@ -58,6 +58,7 @@ export function returnUser(user: PrismaUser) {
     accessToken,
     expiry,
     refreshToken,
+    refreshTokenExpiry,
     createdAt: credCreatedAt,
   } = user.credential
   const { count, lastVisited } = user.stats
@@ -73,9 +74,9 @@ export function returnUser(user: PrismaUser) {
     role,
     credential: {
       accessToken,
-      expiry: Number(expiry),
+      expiry,
       refreshToken,
-      refreshTokenExpiry: Number(user.credential.refreshTokenExpiry),
+      refreshTokenExpiry,
       createdAt: credCreatedAt,
     },
     stats: {

@@ -1,11 +1,11 @@
-import type { Credential, PrismaUserWithAll, Student, User } from "~/types"
+import type { User } from "~/type.d"
 
 import { prisma } from "../db.server"
 import { logger } from "../logger"
-import { returnDriveFileData } from "./drive-file-data.server"
+// import { returnDriveFileData } from "./drive-file-data.server"
 import { redirectToSignin } from "../responses"
 
-const selectUser = {
+export const selectUser = {
   id: true,
   first: true,
   last: true,
@@ -44,21 +44,38 @@ const selectUser = {
       folderLink: true,
       createdAt: true,
       expiry: true,
-      users: true,
     },
   },
   studentGakuseki: true,
-  driveFileData: true,
+  driveFileData: {
+    select: {
+      fileId: true,
+      name: true,
+      mimeType: true,
+      iconLink: true,
+      hasThumbnail: true,
+      thumbnailLink: true,
+      webViewLink: true,
+      webContentLink: true,
+      parents: true,
+      appProperties: true,
+      createdTime: true,
+      modifiedTime: true,
+      views: true,
+      firstSeen: true,
+      lastSeen: true,
+    },
+  },
 }
 // Get UserBase
 // used in `getUserBaseFromSession`
 export async function getUserByEmail(email: string): Promise<User | null> {
   logger.debug(`👑 getUserByEmail: email: ${email}`)
-  const user = await prisma.user.findUnique({
+  const user: User | null = await prisma.user.findUnique({
     where: {
       email,
       credential: {
-        expiry: { gt: new Date().getTime() },
+        expiry: { gt: new Date() },
       },
     },
     select: {
@@ -72,7 +89,8 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
   if (!user.stats) user.stats = null
 
-  return returnUser(user)
+  return user
+  // return returnUser(user)
 }
 export async function getRefreshUserByEmail(
   email: string,
@@ -81,7 +99,7 @@ export async function getRefreshUserByEmail(
     where: {
       email,
       credential: {
-        refreshTokenExpiry: { gt: new Date().getTime() },
+        refreshTokenExpiry: { gt: new Date() },
       },
     },
     select: {
@@ -95,22 +113,23 @@ export async function getRefreshUserByEmail(
 
   if (!user.stats) user.stats = null
 
-  return returnUser(user)
+  return user
+  // return returnUser(user)
 }
 
-export async function requireUserRole(user: User) {
+export async function requireUserRole(request: Request, user: User) {
   logger.debug("👑 requireUserRole start")
 
   if (user && !["SUPER", "ADMIN", "MODERATOR", "USER"].includes(user.role)) {
-    throw redirectToSignin()
+    throw redirectToSignin(request)
   }
 }
 
-export async function requireAdminRole(user: User) {
+export async function requireAdminRole(request: Request, user: User) {
   logger.debug("👑 requireAdminRole start")
 
   if (user && !["SUPER", "ADMIN"].includes(user.role)) {
-    throw redirectToSignin()
+    throw redirectToSignin(request)
   }
 }
 
@@ -157,7 +176,8 @@ export async function getUserById(id: number): Promise<User | null> {
     return null
   }
 
-  return returnUser(user)
+  return user
+  // return returnUser(user)
 }
 
 export async function updateUser(userId: number) {
@@ -182,77 +202,78 @@ export async function updateUser(userId: number) {
 //-------------------------------------------
 // LOCAL FUNCTIONS
 //-------------------------------------------
-export function returnUser(user: PrismaUserWithAll): User {
-  let student: Student | null = null
 
-  if (user.student) {
-    student = {
-      ...user.student,
-      expiry: Number(user.student.expiry),
-    }
-  }
+// export function returnUser(user: any): User {
+//   // let st: Pick<User, "student">
 
-  let cred: Credential | null = null
+//   // if (user.student) {
+//   //   st = {
+//   //     student: {
+//   //       ...user.student,
+//   //     },
+//   //   }
+//   // }
 
-  if (user.credential) {
-    cred = {
-      accessToken: user.credential.accessToken,
-      expiry: Number(user.credential.expiry),
-      refreshToken: user.credential.refreshToken,
-      refreshTokenExpiry: Number(user.credential.refreshTokenExpiry),
-      createdAt: user.credential.createdAt,
-    }
-  }
+//   let cred: Pick<User, "credential">
 
-  if (!user.credential)
-    return {
-      ...user,
+//   if (user.credential) {
+//     cred = {
+//       credential: {
+//         ...user.credential,
+//       },
+//       // userId: user.credential.userId,
+//       // accessToken: user.credential.accessToken,
+//       // expiry: user.credential.expiry,
+//       // refreshToken: user.credential.refreshToken,
+//       // refreshTokenExpiry: user.credential.refreshTokenExpiry,
+//       // createdAt: user.credential.createdAt,
+//     }
+//   }
 
-      credential: null,
-      stats: user.stats || null,
-      student: student ? student : null,
-      driveFileData: returnDriveFileData(user.driveFileData || []),
-    }
+//   if (!user.credential)
+//     return {
+//       ...user,
+//     }
 
-  if (!user.stats)
-    return {
-      ...user,
-      credential: cred || null,
-      stats: null,
-      student: student || null,
-      driveFileData: returnDriveFileData(user.driveFileData || []),
-    }
+//   if (!user.stats)
+//     return {
+//       ...user,
+//       credential: cred || null,
+//       stats: null,
+//       student: student || null,
+//       driveFileData: returnDriveFileData(user.driveFileData || []),
+//     }
 
-  // const { accessToken, expiry } = user.credential
-  const { count, lastVisited } = user.stats
+//   // const { accessToken, expiry } = user.credential
+//   const { count, lastVisited } = user.stats
 
-  if (!user.driveFileData) {
-    return {
-      ...user,
-      credential: cred,
-      stats: {
-        count,
-        lastVisited,
-      },
-      student: student || null,
-      driveFileData: returnDriveFileData(user.driveFileData || []),
-    }
-  }
+//   if (!user.driveFileData) {
+//     return {
+//       ...user,
+//       credential: cred,
+//       stats: {
+//         count,
+//         lastVisited,
+//       },
+//       student: student || null,
+//       driveFileData: returnDriveFileData(user.driveFileData || []),
+//     }
+//   }
 
-  return {
-    ...user,
-    credential: cred,
-    stats: {
-      count,
-      lastVisited,
-    },
-    student: student || null,
-    driveFileData: returnDriveFileData(user.driveFileData),
-  }
-}
+//   return {
+//     ...user,
+//     credential: cred,
+//     stats: {
+//       count,
+//       lastVisited,
+//     },
+//     student: student || null,
+//     driveFileData: returnDriveFileData(user.driveFileData),
+//   }
+// }
 
-function returnUsers(prismaUsers: PrismaUserWithAll[]) {
-  return prismaUsers.map((user) => returnUser(user))
+function returnUsers(prismaUsers: User[]) {
+  return prismaUsers.map((user) => user)
 }
 
 /*

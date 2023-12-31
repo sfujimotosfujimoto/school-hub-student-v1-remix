@@ -1,11 +1,11 @@
 import { logger } from "./logger"
 
 // Check expiration
-export function isExpired(expire: number): boolean {
-  if (expire < 10_000_000_000 && expire > 0)
+export function isExpired(expire: Date): boolean {
+  if (expire.getTime() < 10_000_000_000 && expire.getTime() > 0)
     throw Error(`expire is incorrect: ${expire}`)
   logger.info(
-    `🍇 isExpired: ${expire < Date.now()}, expire ${new Date(
+    `🍇 isExpired: ${expire.getTime() < Date.now()}, expire ${new Date(
       expire,
     ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}, now ${new Date(
       Date.now(),
@@ -15,7 +15,7 @@ export function isExpired(expire: number): boolean {
   const now = Date.now()
 
   // check for expired!!
-  if (expire < now) {
+  if (expire.getTime() < now) {
     return true
   } else {
     return false

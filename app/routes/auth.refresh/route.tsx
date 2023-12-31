@@ -1,4 +1,4 @@
-import { json } from "@remix-run/node"
+import { json, redirect } from "@remix-run/node"
 import type { ActionFunctionArgs } from "@remix-run/node"
 
 import { prisma } from "~/lib/db.server"
@@ -11,6 +11,7 @@ import {
   updateThumbnails,
 } from "~/lib/services/drive-file-data.server"
 import { parseVerifyUserJWT } from "~/lib/services/session.server"
+import { selectUser } from "~/lib/services/user.server"
 import { updateUserJWT } from "~/lib/signinout.server"
 import { getFolderId } from "~/lib/utils"
 
@@ -19,12 +20,20 @@ export const config = {
   maxDuration: 60,
 }
 
+const REFRESH_EXPIRY = Date.now() + 1000 * 60 * 60 * 24
+
 /**
  * Loader function
  */
 // update base_url in prodc
 export async function loader({ request }: ActionFunctionArgs) {
   logger.debug(`🍿 loader: auth.refresh ${request.url}`)
+
+  // get redirect from search params
+  const redirectUrl = new URL(request.url).searchParams.get("redirect")
+  if (redirectUrl) {
+    throw redirect(redirectUrl)
+  }
 
   return json({ ok: true }, 200)
 }
@@ -75,9 +84,9 @@ export async function action({ request }: ActionFunctionArgs) {
       credential: {
         update: {
           accessToken: newAccessToken,
-          expiry: Number(expiry_date),
+          expiry: new Date(expiry_date),
           refreshToken: newRefreshToken,
-          refreshTokenExpiry: Number(Date.now() + 1000 * 60 * 60 * 24),
+          refreshTokenExpiry: new Date(REFRESH_EXPIRY),
         },
       },
     },
@@ -85,7 +94,6 @@ export async function action({ request }: ActionFunctionArgs) {
       ...selectUser,
     },
   })
-
   if (!updatedUser) {
     return json({ ok: false }, { status: 400 })
   }
@@ -96,8 +104,9 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   // Update drive file data in Database
+  // !! Wasn't using newAccessToken
   const driveFiles = await getDriveFiles(
-    accessToken,
+    newAccessToken, // !! was using accessToken which is old and outdated
     `trashed=false and '${folderId}' in parents`,
   )
   await saveDriveFileData(updatedUser.id, driveFiles)
@@ -108,7 +117,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const userJWT = await updateUserJWT(
       updatedUser.email,
       expiry_date,
-      Number(updatedUser.credential?.refreshTokenExpiry) || 0,
+      updatedUser.credential?.refreshTokenExpiry || new Date(),
     )
     const payload = await parseVerifyUserJWT(userJWT)
     if (!payload) {
@@ -135,30 +144,30 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-const selectUser = {
-  id: true,
-  first: true,
-  last: true,
-  picture: true,
-  email: true,
-  activated: true,
-  role: true,
-  createdAt: true,
-  updatedAt: true,
-  credential: {
-    select: {
-      accessToken: true,
-      expiry: true,
-      refreshToken: true,
-      refreshTokenExpiry: true,
-      createdAt: true,
-    },
-  },
-  stats: {
-    select: {
-      count: true,
-      lastVisited: true,
-    },
-  },
-  student: true,
-}
+// const selectUser = {
+//   id: true,
+//   first: true,
+//   last: true,
+//   picture: true,
+//   email: true,
+//   activated: true,
+//   role: true,
+//   createdAt: true,
+//   updatedAt: true,
+//   credential: {
+//     select: {
+//       accessToken: true,
+//       expiry: true,
+//       refreshToken: true,
+//       refreshTokenExpiry: true,
+//       createdAt: true,
+//     },
+//   },
+//   stats: {
+//     select: {
+//       count: true,
+//       lastVisited: true,
+//     },
+//   },
+//   student: true,
+// }
