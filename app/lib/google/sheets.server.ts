@@ -1,10 +1,10 @@
 import invariant from "tiny-invariant"
-import type { Student } from "~/types"
 import { getFolderId } from "../utils"
 import { getServiceAccountClient } from "./google.server"
 import { createClient } from "@vercel/kv"
 import { logger } from "../logger"
 import { google } from "googleapis"
+import type { Student } from "~/type.d"
 
 const KV_EXPIRE_SECONDS = 60
 
@@ -88,6 +88,9 @@ export async function getStudentDataWithServiceAccount() {
           mei: d[7] as string,
           email: d[8] as string,
           folderLink: (d[9] || null) as string | null,
+          users: [],
+          createdAt: new Date(),
+          expiry: new Date(),
         }
       })
 

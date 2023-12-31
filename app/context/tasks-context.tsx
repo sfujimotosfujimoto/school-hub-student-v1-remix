@@ -1,7 +1,6 @@
 import React from "react"
+import { DriveFile } from "~/type.d"
 // import { undoMoveDataExecute, undoRenameDataExecute } from "./undo"
-
-import type { DriveFile, Task } from "~/types"
 
 const MAX_AGE = 1000 * 60 * 60 * 24 * 3 // 3 days
 const MAX_TASKS = 20
