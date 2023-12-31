@@ -1,4 +1,4 @@
-import type { User } from "~/types"
+import type { User } from "~/___types"
 
 import {
   getUserJWTFromSession,
@@ -40,18 +40,18 @@ export async function authenticate(
   const userJWT = await getUserJWTFromSession(request)
   // if not found, redirect to /, this means the user is not even logged-in
   if (!userJWT) {
-    redirectToSignin()
+    redirectToSignin(request)
   }
   // if expired throw an error (we can extends Error to create this)
   const payload = await parseVerifyUserJWT(userJWT)
   if (!payload) {
-    redirectToSignin()
+    redirectToSignin(request)
   }
 
   // get user from session
   const user = await getUserByEmail(payload.email)
   if (!user) {
-    redirectToSignin()
+    redirectToSignin(request)
   }
 
   try {
@@ -97,12 +97,15 @@ export async function authenticate(
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          user,
-          email: payload.email,
-          accessToken: user.credential?.accessToken,
-          refreshToken: user.credential?.refreshToken,
-        }),
+        body: JSON.stringify(
+          {
+            user,
+            email: payload.email,
+            accessToken: user.credential?.accessToken,
+            refreshToken: user.credential?.refreshToken,
+          },
+          (key, value) => (typeof value === "bigint" ? Number(value) : value),
+        ),
       })
         .then((res) => {
           logger.debug("👑 authenticate: fetch res")
