@@ -29,6 +29,7 @@ model User {
   studentGakuseki Int?
 
   driveFileData DriveFileData[]
+  oldId         BigInt?         @unique
 }
 
 model Credential {
@@ -36,9 +37,9 @@ model Credential {
   accessToken        String
   scope              String
   tokenType          String
-  expiry             BigInt   @default(0)
+  expiry             DateTime @default(now())
   refreshToken       String?
-  refreshTokenExpiry BigInt   @default(0)
+  refreshTokenExpiry DateTime @default(now())
   createdAt          DateTime @default(now())
   userId             Int      @unique
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -64,7 +65,7 @@ model Student {
   email      String   @unique
   folderLink String?
   createdAt  DateTime @default(now())
-  expiry     BigInt   @default(0)
+  expiry     DateTime @default(now())
 
   users User[]
 }
@@ -78,13 +79,13 @@ model DriveFileData {
   thumbnailLink  String?
   webViewLink    String?
   webContentLink String?
+  parents        String[]
+  appProperties  String?
   createdTime    DateTime
   modifiedTime   DateTime
-  parents        String[]
-  appProperties  Json?
   views          Int      @default(0)
-  firstSeen      BigInt   @default(0)
-  lastSeen       BigInt   @default(0)
+  firstSeen      DateTime @default(now())
+  lastSeen       DateTime @default(now())
 
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
