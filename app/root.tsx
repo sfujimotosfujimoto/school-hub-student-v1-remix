@@ -22,11 +22,15 @@ import Navigation from "./root/navigation"
 import Footer from "./root/footer"
 import ErrorDocument from "./root/error-document"
 import { getUserFromSession } from "./lib/services/session.server"
+import { logger } from "./lib/logger"
+import { PageTransitionProgressBar } from "./components/progress-bar"
 
 /**
  * LOADER function
  */
 export async function loader({ request }: LoaderFunctionArgs) {
+  logger.debug(`🍿 loader: root ${request.url}`)
+
   const headers = new Headers()
   headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
   const user = await getUserFromSession(request)
@@ -122,6 +126,7 @@ function Document({ children }: { children: React.ReactNode }) {
           data-name="root.tsx"
           className="mx-auto grid h-full grid-rows-layout"
         >
+          <PageTransitionProgressBar />
           <Navigation />
           <main className="h-full">{children}</main>
           <Footer />
