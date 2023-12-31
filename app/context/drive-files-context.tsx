@@ -1,6 +1,5 @@
 import React from "react"
-
-import type { DriveFile } from "~/types"
+import type { DriveFile } from "~/type.d"
 
 /**
  * TYPES
@@ -83,9 +82,10 @@ function driveFilesReducer(dfs: DriveFile[], action: Action): DriveFile[] {
     case "FILTER_BY_NENDO": {
       const nendo = action.payload.nendo
       const baseDriveFiles = action.payload.driveFiles as DriveFile[]
-      const filtered = baseDriveFiles.filter(
-        (df) => df.appProperties?.nendo === nendo,
-      )
+      const filtered = baseDriveFiles.filter((df) => {
+        const props = JSON.parse(df.appProperties || "[]")
+        return props.nendo === nendo
+      })
 
       if (!filtered || !nendo) {
         return dfs
@@ -100,7 +100,8 @@ function driveFilesReducer(dfs: DriveFile[], action: Action): DriveFile[] {
       console.log("tag", tag)
 
       const filtered = baseDriveFiles.filter((df) => {
-        const tags = df.appProperties?.tags?.split(",").map((t) => t.trim())
+        const props = JSON.parse(df.appProperties || "[]")
+        const tags = props.tags?.split(",").map((t: string) => t.trim())
         console.log("tags", tags)
         return tags?.includes(tag)
       })
