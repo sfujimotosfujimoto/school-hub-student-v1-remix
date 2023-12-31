@@ -6,7 +6,7 @@ import {
 
 import React from "react"
 
-import type { DriveFileData } from "~/types"
+import type { DriveFileData } from "~/type.d"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { logger } from "~/lib/logger"
 import { requireUserRole } from "~/lib/require-roles.server"
@@ -17,7 +17,7 @@ import ToFolderBtn from "./to-folder-button"
 import BackButton from "~/components/back-button"
 import StudentCard from "../student.$studentFolderId._index/components/student-card"
 
-import { useLoaderData, useParams } from "@remix-run/react"
+import { useLoaderData, useNavigation, useParams } from "@remix-run/react"
 import { redirectToSignin } from "~/lib/responses"
 import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
 
@@ -27,11 +27,11 @@ import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
   const user = await getUserFromSession(request)
-  if (!user) throw redirectToSignin()
-  await requireUserRole(user)
+  if (!user) throw redirectToSignin(request)
+  await requireUserRole(request, user)
 
   const { fileId } = params
-  if (!fileId) throw redirectToSignin()
+  if (!fileId) throw redirectToSignin(request)
 
   let dfd: DriveFileData | undefined
   dfd = await updateDriveFileData(fileId)
@@ -72,23 +72,8 @@ export default function StudentFolderIdFileIdPage() {
   const { driveFileDatum } = useLoaderData<typeof loader>()
   console.log("✅ driveFileDatum", driveFileDatum)
 
-  // const props = useRouteLoaderData<typeof studentFolderIdLoader>(
-  //   "routes/student.$studentFolderId",
-  // )
-
-  // if (!props) {
-  //   console.error(`🚨 `)
-  //   throw new Error("no props")
-  // }
-
-  // const { driveFiles } = props
-
-  // const dfs = React.useMemo(() => {
-  //   return driveFiles
-  // }, [driveFiles])
-
-  // // find driveFileDatum from driveFileData[]
-  // const driveFile: DriveFile | undefined = dfs?.find((r) => r.id === fileId)
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== "idle"
 
   // JSX -------------------------
   return (
@@ -112,7 +97,12 @@ export default function StudentFolderIdFileIdPage() {
             rel="noopener noreferrer"
             href={`${driveFileDatum.webViewLink}`}
           >
-            <StudentCard driveFile={driveFileDatum} thumbnailSize={"big"} />
+            <StudentCard
+              driveFile={driveFileDatum}
+              thumbnailSize={"big"}
+              isViewed={driveFileDatum.views > 0}
+              isNavigating={isNavigating}
+            />
           </a>
         )}
       </div>

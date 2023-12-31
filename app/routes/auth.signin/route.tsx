@@ -1,6 +1,6 @@
 import { redirect } from "@remix-run/node"
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node"
-import { Form } from "@remix-run/react"
+import { Form, useNavigation } from "@remix-run/react"
 
 import { initializeClient } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
@@ -13,9 +13,10 @@ import {
 import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
-import type { User } from "~/types"
+import type { User } from "~/type.d"
 import { redirectToSignin } from "~/lib/responses"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import clsx from "clsx"
 
 /**
  * Root loader
@@ -23,11 +24,13 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
   const user = await getUserFromSession(request)
-  // const { user } = await authenticate(request)
+
+  // TODO: For debug
 
   // if user is expired, check for refresh token
   if (!user) {
     // get refresh token expiry
+    logger.debug("!! getRefreshUserFromSession: in if (user)")
     const refreshUser = await getRefreshUserFromSession(request)
     if (!refreshUser) {
       return null
@@ -39,11 +42,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     logger.info(
       `👑 authenticate: expiry: ${new Date(
-        Number(jsn.data.user.credential.expiry || 0),
+        jsn.data.user.credential.expiry,
       ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
     )
     if (!jsn.ok) {
-      throw redirectToSignin("unauthorized-refresherror")
+      throw redirectToSignin(request, {
+        authstate: "unauthorized-refresherror",
+      })
       // throw redirect("/auth/signin?authstate=unauthorized-refresherror")
     }
 
@@ -57,6 +62,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
+  // get redirect from search params
+  const redirectUrl = new URL(request.url).searchParams.get("redirect")
+  if (redirectUrl) {
+    throw redirect(redirectUrl)
+  }
+
   const folderId = getFolderId(user?.student?.folderLink || "")
 
   if (folderId) {
@@ -67,18 +78,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 async function fetchRefresh(user: User) {
-  logger.debug("🍺 fetchRefresh: ", user)
+  logger.debug("🍺 fetchRefresh: ")
+
   const jsn = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      user,
-      email: user.email,
-      accessToken: user.credential?.accessToken,
-      refreshToken: user.credential?.refreshToken,
-    }),
+    body: JSON.stringify(
+      {
+        user,
+        email: user.email,
+        accessToken: user.credential?.accessToken,
+        refreshToken: user.credential?.refreshToken,
+      },
+      (key, value) => (typeof value === "bigint" ? Number(value) : value),
+    ),
   })
     .then((res) => {
       logger.debug("👑 authenticate: fetch res")
@@ -120,33 +135,44 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AuthSigninPage() {
   console.log("✅ auth.signin/route.tsx ~ 	😀 ")
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== "idle"
   return (
     <>
-      <section className="mx-auto flex h-full w-screen max-w-7xl flex-col items-center justify-center gap-8 text-sfblue-300">
+      <section
+        className={clsx(
+          `mx-auto flex h-full w-screen max-w-7xl flex-col items-center justify-center gap-8 text-sfblue-300`,
+          { "opacity-40": isNavigating },
+        )}
+      >
         <div className="flex items-center">
           <LogoIcon className=" w-16 sm:w-24" />
           <DriveLogoIcon className="h-24 w-24" />
         </div>
 
         <div className="max-w-xl rounded-lg bg-base-100 p-4 shadow-lg">
-          <span className="font-bold underline decoration-sfred-200 decoration-4 underline-offset-4">
+          <span
+            className={clsx(
+              `font-bold underline decoration-sfred-200 decoration-4 underline-offset-4`,
+            )}
+          >
             Google アカウント
           </span>
           でサインインしてください。
         </div>
 
-        <GoogleSigninButton />
+        <GoogleSigninButton disabled={isNavigating} />
       </section>
     </>
   )
 }
 
-function GoogleSigninButton() {
+function GoogleSigninButton({ disabled }: { disabled: boolean }) {
   return (
     <>
       <div className="relative flex w-full items-center justify-center gap-8 ">
         <Form method="post" action="/auth/signin">
-          <Button type="submit" variant="info" size="md">
+          <Button type="submit" variant="info" size="md" disabled={disabled}>
             <DriveLogoIcon className="h-7" />
             <span className="">Google サインイン</span>
           </Button>

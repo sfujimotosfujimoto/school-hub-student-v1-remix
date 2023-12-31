@@ -1,7 +1,7 @@
 import { useLoaderData } from "@remix-run/react"
 import type { LoaderFunctionArgs } from "@remix-run/node"
 
-import type { User } from "~/types"
+import type { User } from "~/type.d"
 import { UsersSchema } from "~/schemas"
 import { logger } from "~/lib/logger"
 
@@ -18,11 +18,10 @@ import { redirectToSignin } from "~/lib/responses"
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin._index ${request.url}`)
   const user = await getUserFromSession(request)
-  if (!user || !user.credential)
-    throw redirectToSignin(
-      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
-    )
-  await requireAdminRole(user)
+  if (!user || !user.credential) {
+    throw redirectToSignin(request)
+  }
+  await requireAdminRole(request, user)
 
   const users = await getUsers()
   return { users }

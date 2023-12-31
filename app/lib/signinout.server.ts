@@ -31,7 +31,13 @@ const TokenSchema = z.object({
 /**
  * signin
  */
-export async function signin({ code }: { code: string }) {
+export async function signin({
+  request,
+  code,
+}: {
+  request: Request
+  code: string
+}) {
   logger.debug("🍓 signin")
   const { tokens } = await getClientFromCode(code)
 
@@ -40,19 +46,19 @@ export async function signin({ code }: { code: string }) {
 
   if (!result.success) {
     console.error(result.error.errors)
-    throw redirectToSignin()
+    throw redirectToSignin(request)
   }
 
   let { access_token, expiry_date, scope, token_type, refresh_token } =
     result.data
 
   // TODO: !!DEBUG!!: setting expiryDateDummy to 10 seconds
-  // const expiryDummy = new Date().getTime() + 1000 * 15
-  // expiry_date = expiryDummy
+  const expiryDummy = new Date().getTime() + 1000 * 15
+  expiry_date = expiryDummy
 
   // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
   // let refreshTokenExpiry = refreshTokenExpiryDummy
-  let refreshTokenExpiry = Date.now() + 1000 * 60 * 60 * 24 // 1 days
+  let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 days
 
   logger.info(
     `🍓 signin: new expiry_date ${new Date(expiry_date || 0).toLocaleString(
@@ -68,14 +74,14 @@ export async function signin({ code }: { code: string }) {
   )
 
   if (!access_token) {
-    throw redirectToSignin(`authstate=unauthorized-002`)
+    throw redirectToSignin(request, { authstate: "no-access-token" })
   }
 
   console.log(`🔥 getPersomFromPeople`)
   let start = performance.now()
   const person = await getPersonFromPeople(access_token)
   if (!person) {
-    throw redirectToSignin(`authstate=unauthorized`)
+    throw redirectToSignin(request, { authstate: "unauthorized" })
   }
   let end = performance.now()
   console.log(`🔥 getPersomFromPeople time: ${end - start} ms`)
@@ -85,7 +91,7 @@ export async function signin({ code }: { code: string }) {
     !checkValidStudentOrParentEmail(person.email) &&
     !checkValidAdminEmail(person.email)
   ) {
-    throw redirectToSignin(`authstate=not-parent-account`)
+    throw redirectToSignin(request, { authstate: `not-parent-account` })
   }
 
   let userPrisma = await prisma.user.upsert({
@@ -111,7 +117,7 @@ export async function signin({ code }: { code: string }) {
 
   const student = await getStudentByEmail(studentEmail)
   if (!student) {
-    throw redirectToSignin(`authstate=not-seig-account`)
+    throw redirectToSignin(request, { authstate: `not-seig-account` })
   }
 
   console.log("🍓 signin: before transaction")
@@ -135,7 +141,7 @@ export async function signin({ code }: { code: string }) {
         accessToken: access_token,
         scope: scope,
         tokenType: token_type,
-        expiry: expiry_date,
+        expiry: new Date(expiry_date),
         refreshToken: refresh_token,
         refreshTokenExpiry: refreshTokenExpiry,
       },
@@ -143,7 +149,7 @@ export async function signin({ code }: { code: string }) {
         accessToken: access_token,
         scope: scope,
         tokenType: token_type,
-        expiry: expiry_date,
+        expiry: new Date(expiry_date),
         userId: userPrisma.id,
         refreshToken: refresh_token,
         refreshTokenExpiry: refreshTokenExpiry,
@@ -171,7 +177,7 @@ export async function signin({ code }: { code: string }) {
         mei: student.mei || "",
         email: student.email,
         folderLink: student.folderLink,
-        expiry: EXPIRY_DATE,
+        expiry: new Date(EXPIRY_DATE),
         users: {
           connect: {
             id: userPrisma.id,
@@ -187,7 +193,7 @@ export async function signin({ code }: { code: string }) {
   const updatedUser = await updateUser(userPrisma.id)
 
   if (!updatedUser) {
-    throw redirectToSignin(`authstate=not-seig-account`)
+    throw redirectToSignin(request, { authstate: `not-seig-account` })
   }
 
   const userJWT = await updateUserJWT(
@@ -221,12 +227,15 @@ export async function signin({ code }: { code: string }) {
 export async function updateUserJWT(
   email: string,
   expiry: number,
-  refreshTokenExpiry: number,
+  refreshTokenExpiry: Date,
 ): Promise<string> {
   logger.debug(`🍓 signin: updateUserJWT: email ${email}`)
   const secret = process.env.SESSION_SECRET
   const secretEncoded = new TextEncoder().encode(secret)
-  const userJWT = await new jose.SignJWT({ email, rexp: refreshTokenExpiry })
+  const userJWT = await new jose.SignJWT({
+    email,
+    rexp: refreshTokenExpiry.getTime(),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime(expiry)
     .sign(secretEncoded)

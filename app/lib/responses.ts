@@ -1,11 +1,20 @@
 import { redirect } from "@remix-run/node"
 
 export function redirectToSignin(
-  urlParam = "authstate=unauthorized",
+  request: Request,
+  urlParams: { [key: string]: string } = { authstate: "unauthorized" },
   headers?: Headers,
 ): void {
-  if (headers) {
-    throw redirect(`/auth/signin?${urlParam}`, { headers })
+  urlParams = {
+    ...urlParams,
+    redirect: request.url,
   }
-  throw redirect(`/auth/signin?${urlParam}`)
+
+  const urlParamString = new URLSearchParams(urlParams).toString()
+
+  const redirectUrl = `/auth/signin?${urlParamString}`
+  if (headers) {
+    throw redirect(redirectUrl, { headers })
+  }
+  throw redirect(redirectUrl)
 }

@@ -39,11 +39,8 @@ export default function AdminIdIndexPage() {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id._index ${request.url}`)
   const user = await getUserFromSession(request)
-  if (!user || !user.credential)
-    throw redirectToSignin(
-      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
-    )
-  await requireAdminRole(user)
+  if (!user || !user.credential) throw redirectToSignin(request)
+  await requireAdminRole(request, user)
   const { id } = params
 
   const targetUser = await userS.getUserById(Number(id))

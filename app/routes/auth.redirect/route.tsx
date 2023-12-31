@@ -23,11 +23,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const code = parsedUrl.searchParams.get("code")
 
   // if no "code" , do not touch and resolve
-  if (!code) throw redirectToSignin()
+  if (!code) throw redirectToSignin(request)
 
   console.log(`🔥 signin()`)
   let start = performance.now()
-  const { folderId, userJWT, accessToken, userId } = await signin({ code })
+  const { folderId, userJWT, accessToken, userId } = await signin({
+    request,
+    code,
+  })
   let end = performance.now()
   console.log(`🔥 signin() time: ${end - start} ms`)
 

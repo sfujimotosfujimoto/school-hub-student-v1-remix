@@ -4,7 +4,7 @@ import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 import invariant from "tiny-invariant"
 
 import { StudentSchema } from "~/schemas"
-import type { Student } from "~/types"
+import type { Student } from "~/type.d"
 
 import { requireUserRole } from "~/lib/require-roles.server"
 import { logger } from "~/lib/logger"
@@ -39,19 +39,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   )
   const user = await getUserFromSession(request)
 
-  if (!user || !user.credential)
-    throw redirectToSignin(`redirect=${encodeURI(new URL(request.url).href)}`)
+  if (!user || !user.credential) throw redirectToSignin(request)
 
   // const { user } = await authenticate(request)
-  await requireUserRole(user)
+  await requireUserRole(request, user)
 
   const student = user.student
 
-  if (!student || !student.folderLink) throw redirectToSignin()
+  if (!student || !student.folderLink) throw redirectToSignin(request)
 
   // Check if studentFolderId is the same as the student's folder
   if (getFolderId(student.folderLink) !== params.studentFolderId) {
-    throw redirectToSignin()
+    throw redirectToSignin(request)
   }
 
   const studentFolderId = params.studentFolderId
@@ -88,13 +87,13 @@ export default function StudentFolderIdLayout() {
   if (result.success) {
     resultStudent = result.data
   }
-
   // JSX -------------------------
   return (
     <div className="container mx-auto h-full p-4 sm:p-8">
       <div className="mb-4 space-y-4">
         {resultStudent && <StudentHeader student={resultStudent} />}
       </div>
+
       {/* <Suspense
         fallback={<h1 className="text3xl font-bold">ファイルを検索中...</h1>}
         key={Math.random()}

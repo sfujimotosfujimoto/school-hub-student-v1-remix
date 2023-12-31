@@ -1,4 +1,5 @@
-import type { DriveFileData, Student } from "~/types"
+import { SerializeFrom } from "@remix-run/node"
+import { DriveFileData, Student } from "~/type.d"
 
 export function dateFormat(dateString: string | number) {
   const date = new Date(dateString)
@@ -23,7 +24,10 @@ export function getFolderId(folderUrl: string): string | null {
 }
 
 // used in student.$studentFolderId.tsx
-export function filterSegments(segments: string[], student?: Student | null) {
+export function filterSegments(
+  segments: string[],
+  student?: Omit<Student, "users"> | null,
+) {
   const regex = RegExp(
     `${student?.last}|${student?.first}|${student?.gakuseki}|([ABCDE]+\\d+)|([ABCDE]組\\d+番)|^\\d+$|pdf|png|jpg|jpeg`,
     "g",
@@ -109,7 +113,7 @@ export function stripText(name: string) {
   return null
 }
 
-export function checkGoogleMimeType(rowData: DriveFileData) {
+export function checkGoogleMimeType(rowData: SerializeFrom<DriveFileData>) {
   const regex = RegExp(/^application\/vnd\.google-apps.*/)
 
   const matches = rowData.mimeType.match(regex)

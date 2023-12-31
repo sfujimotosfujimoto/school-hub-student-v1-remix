@@ -42,12 +42,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id ${request.url}`)
   const user = await getUserFromSession(request)
-  if (!user || !user.credential)
-    throw redirectToSignin(
-      `/auth/signin?redirect=${encodeURI(new URL(request.url).href)}`,
-    )
+  if (!user || !user.credential) throw redirectToSignin(request)
 
-  await requireAdminRole(user)
+  await requireAdminRole(request, user)
   const { id } = params
 
   const targetUser = await userS.getUserById(Number(id))
