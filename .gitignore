@@ -12,3 +12,5 @@ _backup
 
 START*.md
 .vercel
+
+data/*.json
