@@ -3,8 +3,13 @@ import {
   useLoaderData,
   useNavigation,
   useParams,
+  useRouteError,
 } from "@remix-run/react"
-import { defer, type LoaderFunctionArgs } from "@remix-run/node"
+import {
+  defer,
+  type SerializeFrom,
+  type LoaderFunctionArgs,
+} from "@remix-run/node"
 
 import { getUserFromSession } from "~/lib/services/session.server"
 import { filterSegments, parseTags } from "~/lib/utils"
@@ -24,11 +29,15 @@ import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.serve
 import { redirectToSignin } from "~/lib/responses"
 import { Suspense } from "react"
 import type { DriveFileData, Student } from "~/type.d"
+import { logger } from "~/lib/logger"
 
 /**
  * LOADER function
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
+  logger.debug(
+    `🍿 loader: student.$studentFolderId._index ${new URL(request.url).href}`,
+  )
   const { studentFolderId } = params
   if (!studentFolderId) throw Error("id route parameter must be defined")
 
@@ -87,8 +96,6 @@ function getFilteredDriveFiles(
   segmentsString: string | null,
   extensionsString: string | null,
 ) {
-  console.log("✅ in  getFilteredDriveFiles: driveFiles", driveFiles?.length)
-
   // filter by nendo
   if (nendoString) {
     driveFiles =
@@ -129,7 +136,6 @@ function getFilteredDriveFiles(
         return segments.includes(segmentsString)
       }) || []
   }
-  console.log("✅ driveFiles after filtering", driveFiles?.length)
 
   return (
     driveFiles.sort(
@@ -143,12 +149,6 @@ function getNendosSegmentsExtensionsTags(
   driveFiles: DriveFileData[],
   student: Omit<Student, "users">,
 ) {
-  console.log(
-    "✅ in getNendosSegmentsExtensionsTags: driveFiles",
-    driveFiles.length,
-    "student",
-    student.email,
-  )
   let segments: string[] = Array.from(
     new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
   )
@@ -195,7 +195,7 @@ function getNendosSegmentsExtensionsTags(
     tags,
   }
 }
-
+// type LoaderData = SerializeFrom<typeof loader>
 /**
  * StudentFolderIndexPage Component
  */
@@ -211,7 +211,7 @@ export default function StudentFolderIdIndexPage() {
     extensions,
     segments,
     driveFileData,
-  } = useLoaderData<typeof loader>()
+  } = useLoaderData<SerializeFrom<typeof loader>>()
 
   // JSX -------------------------
   return (
@@ -277,6 +277,8 @@ export default function StudentFolderIdIndexPage() {
  */
 export function ErrorBoundary() {
   const { studentFolderId } = useParams()
+  const error = useRouteError()
+  console.error(error)
   let message = `フォルダID（${studentFolderId}）からフォルダを取得できませんでした。`
   return <ErrorBoundaryDocument message={message} />
 }

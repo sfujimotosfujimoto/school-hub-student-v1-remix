@@ -2,6 +2,7 @@ import {
   type MetaFunction,
   type LoaderFunctionArgs,
   json,
+  type SerializeFrom,
 } from "@remix-run/node"
 
 import React from "react"
@@ -20,6 +21,7 @@ import StudentCard from "../student.$studentFolderId._index/components/student-c
 import { useLoaderData, useNavigation, useParams } from "@remix-run/react"
 import { redirectToSignin } from "~/lib/responses"
 import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
+import { DriveFileDataSchema } from "~/schemas"
 
 /**
  * Loader Function
@@ -69,8 +71,15 @@ export const meta: MetaFunction = () => {
  */
 export default function StudentFolderIdFileIdPage() {
   console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
-  const { driveFileDatum } = useLoaderData<typeof loader>()
+  const { driveFileDatum } = useLoaderData<SerializeFrom<typeof loader>>()
   console.log("✅ driveFileDatum", driveFileDatum)
+
+  const result = DriveFileDataSchema.safeParse(driveFileDatum)
+  if (!result.success) {
+    throw new Error(result.error.message)
+  }
+
+  const dfd = result.data
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
@@ -83,24 +92,22 @@ export default function StudentFolderIdFileIdPage() {
         <BackButton />
         {/* <BackButton to={`/student/${studentFolderId}`} /> */}
 
-        {driveFileDatum && driveFileDatum.parents && (
-          <ToFolderBtn parentId={driveFileDatum.parents[0]} />
-        )}
+        {dfd && dfd.parents && <ToFolderBtn parentId={dfd.parents[0]} />}
       </div>
 
       {/* Student file card */}
       <div className="mt-4">
-        {driveFileDatum && (
+        {dfd && (
           <a
             id="_StudentCard"
             target="_blank"
             rel="noopener noreferrer"
-            href={`${driveFileDatum.webViewLink}`}
+            href={`${dfd.webViewLink}`}
           >
             <StudentCard
-              driveFile={driveFileDatum}
+              driveFile={dfd}
               thumbnailSize={"big"}
-              isViewed={driveFileDatum.views > 0}
+              isViewed={dfd.views > 0}
               isNavigating={isNavigating}
             />
           </a>

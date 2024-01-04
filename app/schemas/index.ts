@@ -17,7 +17,8 @@ export const StudentSchema = z.object({
     .or(z.date())
     .transform((arg) => new Date(arg))
     .nullable(),
-  expiry: z.date(),
+  expiry: z.string().datetime(),
+  // expiry: z.date(),
   users: z.array(z.number()).nullable(),
 })
 
@@ -51,10 +52,13 @@ export const DriveFilesSchema = z.array(DriveFileSchema)
 
 export const CredentialSchema = z.object({
   accessToken: z.string(),
-  expiry: z.date(),
+  expiry: z.string().datetime(),
+  // expiry: z.date(),
   refreshToken: z.string().nullable(),
-  refreshTokenExpiry: z.date(),
-  createdAt: z.date(),
+  refreshTokenExpiry: z.string().datetime(),
+  // refreshTokenExpiry: z.date(),
+  createdAt: z.string().datetime(),
+  // createdAt: z.date(),
   // createdAt: z
   //   .string()
   //   .or(z.date())
@@ -65,7 +69,8 @@ export const CredentialSchema = z.object({
 export const StatsSchema = z.object({
   id: z.number(),
   count: z.number(),
-  lastVisited: z.date(),
+  lastVisited: z.string().datetime(),
+  // lastVisited: z.date(),
   // lastVisited: z
   //   .string()
   //   .or(z.date())
@@ -91,23 +96,27 @@ export const DriveFileDataSchema = z.object({
   webContentLink: z.string().nullable(),
   parents: z.array(z.string()),
   appProperties: z.string().nullable(),
-  createdTime: z.date(),
-  // createdTime: z.string().datetime(),
+  // createdTime: z.date(),
+  createdTime: z.string().datetime(),
   // createdTime: z
   //   .string()
   //   .or(z.date())
   //   .transform((arg) => new Date(arg)),
-  modifiedTime: z.date(),
-  // modifiedTime: z.string().datetime(),
+  // modifiedTime: z.date(),
+  modifiedTime: z.string().datetime(),
   // modifiedTime: z
   //   .string()
   //   .or(z.date())
   //   .transform((arg) => new Date(arg)),
   views: z.number(),
-  firstSeen: z.date(),
-  lastSeen: z.date(),
+  // firstSeen: z.date(),
+  firstSeen: z.string().datetime(),
+  // lastSeen: z.date(),
+  lastSeen: z.string().datetime(),
   userId: z.number(),
 })
+
+export const DriveFileDatasSchema = z.array(DriveFileDataSchema)
 
 export const UserSchema = z.object({
   id: z.number(),
@@ -117,15 +126,15 @@ export const UserSchema = z.object({
   picture: z.string(),
   role: z.enum(["USER", "ADMIN"]),
   activated: z.boolean(),
-  createdAt: z.date(),
-  // createdAt: z.string().datetime(),
+  // createdAt: z.date(),
+  createdAt: z.string().datetime(),
   // createdAt: z
   //   .string()
   //   .or(z.date())
   //   .transform((arg) => new Date(arg)),
 
-  updatedAt: z.date(),
-  // updatedAt: z.string().datetime(),
+  // updatedAt: z.date(),
+  updatedAt: z.string().datetime(),
   // updatedAt: z
   //   .string()
   //   .or(z.date())

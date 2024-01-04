@@ -74,10 +74,11 @@ export async function getUserFromSession(
   }
 
   logger.debug(
-    `👑 getUserFromSession: exp ${user.credential?.expiry.toLocaleString(
-      "ja-JP",
-      { timeZone: "Asia/Tokyo" },
-    )} -- requrest.url ${request.url}`,
+    `👑 getUserFromSession: exp ${new Date(
+      user.credential?.expiry || 0,
+    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} -- request.url ${
+      request.url
+    }`,
   )
   return user
 }

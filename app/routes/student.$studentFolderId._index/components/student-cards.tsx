@@ -1,7 +1,8 @@
 import { Link, useParams } from "@remix-run/react"
-import type { DriveFileData } from "~/___types"
 import StudentCard from "./student-card"
 import type { SerializeFrom } from "@remix-run/node"
+import type { DriveFileData } from "~/type.d"
+import { DriveFileDatasSchema } from "~/schemas"
 
 export default function StudentCards({
   driveFiles,
@@ -12,13 +13,21 @@ export default function StudentCards({
 }) {
   const { studentFolderId } = useParams()
 
+  const result = DriveFileDatasSchema.safeParse(driveFiles)
+
+  if (!result.success) {
+    throw new Error(result.error.message)
+  }
+
+  const dfdz = result.data
+
   return (
     <div
       data-name="StudentCards"
       className="grid grid-cols-1 gap-4 pt-4 outline-sfgreen-200 md:grid-cols-2 xl:grid-cols-3"
     >
-      {driveFiles &&
-        driveFiles.map((d: DriveFileData) => (
+      {dfdz &&
+        dfdz.map((d: DriveFileData) => (
           <Link
             prefetch="intent"
             key={d.fileId}

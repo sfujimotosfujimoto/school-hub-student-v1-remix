@@ -1,4 +1,3 @@
-import type { SerializeFrom } from "@remix-run/node"
 import clsx from "clsx"
 import { RenewIcon, TimeIcon } from "~/components/icons"
 import {
@@ -16,7 +15,7 @@ export default function StudentCard({
   isViewed = false,
   isNavigating = false,
 }: {
-  driveFile: SerializeFrom<DriveFileData>
+  driveFile: DriveFileData
   thumbnailSize?: "small" | "big"
   size?: "small" | "big"
   isViewed?: boolean

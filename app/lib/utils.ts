@@ -1,5 +1,4 @@
-import { SerializeFrom } from "@remix-run/node"
-import { DriveFileData, Student } from "~/type.d"
+import type { DriveFileData, Student } from "~/type.d"
 
 export function dateFormat(dateString: string | number) {
   const date = new Date(dateString)
@@ -113,7 +112,7 @@ export function stripText(name: string) {
   return null
 }
 
-export function checkGoogleMimeType(rowData: SerializeFrom<DriveFileData>) {
+export function checkGoogleMimeType(rowData: DriveFileData) {
   const regex = RegExp(/^application\/vnd\.google-apps.*/)
 
   const matches = rowData.mimeType.match(regex)
