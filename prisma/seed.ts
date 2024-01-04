@@ -20,7 +20,7 @@ async function main() {
 
   console.log("Start seeding ...")
   for (const user of users) {
-    const u = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: {
         email: user.email,
       },
@@ -48,7 +48,7 @@ async function main() {
       },
     })
     if (!u) continue
-    const s = await prisma.student.upsert({
+    await prisma.student.upsert({
       where: {
         gakuseki: student.gakuseki,
       },
@@ -65,7 +65,7 @@ async function main() {
         email: student.email,
         folderLink: student.folderLink,
         createdAt: new Date(student.createdAt),
-        expiry: student.expiry,
+        expiry: new Date(student.expiry),
         users: {
           connect: {
             id: u.id,
@@ -85,7 +85,7 @@ async function main() {
     })
     if (!u) continue
 
-    const c = await prisma.credential.upsert({
+    await prisma.credential.upsert({
       where: {
         userId: u.id,
       },
@@ -94,10 +94,10 @@ async function main() {
         accessToken: cred.accessToken,
         scope: cred.scope,
         tokenType: cred.tokenType,
-        expiry: cred.expiry,
+        expiry: new Date(cred.expiry),
         refreshToken: null,
-        refreshTokenExpiry: 0,
-        createdAt: new Date(Date.now()),
+        refreshTokenExpiry: new Date(),
+        createdAt: new Date(),
         user: {
           connect: {
             id: u.id,
@@ -116,7 +116,7 @@ async function main() {
       },
     })
     if (!u) continue
-    const s = await prisma.stats.upsert({
+    await prisma.stats.upsert({
       where: {
         userId: u.id,
       },
