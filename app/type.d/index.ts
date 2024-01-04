@@ -1,10 +1,10 @@
-import type {
-  User as PrismaUser,
-  DriveFileData as PrismaDriveFileData,
-  Stats as PrismaStats,
-  Credential as PrismaCredential,
-  Student as PrismaStudent,
-} from "@prisma/client"
+// import type {
+//   User as PrismaUser,
+//   DriveFileData as PrismaDriveFileData,
+//   Stats as PrismaStats,
+//   Credential as PrismaCredential,
+//   Student as PrismaStudent,
+// } from "@prisma/client"
 export type {
   User,
   Student,
@@ -15,12 +15,12 @@ export type {
   Stats,
 } from "./prisma-types"
 
-export type PrismaUserAll = PrismaUser & {
-  credential: PrismaCredential | null
-  stats: PrismaStats | null
-  student?: PrismaStudent | null
-  driveFileData?: PrismaDriveFileData[] | null
-}
+// export type PrismaUserAll = PrismaUser & {
+//   credential: PrismaCredential | null
+//   stats: PrismaStats | null
+//   student?: PrismaStudent | null
+//   driveFileData?: PrismaDriveFileData[] | null
+// }
 
 export type { DriveFile, Tokens, Person } from "./google-types"
 
