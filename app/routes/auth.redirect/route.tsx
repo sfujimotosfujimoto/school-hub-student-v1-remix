@@ -27,15 +27,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   console.log(`🔥 signin()`)
   let start = performance.now()
-  const { folderId, userJWT, accessToken, userId } = await signin({
+  const { folderId, accessToken, userId } = await signin({
     request,
     code,
   })
   let end = performance.now()
   console.log(`🔥 signin() time: ${end - start} ms`)
 
-  if (folderId === null && userJWT.trim()) {
-    return createUserSession(userJWT, `/admin`)
+  if (folderId === null && userId) {
+    return createUserSession(userId, `/admin`)
   }
 
   console.log("⭐️ in auth.redirect: before getDriveFiles")
@@ -46,7 +46,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     `trashed=false and '${folderId}' in parents`,
   )
   end = performance.now()
-  console.log(`⭐️before getDriveFiles time: ${end - start} ms`)
+  console.log(
+    `⭐️ in auth.redirect: after getDriveFiles time: ${end - start} ms`,
+  )
 
   console.log(
     "🐣 in auth.redirect: before saveDriveFileData & updateThumbnails",
@@ -59,7 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   end = performance.now()
   console.log(`🐣Execution time: ${end - start} ms`)
 
-  return createUserSession(userJWT, `/student/${folderId}`)
+  return createUserSession(userId, `/student/${folderId}`)
 }
 
 export default function Redirect() {

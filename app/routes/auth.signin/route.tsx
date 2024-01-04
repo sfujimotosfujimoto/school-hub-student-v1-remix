@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // update the session with the new values
-    const headers = await updateSession("userJWT", jsn.data.userJWT)
+    const headers = await updateSession("userId", jsn.data.userId)
 
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
@@ -92,7 +92,7 @@ async function fetchRefresh(user: User) {
         accessToken: user.credential?.accessToken,
         refreshToken: user.credential?.refreshToken,
       },
-      (key, value) => (typeof value === "bigint" ? Number(value) : value),
+      // (key, value) => (typeof value === "bigint" ? Number(value) : value),
     ),
   })
     .then((res) => {
@@ -174,7 +174,7 @@ function GoogleSigninButton({ disabled }: { disabled: boolean }) {
         <Form method="post" action="/auth/signin">
           <Button type="submit" variant="info" size="md" disabled={disabled}>
             <DriveLogoIcon className="h-7" />
-            <span className="">Google サインイン</span>
+            <span id="google-signin">Google サインイン</span>
           </Button>
         </Form>
       </div>

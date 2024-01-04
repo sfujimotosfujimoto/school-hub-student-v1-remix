@@ -1,4 +1,4 @@
-import * as jose from "jose"
+// import * as jose from "jose"
 import { z } from "zod"
 
 import { getPersonFromPeople } from "./google/people.server"
@@ -53,12 +53,14 @@ export async function signin({
     result.data
 
   // TODO: !!DEBUG!!: setting expiryDateDummy to 10 seconds
-  const expiryDummy = new Date().getTime() + 1000 * 15
-  expiry_date = expiryDummy
+  // const expiry_date_dummy = new Date().getTime() + 1000 * 15
+  // expiry_date = expiry_date_dummy
 
   // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
   // let refreshTokenExpiry = refreshTokenExpiryDummy
   let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 days
+
+  logger.info(`🍓 signin: new expiry_date ${expiry_date}`)
 
   logger.info(
     `🍓 signin: new expiry_date ${new Date(expiry_date || 0).toLocaleString(
@@ -196,16 +198,15 @@ export async function signin({
     throw redirectToSignin(request, { authstate: `not-seig-account` })
   }
 
-  const userJWT = await updateUserJWT(
-    userPrisma.email,
-    expiry_date,
-    refreshTokenExpiry,
-  )
+  // const userJWT = await updateUserJWT(
+  //   userPrisma.email,
+  //   new Date(expiry_date),
+  //   refreshTokenExpiry,
+  // )
   if (["ADMIN", "SUPER"].includes(userPrisma.role)) {
     return {
       userId: userPrisma.id,
       folderId: null,
-      userJWT,
       accessToken: access_token,
     }
   }
@@ -216,31 +217,30 @@ export async function signin({
   const folderId = getFolderId(student.folderLink)
 
   return {
-    folderId,
-    userJWT,
-    accessToken: access_token,
     userId: userPrisma.id,
+    folderId,
+    accessToken: access_token,
   }
 }
 
 // used in authenticate
-export async function updateUserJWT(
-  email: string,
-  expiry: number,
-  refreshTokenExpiry: Date,
-): Promise<string> {
-  logger.debug(`🍓 signin: updateUserJWT: email ${email}`)
-  const secret = process.env.SESSION_SECRET
-  const secretEncoded = new TextEncoder().encode(secret)
-  const userJWT = await new jose.SignJWT({
-    email,
-    rexp: refreshTokenExpiry.getTime(),
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(expiry)
-    .sign(secretEncoded)
-  return userJWT
-}
+// export async function updateUserJWT(
+//   email: string,
+//   expiry: Date,
+//   refreshTokenExpiry: Date,
+// ): Promise<string> {
+//   logger.debug(`🍓 signin: updateUserJWT: email ${email}`)
+//   const secret = process.env.SESSION_SECRET
+//   const secretEncoded = new TextEncoder().encode(secret)
+//   const userJWT = await new jose.SignJWT({
+//     email,
+//     rexp: refreshTokenExpiry.getTime(),
+//   })
+//     .setProtectedHeader({ alg: "HS256" })
+//     .setExpirationTime(expiry)
+//     .sign(secretEncoded)
+//   return userJWT
+// }
 
 /**
  * signout

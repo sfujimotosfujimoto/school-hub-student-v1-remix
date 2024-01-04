@@ -83,6 +83,12 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     },
   })
 
+  console.log(
+    "✅ services/user.server.ts ~ 	🌈 user.credential.expiry ✅ ",
+    user?.credential?.expiry,
+    new Date(user?.credential?.expiry || 0).toLocaleString(),
+  )
+
   if (!user || !user.credential) {
     return null
   }
@@ -92,12 +98,35 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return user
   // return returnUser(user)
 }
-export async function getRefreshUserByEmail(
-  email: string,
-): Promise<User | null> {
+
+export async function getUserById(userId: number): Promise<User | null> {
+  logger.debug(`👑 getUserById: userId: ${userId}`)
+  const user: User | null = await prisma.user.findUnique({
+    where: {
+      id: userId,
+      credential: {
+        expiry: { gt: new Date() },
+      },
+    },
+    select: {
+      ...selectUser,
+    },
+  })
+
+  if (!user || !user.credential) {
+    return null
+  }
+
+  if (!user.stats) user.stats = null
+
+  return user
+  // return returnUser(user)
+}
+
+export async function getRefreshUserById(userId: number): Promise<User | null> {
   const user = await prisma.user.findUnique({
     where: {
-      email,
+      id: userId,
       credential: {
         refreshTokenExpiry: { gt: new Date() },
       },
@@ -116,6 +145,31 @@ export async function getRefreshUserByEmail(
   return user
   // return returnUser(user)
 }
+
+// export async function getRefreshUserByEmail(
+//   email: string,
+// ): Promise<User | null> {
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       email,
+//       credential: {
+//         refreshTokenExpiry: { gt: new Date() },
+//       },
+//     },
+//     select: {
+//       ...selectUser,
+//     },
+//   })
+
+//   if (!user || !user.credential) {
+//     return null
+//   }
+
+//   if (!user.stats) user.stats = null
+
+//   return user
+//   // return returnUser(user)
+// }
 
 export async function requireUserRole(request: Request, user: User) {
   logger.debug("👑 requireUserRole start")
@@ -162,23 +216,23 @@ export async function getUsers(): Promise<User[] | null> {
   return returnUsers(users)
 }
 
-export async function getUserById(id: number): Promise<User | null> {
-  const user = await prisma.user.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      ...selectUser,
-    },
-  })
+// export async function getUserById(id: number): Promise<User | null> {
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       id,
+//     },
+//     select: {
+//       ...selectUser,
+//     },
+//   })
 
-  if (!user || !user.credential) {
-    return null
-  }
+//   if (!user || !user.credential) {
+//     return null
+//   }
 
-  return user
-  // return returnUser(user)
-}
+//   return user
+//   // return returnUser(user)
+// }
 
 export async function updateUser(userId: number) {
   return await prisma.user.update({

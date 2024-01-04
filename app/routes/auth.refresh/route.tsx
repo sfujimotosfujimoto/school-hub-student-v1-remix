@@ -10,9 +10,9 @@ import {
   saveDriveFileData,
   updateThumbnails,
 } from "~/lib/services/drive-file-data.server"
-import { parseVerifyUserJWT } from "~/lib/services/session.server"
+// import { parseVerifyUserJWT } from "~/lib/services/session.server"
 import { selectUser } from "~/lib/services/user.server"
-import { updateUserJWT } from "~/lib/signinout.server"
+// import { updateUserJWT } from "~/lib/signinout.server"
 import { getFolderId } from "~/lib/utils"
 
 export const config = {
@@ -114,28 +114,28 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     // 3. update userJWT in session
-    const userJWT = await updateUserJWT(
-      updatedUser.email,
-      expiry_date,
-      updatedUser.credential?.refreshTokenExpiry || new Date(),
-    )
-    const payload = await parseVerifyUserJWT(userJWT)
-    if (!payload) {
-      return json({ ok: false }, { status: 400 })
-    }
+    // const userJWT = await updateUserJWT(
+    //   updatedUser.email,
+    //   new Date(expiry_date),
+    //   updatedUser.credential?.refreshTokenExpiry || new Date(),
+    // )
+    // const payload = await parseVerifyUserJWT(userJWT)
+    // if (!payload) {
+    //   return json({ ok: false }, { status: 400 })
+    // }
 
-    logger.debug(
-      `✅ in auth.refresh action: new payload.exp ${new Date(
-        Number(payload.exp),
-      ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
-    )
+    // logger.debug(
+    //   `✅ in auth.refresh action: new payload.exp ${new Date(
+    //     Number(payload.exp),
+    //   ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+    // )
     const newUser = returnUser(updatedUser)
 
     return json({
       ok: true,
       data: {
         user: newUser,
-        userJWT: userJWT,
+        // userJWT: userJWT,
       },
     })
   } catch (error) {
