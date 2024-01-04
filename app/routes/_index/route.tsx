@@ -77,7 +77,7 @@ function LoginButton({
         {!email || !folderId ? (
           <NavLinkButton to="/auth/signin" size="md">
             <LogoIcon className="h-7 w-4" />
-            <span className="ml-2 sm:ml-4 sm:inline">
+            <span id="signin" className="ml-2 sm:ml-4 sm:inline">
               SCHOOL HUB サインイン
             </span>
           </NavLinkButton>

@@ -1,5 +1,3 @@
-import type { User } from "~/___types"
-
 import {
   getUserJWTFromSession,
   parseVerifyUserJWT,
