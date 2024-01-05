@@ -30,6 +30,7 @@ import { redirectToSignin } from "~/lib/responses"
 import { Suspense } from "react"
 import type { DriveFileData, Student } from "~/type.d"
 import { logger } from "~/lib/logger"
+import { convertDriveFileData } from "~/lib/utils-loader"
 
 /**
  * LOADER function
@@ -213,6 +214,8 @@ export default function StudentFolderIdIndexPage() {
     driveFileData,
   } = useLoaderData<SerializeFrom<typeof loader>>()
 
+  const dfd = convertDriveFileData(driveFileData)
+
   // JSX -------------------------
   return (
     <>
@@ -220,7 +223,7 @@ export default function StudentFolderIdIndexPage() {
         <div className="flex flex-none items-center justify-between">
           <BackButton />
 
-          <FileCount driveFiles={driveFileData} />
+          <FileCount driveFiles={dfd} />
         </div>
         <div className="flex flex-none flex-wrap gap-1">
           <AllPill url={url} studentFolderId={studentFolderId} />
@@ -250,7 +253,7 @@ export default function StudentFolderIdIndexPage() {
             key={Math.random()}
           >
             <Await
-              resolve={driveFileData}
+              resolve={dfd}
               errorElement={
                 <ErrorBoundaryDocument
                   toHome={true}

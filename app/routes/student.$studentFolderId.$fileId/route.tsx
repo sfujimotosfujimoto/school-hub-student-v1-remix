@@ -21,7 +21,7 @@ import StudentCard from "../student.$studentFolderId._index/components/student-c
 import { useLoaderData, useNavigation, useParams } from "@remix-run/react"
 import { redirectToSignin } from "~/lib/responses"
 import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
-import { DriveFileDataSchema } from "~/schemas"
+import { convertDriveFileDatum } from "~/lib/utils-loader"
 
 /**
  * Loader Function
@@ -72,14 +72,8 @@ export const meta: MetaFunction = () => {
 export default function StudentFolderIdFileIdPage() {
   console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
   const { driveFileDatum } = useLoaderData<SerializeFrom<typeof loader>>()
-  console.log("✅ driveFileDatum", driveFileDatum)
 
-  const result = DriveFileDataSchema.safeParse(driveFileDatum)
-  if (!result.success) {
-    throw new Error(result.error.message)
-  }
-
-  const dfd = result.data
+  const dfd = convertDriveFileDatum(driveFileDatum)
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
