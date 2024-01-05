@@ -1,6 +1,5 @@
 import { Link, useParams } from "@remix-run/react"
 import StudentCard from "./student-card"
-import type { SerializeFrom } from "@remix-run/node"
 import type { DriveFileData } from "~/type.d"
 import { DriveFileDatasSchema } from "~/schemas"
 
@@ -8,7 +7,7 @@ export default function StudentCards({
   driveFiles,
   isNavigating = false,
 }: {
-  driveFiles: SerializeFrom<DriveFileData[]>
+  driveFiles: DriveFileData[]
   isNavigating?: boolean
 }) {
   const { studentFolderId } = useParams()

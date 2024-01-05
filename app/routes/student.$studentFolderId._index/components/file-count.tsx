@@ -1,10 +1,9 @@
-import type { SerializeFrom } from "@remix-run/node"
 import type { DriveFileData } from "~/type.d"
 
 export default function FileCount({
   driveFiles,
 }: {
-  driveFiles?: SerializeFrom<DriveFileData[] | null>
+  driveFiles?: DriveFileData[] | null
 }) {
   return (
     <>
