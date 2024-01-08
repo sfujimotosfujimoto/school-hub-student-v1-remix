@@ -67,6 +67,7 @@ export const selectUser = {
     },
   },
 }
+
 // Get UserBase
 // used in `getUserBaseFromSession`
 export async function getUserByEmail(email: string): Promise<User | null> {
@@ -257,6 +258,10 @@ export async function updateUser(userId: number) {
 // LOCAL FUNCTIONS
 //-------------------------------------------
 
+function returnUsers(prismaUsers: User[]) {
+  return prismaUsers.map((user) => user)
+}
+
 // export function returnUser(user: any): User {
 //   // let st: Pick<User, "student">
 
@@ -325,10 +330,6 @@ export async function updateUser(userId: number) {
 //     driveFileData: returnDriveFileData(user.driveFileData),
 //   }
 // }
-
-function returnUsers(prismaUsers: User[]) {
-  return prismaUsers.map((user) => user)
-}
 
 /*
 

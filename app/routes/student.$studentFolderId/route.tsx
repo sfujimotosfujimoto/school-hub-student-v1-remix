@@ -38,10 +38,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     `🍿 loader: student.$studentFolderId ${new URL(request.url).href}`,
   )
   const user = await getUserFromSession(request)
-
   if (!user || !user.credential) throw redirectToSignin(request)
-
-  // const { user } = await authenticate(request)
   await requireUserRole(request, user)
 
   const student = user.student

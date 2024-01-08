@@ -1,9 +1,9 @@
 import * as jose from "jose"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
+import type { Payload, User } from "~/type.d"
 import { logger } from "../logger"
 import { getRefreshUserById, getUserById } from "./user.server"
-import type { User, Payload } from "~/type.d"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
 

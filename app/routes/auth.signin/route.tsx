@@ -53,7 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // update the session with the new values
-    const headers = await updateSession("userId", jsn.data.userId)
+    const headers = await updateSession("userId", jsn.data.user.id)
 
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
