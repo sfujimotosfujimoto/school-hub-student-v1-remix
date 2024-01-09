@@ -2,7 +2,7 @@ import { type drive_v3, google } from "googleapis"
 import { getClient } from "./google.server"
 import { logger } from "../logger"
 import { QUERY_FILES_FIELDS } from "../config"
-import type { DriveFile } from "~/type.d"
+import type { DriveFile } from "~/types"
 
 export function createQuery({
   folderId,

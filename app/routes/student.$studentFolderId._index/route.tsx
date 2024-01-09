@@ -28,7 +28,7 @@ import StudentCards from "./components/student-cards"
 import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
 import { redirectToSignin } from "~/lib/responses"
 import { Suspense } from "react"
-import type { DriveFileData, Student } from "~/type.d"
+import type { DriveFileData, Student } from "~/types"
 import { logger } from "~/lib/logger"
 import { convertDriveFileData } from "~/lib/utils-loader"
 

@@ -6,7 +6,7 @@ import {
   parseTags,
   stripText,
 } from "~/lib/utils"
-import type { DriveFileData } from "~/type.d"
+import type { DriveFileData } from "~/types"
 
 export default function StudentCard({
   driveFile,

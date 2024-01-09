@@ -1,4 +1,4 @@
-import type { DriveFileData, Student } from "~/type.d"
+import type { DriveFileData, Student } from "~/types"
 
 export function dateFormat(dateString: string | number) {
   const date = new Date(dateString)

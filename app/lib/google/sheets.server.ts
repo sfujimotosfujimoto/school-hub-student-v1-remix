@@ -4,7 +4,7 @@ import { getServiceAccountClient } from "./google.server"
 import { createClient } from "@vercel/kv"
 import { logger } from "../logger"
 import { google } from "googleapis"
-import type { Student } from "~/type.d"
+import type { Student } from "~/types"
 
 const KV_EXPIRE_SECONDS = 60
 

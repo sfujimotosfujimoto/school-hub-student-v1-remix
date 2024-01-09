@@ -1,6 +1,6 @@
 import React from "react"
 import { formatDate } from "~/lib/utils"
-import type { User } from "~/type.d"
+import type { User } from "~/types"
 
 import TableRow from "./table-row"
 

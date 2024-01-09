@@ -1,7 +1,7 @@
 import { useLoaderData } from "@remix-run/react"
 import type { LoaderFunctionArgs } from "@remix-run/node"
 
-import { UserSchema } from "~/schemas"
+import { UserSchema } from "~/types/schemas"
 
 import { getUserFromSession } from "~/lib/services/session.server"
 import * as userS from "~/lib/services/user.server"

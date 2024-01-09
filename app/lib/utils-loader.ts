@@ -1,5 +1,5 @@
-import { DriveFileDataSchema, DriveFileDatasSchema } from "~/schemas"
-import type { DriveFileData } from "~/type.d"
+import { DriveFileDataSchema, DriveFileDatasSchema } from "~/types/schemas"
+import type { DriveFileData } from "~/types"
 
 // Function to convert date strings to Date objects for specified keys
 export function convertDateStringsToDateObjects(

@@ -5,7 +5,7 @@ import type {
   StatsSchema,
   StudentSchema,
   UserSchema,
-} from "~/schemas"
+} from "~/types/schemas"
 
 import type {
   User as PrismaUser,

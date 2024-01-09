@@ -1,7 +1,7 @@
 import * as jose from "jose"
 
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
-import type { Payload, User } from "~/type.d"
+import type { Payload, User } from "~/types"
 import { logger } from "../logger"
 import { getRefreshUserById, getUserById } from "./user.server"
 const SESSION_SECRET = process.env.SESSION_SECRET

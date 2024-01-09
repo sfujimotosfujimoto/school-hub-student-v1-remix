@@ -1,5 +1,5 @@
 import React from "react"
-import type { DriveFile } from "~/type.d"
+import type { DriveFile } from "~/types"
 
 /**
  * TYPES

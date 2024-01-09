@@ -1,7 +1,7 @@
 import type { DriveFileData as PrismaDriveFileData } from "@prisma/client"
 
 import { prisma } from "../db.server"
-import type { DriveFile, DriveFileData } from "~/type.d"
+import type { DriveFile, DriveFileData } from "~/types"
 
 export async function getDriveFileDataByFileId(
   fileId: string,

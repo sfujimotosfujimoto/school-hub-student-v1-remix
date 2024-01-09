@@ -1,8 +1,8 @@
 import { useLoaderData } from "@remix-run/react"
 import type { LoaderFunctionArgs } from "@remix-run/node"
 
-import type { User } from "~/type.d"
-import { UsersSchema } from "~/schemas"
+import type { User } from "~/types"
+import { UsersSchema } from "~/types/schemas"
 import { logger } from "~/lib/logger"
 
 import { requireAdminRole } from "~/lib/require-roles.server"

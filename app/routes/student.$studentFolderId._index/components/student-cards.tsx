@@ -1,7 +1,7 @@
 import { Link, useParams } from "@remix-run/react"
 import StudentCard from "./student-card"
-import type { DriveFileData } from "~/type.d"
-import { DriveFileDatasSchema } from "~/schemas"
+import type { DriveFileData } from "~/types"
+import { DriveFileDatasSchema } from "~/types/schemas"
 
 export default function StudentCards({
   driveFiles,

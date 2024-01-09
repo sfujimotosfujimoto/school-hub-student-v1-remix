@@ -3,8 +3,8 @@ import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
 import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 import invariant from "tiny-invariant"
 
-import { StudentSchema } from "~/schemas"
-import type { Student } from "~/type.d"
+import { StudentSchema } from "~/types/schemas"
+import type { Student } from "~/types"
 
 import { requireUserRole } from "~/lib/require-roles.server"
 import { logger } from "~/lib/logger"

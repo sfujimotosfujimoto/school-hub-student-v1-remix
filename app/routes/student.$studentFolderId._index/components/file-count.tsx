@@ -1,4 +1,4 @@
-import type { DriveFileData } from "~/type.d"
+import type { DriveFileData } from "~/types"
 
 export default function FileCount({
   driveFiles,

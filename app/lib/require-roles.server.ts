@@ -1,4 +1,4 @@
-import type { User } from "~/type.d"
+import type { User } from "~/types"
 import { logger } from "./logger"
 import { redirectToSignin } from "./responses"
 

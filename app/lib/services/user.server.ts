@@ -1,4 +1,4 @@
-import type { User } from "~/type.d"
+import type { User } from "~/types"
 
 import { prisma } from "../db.server"
 import { logger } from "../logger"

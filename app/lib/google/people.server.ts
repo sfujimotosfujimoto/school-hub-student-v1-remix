@@ -1,6 +1,6 @@
 import { google } from "googleapis"
 import { getClient } from "./google.server"
-import type { Person } from "~/type.d"
+import type { Person } from "~/types"
 
 async function getPeople(accessToken: string) {
   const client = await getClient(accessToken)

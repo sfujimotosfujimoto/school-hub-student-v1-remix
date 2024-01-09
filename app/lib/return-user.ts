@@ -3,7 +3,7 @@
 // LOCAL FUNCTIONS
 //-------------------------------------------
 
-import type { User } from "~/type.d"
+import type { User } from "~/types"
 
 export function returnUser(user: User) {
   const {

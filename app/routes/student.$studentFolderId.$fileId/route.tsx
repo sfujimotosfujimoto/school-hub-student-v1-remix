@@ -7,7 +7,7 @@ import {
 
 import React from "react"
 
-import type { DriveFileData } from "~/type.d"
+import type { DriveFileData } from "~/types"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { logger } from "~/lib/logger"
 import { requireUserRole } from "~/lib/require-roles.server"

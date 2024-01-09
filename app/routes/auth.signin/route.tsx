@@ -13,7 +13,7 @@ import {
 import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
-import type { User } from "~/type.d"
+import type { User } from "~/types"
 import { redirectToSignin } from "~/lib/responses"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"

@@ -1,4 +1,4 @@
-import type { Student } from "~/type.d"
+import type { Student } from "~/types"
 import { prisma } from "../db.server"
 
 export async function getStudentDBByEmail(email: string) {
