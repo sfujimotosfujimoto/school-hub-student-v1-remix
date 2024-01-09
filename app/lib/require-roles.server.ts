@@ -9,7 +9,6 @@ export async function requireUserRole(request: Request, user: User) {
     redirectToSignin(request)
     // throw redirect("/auth/signin?authstate=unauthorized")
   }
-  console.log("✅ lib/require-roles.server.ts ~ 	😀 after requireUserRole")
 }
 
 export async function requireAdminRole(request: Request, user: User) {

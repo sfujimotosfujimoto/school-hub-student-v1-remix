@@ -97,12 +97,10 @@ function driveFilesReducer(dfs: DriveFile[], action: Action): DriveFile[] {
     case "FILTER_BY_TAG": {
       const tag = action.payload.tag
       const baseDriveFiles = action.payload.driveFiles as DriveFile[]
-      console.log("tag", tag)
 
       const filtered = baseDriveFiles.filter((df) => {
         const props = JSON.parse(df.appProperties || "[]")
         const tags = props.tags?.split(",").map((t: string) => t.trim())
-        console.log("tags", tags)
         return tags?.includes(tag)
       })
 
