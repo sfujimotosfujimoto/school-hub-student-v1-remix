@@ -38,6 +38,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!user?.email)
     return json({ role: null, picture: null, folderLink: null, email: null })
 
+  logger.info(`🍿 ${user.last}${user.first} - ${user.email}`)
+
   const student = user?.student
   if (!student)
     return json(
