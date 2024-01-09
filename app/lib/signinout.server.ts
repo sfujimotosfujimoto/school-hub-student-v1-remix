@@ -79,14 +79,14 @@ export async function signin({
     throw redirectToSignin(request, { authstate: "no-access-token" })
   }
 
-  console.log(`🔥 getPersomFromPeople`)
-  let start = performance.now()
+  // console.log(`🔥 getPersomFromPeople`)
+  // let start = performance.now()
   const person = await getPersonFromPeople(access_token)
   if (!person) {
     throw redirectToSignin(request, { authstate: "unauthorized" })
   }
-  let end = performance.now()
-  console.log(`🔥 getPersomFromPeople time: ${end - start} ms`)
+  // let end = performance.now()
+  // console.log(`🔥 getPersomFromPeople time: ${end - start} ms`)
 
   // check if email is valid or person is admin
   if (
@@ -122,8 +122,8 @@ export async function signin({
     throw redirectToSignin(request, { authstate: `not-seig-account` })
   }
 
-  console.log("🍓 signin: before transaction")
-  start = performance.now()
+  // console.log("🍓 signin: before transaction")
+  // start = performance.now()
 
   await prisma.$transaction([
     prisma.stats.upsert({
@@ -188,8 +188,8 @@ export async function signin({
       },
     }),
   ])
-  end = performance.now()
-  console.log(`✨ after transaction time: ${end - start} ms`)
+  // end = performance.now()
+  // console.log(`✨ after transaction time: ${end - start} ms`)
 
   // if user passes email check, set user.activated to true
   const updatedUser = await updateUser(userPrisma.id)
@@ -261,7 +261,7 @@ export async function signout({ request }: { request: Request }) {
 export async function getFolderIdFromEmail(
   email: string,
 ): Promise<string | null> {
-  console.log("✅ getFolderIdFromEmail", email)
+  // console.log("✅ getFolderIdFromEmail", email)
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {

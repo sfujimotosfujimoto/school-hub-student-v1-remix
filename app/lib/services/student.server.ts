@@ -32,7 +32,7 @@ export async function upsertStudentDB(
   createdAt: Date
   expiry: Date
 }> {
-  console.log("✅ in createStudentDB before upsert")
+  // console.log("✅ in createStudentDB before upsert")
   return await prisma.student.upsert({
     where: {
       gakuseki: student.gakuseki,

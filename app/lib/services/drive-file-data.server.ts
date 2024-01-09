@@ -91,7 +91,7 @@ export async function updateDriveFileData(
   }
 
   if (dfd.lastSeen < new Date(new Date().getTime() - 1000 * 60)) {
-    console.log("✅ lastSeen is more than 1 hour ago")
+    // console.log("✅ lastSeen is more than 1 hour ago")
     const dfp = await prisma.driveFileData.update({
       where: {
         fileId,
@@ -106,7 +106,7 @@ export async function updateDriveFileData(
     })
     return returnDriveFileDatum(dfp)
   } else {
-    console.log("✅ lastSeen is less than 1 hour ago")
+    // console.log("✅ lastSeen is less than 1 hour ago")
     return returnDriveFileDatum(dfd)
   }
 }
@@ -183,7 +183,7 @@ export async function saveDriveFileData(
   userId: number,
   driveFiles: DriveFile[],
 ) {
-  console.log("✅ in saveDriveFileData: driveFiles", driveFiles.length)
+  // console.log("✅ in saveDriveFileData: driveFiles", driveFiles.length)
 
   const data = driveFiles.map((driveFile) => ({
     fileId: driveFile.id,

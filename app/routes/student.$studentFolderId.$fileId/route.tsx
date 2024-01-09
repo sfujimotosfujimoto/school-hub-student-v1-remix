@@ -70,7 +70,7 @@ export const meta: MetaFunction = () => {
  * StudentFolderFileIdPage
  */
 export default function StudentFolderIdFileIdPage() {
-  console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
+  // console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
   const { driveFileDatum } = useLoaderData<SerializeFrom<typeof loader>>()
 
   const dfd = convertDriveFileDatum(driveFileDatum)

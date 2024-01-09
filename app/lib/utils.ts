@@ -169,7 +169,7 @@ type ErrorMessage =
   | "login-error"
 
 export function getErrorMessage(errorMessage: ErrorMessage): string {
-  console.log("✅ lib/utils.ts ~ 	😀 in getErrorMessage", errorMessage)
+  // console.log("✅ lib/utils.ts ~ 	😀 in getErrorMessage", errorMessage)
   switch (errorMessage) {
     case "expired":
       return "アクセス期限が切れました。"

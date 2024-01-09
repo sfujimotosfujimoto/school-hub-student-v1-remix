@@ -74,7 +74,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
  * path = /student.$studentFolderId
  */
 export default function StudentFolderIdLayout() {
-  console.log("✅ student.$studentFolderId/route.tsx ~ 	😀 ")
+  // console.log("✅ student.$studentFolderId/route.tsx ~ 	😀 ")
   const { student } = useLoaderData<typeof loader>()
   // const { student, driveFilesDB } = useLoaderData<typeof loader>()
 

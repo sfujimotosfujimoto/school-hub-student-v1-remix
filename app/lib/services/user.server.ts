@@ -84,10 +84,11 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     },
   })
 
-  console.log(
-    "✅ services/user.server.ts ~ 	🌈 user.credential.expiry ✅ ",
-    user?.credential?.expiry,
-    new Date(user?.credential?.expiry || 0).toLocaleString(),
+  logger.debug(
+    `✅ services/user.server.ts ~ 	🌈 user.credential.expiry ✅ ${user
+      ?.credential?.expiry} - ${new Date(
+      user?.credential?.expiry || 0,
+    ).toLocaleString()}`,
   )
 
   if (!user || !user.credential) {

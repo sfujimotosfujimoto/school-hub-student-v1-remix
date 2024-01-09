@@ -38,7 +38,7 @@ export default function AdminIndexPage() {
   if (result.success) {
     resultUsers = result.data || null
   } else {
-    console.log("🚨 UsersSchema", result.error)
+    // console.log("🚨 UsersSchema", result.error)
   }
 
   // const user = rawUserToUser(targetUser)

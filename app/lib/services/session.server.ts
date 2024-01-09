@@ -179,9 +179,9 @@ export async function parseVerifyUserJWT(
 
   // decode the JWT and get payload<email,exp>
   const secret = new TextEncoder().encode(process.env.SESSION_SECRET)
-  console.log("✅ parseVerifyUserJWT: secret", secret)
+  // console.log("✅ parseVerifyUserJWT: secret", secret)
   const { payload } = await jose.jwtVerify(userJWT, secret)
-  console.log("✅ parseVerifyUserJWT: payload", payload)
+  // console.log("✅ parseVerifyUserJWT: payload", payload)
   // const payload = jose.decodeJwt(userJWT) as { email: string; exp: number }
   if (payload.email === undefined || payload.exp === undefined) return null
 
