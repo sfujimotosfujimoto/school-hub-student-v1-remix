@@ -44,7 +44,7 @@ export default function Index() {
   if (folderLink) {
     folderId = getFolderId(folderLink)
   }
-  console.log("✅ _index/route.tsx ~ 	😀 ")
+  // console.log("✅ _index/route.tsx ~ 	😀 ")
   return (
     <>
       <section className="mx-auto flex h-full w-screen max-w-7xl flex-col items-center justify-center gap-8">
