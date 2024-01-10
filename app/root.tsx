@@ -186,31 +186,59 @@ export default function App() {
 
 export function ErrorBoundary() {
   let error = useRouteError()
-  const errorMessage = error instanceof Error && error.message
-
+  console.error("root error:", error)
   return (
-    <Document>
-      <ErrorDocument>
-        <h1 className="text-xl">
-          Something went wrong. Please try again later.
-        </h1>
+    <html lang="en" data-theme="mytheme">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <ErrorDocument>
+          <h1 className="text-xl">
+            Something went wrong. Please try again later.
+          </h1>
 
-        <p className="text-lg">{errorMessage && <p>{errorMessage}</p>}</p>
+          <p className="text-lg">
+            Contact:
+            <a
+              href="mailto:sfujimotosfujimoto@gmail.com"
+              className="ml-2 font-semibold underline hover:text-sfred-200 "
+            >
+              sfujimotosfujimoto[at]gmail.com
+            </a>
+          </p>
+          <BackToHomeButton />
+        </ErrorDocument>
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+    // <Document>
+    //   <ErrorDocument>
+    //     <h1 className="text-xl">
+    //       Something went wrong. Please try again later.
+    //     </h1>
 
-        <p className="text-lg">
-          Contact:
-          <a
-            href="mailto:s-fujimoto@seig-boys.jp"
-            className="ml-2 font-semibold underline hover:text-sfred-200 "
-          >
-            s-fujimoto[at]seig-boys.jp
-          </a>
-        </p>
-        <BackToHomeButton />
-      </ErrorDocument>
+    //     <p className="text-lg">{errorMessage && <p>{errorMessage}</p>}</p>
 
-      <BackToHomeButton />
-    </Document>
+    //     <p className="text-lg">
+    //       Contact:
+    //       <a
+    //         href="mailto:s-fujimoto@seig-boys.jp"
+    //         className="ml-2 font-semibold underline hover:text-sfred-200 "
+    //       >
+    //         s-fujimoto[at]seig-boys.jp
+    //       </a>
+    //     </p>
+    //     <BackToHomeButton />
+    //   </ErrorDocument>
+
+    //   <BackToHomeButton />
+    // </Document>
   )
 }
 
