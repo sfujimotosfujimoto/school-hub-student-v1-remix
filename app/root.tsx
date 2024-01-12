@@ -1,6 +1,5 @@
 import sharedStyles from "~/styles/shared.css"
 import tailwindStyles from "~/styles/tailwind.css"
-
 import {
   json,
   type LinksFunction,
@@ -217,28 +216,6 @@ export function ErrorBoundary() {
         <LiveReload />
       </body>
     </html>
-    // <Document>
-    //   <ErrorDocument>
-    //     <h1 className="text-xl">
-    //       Something went wrong. Please try again later.
-    //     </h1>
-
-    //     <p className="text-lg">{errorMessage && <p>{errorMessage}</p>}</p>
-
-    //     <p className="text-lg">
-    //       Contact:
-    //       <a
-    //         href="mailto:s-fujimoto@seig-boys.jp"
-    //         className="ml-2 font-semibold underline hover:text-sfred-200 "
-    //       >
-    //         s-fujimoto[at]seig-boys.jp
-    //       </a>
-    //     </p>
-    //     <BackToHomeButton />
-    //   </ErrorDocument>
-
-    //   <BackToHomeButton />
-    // </Document>
   )
 }
 
