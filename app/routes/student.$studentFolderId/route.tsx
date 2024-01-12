@@ -1,4 +1,4 @@
-import { defer } from "@remix-run/node"
+import { json } from "@remix-run/node"
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
 import { Outlet, useLoaderData, useParams } from "@remix-run/react"
 import invariant from "tiny-invariant"
@@ -14,6 +14,8 @@ import { getUserFromSession } from "~/lib/services/session.server"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import StudentHeader from "./student-header"
 import { redirectToSignin } from "~/lib/responses"
+
+const CACHE_MAX_AGE = 60 * 10 // 10 minutes
 
 /**
  * Meta Function
@@ -55,9 +57,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const headers = new Headers()
 
-  headers.set("Cache-Control", `private, max-age=${60 * 60}`) // 1 hour
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE}`) // 1 hour
 
-  return defer(
+  return json(
     {
       studentFolderId: params.studentFolderId,
       student,
