@@ -18,6 +18,10 @@ import { redirectToSignin } from "~/lib/responses"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
 
+export const config = {
+  maxDuration: 30,
+}
+
 /**
  * Root loader
  */
