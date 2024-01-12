@@ -1,11 +1,6 @@
 import clsx from "clsx"
 import { RenewIcon, TimeIcon } from "~/components/icons"
-import {
-  checkGoogleMimeType,
-  dateFormat,
-  parseTags,
-  stripText,
-} from "~/lib/utils"
+import { dateFormat, parseTags, stripText } from "~/lib/utils"
 import type { DriveFileData } from "~/types"
 
 export default function StudentCard({
@@ -96,21 +91,22 @@ export default function StudentCard({
           )}
           {driveFile && size === "big" && (
             <figure className="!rounded-2xl">
-              {driveFile.hasThumbnail &&
+              {/* {driveFile.hasThumbnail &&
                 driveFile.thumbnailLink &&
-                !checkGoogleMimeType(driveFile) && (
-                  <img
-                    className="object-contain"
-                    // src={`https://drive.google.com/uc?id=${driveFile.fileId}`}
-                    src={
-                      thumbnailSize === "small"
-                        ? driveFile.thumbnailLink
-                        : driveFile.thumbnailLink?.split("=")[0]
-                    }
-                    alt={driveFile.name}
-                    referrerPolicy="no-referrer"
-                  />
-                )}
+                !checkGoogleMimeType(driveFile) && ( */}
+              {driveFile.thumbnailLink && (
+                <img
+                  className="object-contain"
+                  // src={`https://drive.google.com/uc?id=${driveFile.fileId}`}
+                  src={
+                    thumbnailSize === "small"
+                      ? driveFile.thumbnailLink
+                      : driveFile.thumbnailLink?.split("=")[0]
+                  }
+                  alt={driveFile.name}
+                  referrerPolicy="no-referrer"
+                />
+              )}
             </figure>
           )}
         </div>
