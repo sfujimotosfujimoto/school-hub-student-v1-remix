@@ -1,10 +1,11 @@
 import type { LoaderFunctionArgs } from "@remix-run/node"
 import { redirect, useLocation } from "@remix-run/react"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import { logger } from "~/lib/logger"
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const p = Object.values(params).at(0)
-  console.log("✅ routes/$.tsx ~ 	😀 ", p)
+  logger.debug(`✅ routes/$.tsx ~ 	${p}`)
 
   if (p?.match(/^apple-(\w.*|)icon-.*(.png|.jpg|.ico)$/)) {
     throw redirect("/apple-touch-icon.png")
