@@ -7,6 +7,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node"
 import {
+  isRouteErrorResponse,
   Link,
   Links,
   LiveReload,
@@ -29,37 +30,41 @@ import { PageTransitionProgressBar } from "./components/progress-bar"
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: root ${request.url}`)
+  try {
+    const headers = new Headers()
+    headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
+    const user = await getUserFromSession(request)
 
-  const headers = new Headers()
-  headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
-  const user = await getUserFromSession(request)
+    if (!user?.email)
+      return json({ role: null, picture: null, folderLink: null, email: null })
 
-  if (!user?.email)
-    return json({ role: null, picture: null, folderLink: null, email: null })
+    console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
 
-  console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
+    const student = user?.student
+    if (!student)
+      return json(
+        {
+          role: user.role,
+          picture: user.picture,
+          folderLink: null,
+          email: user.email,
+        },
+        { headers },
+      )
 
-  const student = user?.student
-  if (!student)
     return json(
       {
         role: user.role,
         picture: user.picture,
-        folderLink: null,
+        folderLink: student.folderLink,
         email: user.email,
       },
       { headers },
     )
-
-  return json(
-    {
-      role: user.role,
-      picture: user.picture,
-      folderLink: student.folderLink,
-      email: user.email,
-    },
-    { headers },
-  )
+  } catch (error) {
+    console.error(`🍿 loader: root ${request.url} - error`)
+    return json({ role: null, picture: null, folderLink: null, email: null })
+  }
 }
 
 /**
@@ -186,6 +191,7 @@ export default function App() {
 export function ErrorBoundary() {
   let error = useRouteError()
   console.error("root error:", error)
+
   return (
     <html lang="en" data-theme="mytheme">
       <head>
@@ -196,9 +202,16 @@ export function ErrorBoundary() {
       </head>
       <body>
         <ErrorDocument>
-          <h1 className="text-xl">
+          <h1 className="text-xl text-sfblue-300">
             Something went wrong. Please try again later.
           </h1>
+          <h2 className="text-lg text-sfblue-300">
+            {isRouteErrorResponse(error)
+              ? `${error.status} ${error.statusText}`
+              : error instanceof Error
+                ? error.message
+                : "Unknown Error"}
+          </h2>
 
           <p className="text-lg">
             Contact:
@@ -229,3 +242,30 @@ function BackToHomeButton() {
     </Link>
   )
 }
+
+/*
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  return (
+    <html>
+      <head>
+        <title>Oops!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <h1>
+          {isRouteErrorResponse(error)
+            ? `${error.status} ${error.statusText}`
+            : error instanceof Error
+            ? error.message
+            : "Unknown Error"}
+        </h1>
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+*/
