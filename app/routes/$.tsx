@@ -8,6 +8,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (p?.match(/^apple-(\w.*|)icon-.*(.png|.jpg|.ico)$/)) {
     throw redirect("/apple-touch-icon.png")
+  } else if (p?.match(/^favicon.*.png$/)) {
+    throw redirect("/favicon.png")
   }
 
   throw new Response("Not found", { status: 404 })
