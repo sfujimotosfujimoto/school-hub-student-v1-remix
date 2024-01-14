@@ -60,21 +60,6 @@ export async function signin({
   // let refreshTokenExpiry = refreshTokenExpiryDummy
   let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 days
 
-  logger.info(`🍓 signin: new expiry_date ${expiry_date}`)
-
-  logger.info(
-    `🍓 signin: new expiry_date ${new Date(expiry_date || 0).toLocaleString(
-      "ja-JP",
-      { timeZone: "Asia/Tokyo" },
-    )}`,
-  )
-
-  logger.info(
-    `🍓 signin: new refreshTokenExpiry ${new Date(
-      refreshTokenExpiry || 0,
-    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
-  )
-
   if (!access_token) {
     throw redirectToSignin(request, { authstate: "no-access-token" })
   }
@@ -85,6 +70,18 @@ export async function signin({
   if (!person) {
     throw redirectToSignin(request, { authstate: "unauthorized" })
   }
+
+  logger.info(
+    `🍓 signin: new expiry_date ${person.last} ${person.first} - ${new Date(
+      expiry_date || 0,
+    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+  )
+
+  logger.info(
+    `🍓 signin: new refreshTokenExpiry ${person.last} ${person.first} - ${new Date(
+      refreshTokenExpiry || 0,
+    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+  )
   // let end = performance.now()
   // console.log(`🔥 getPersomFromPeople time: ${end - start} ms`)
 
