@@ -1,5 +1,5 @@
 import type { User } from "~/types"
-
+import { GaxiosError } from "gaxios"
 import { prisma } from "../db.server"
 import { logger } from "../logger"
 // import { returnDriveFileData } from "./drive-file-data.server"
@@ -68,83 +68,117 @@ export const selectUser = {
   },
 }
 
-// Get UserBase
-// used in `getUserBaseFromSession`
-export async function getUserByEmail(email: string): Promise<User | null> {
-  logger.debug(`👑 getUserByEmail: email: ${email}`)
-  const user: User | null = await prisma.user.findUnique({
-    where: {
-      email,
-      credential: {
-        expiry: { gt: new Date() },
-      },
-    },
-    select: {
-      ...selectUser,
-    },
-  })
+// // Get UserBase
+// // used in `getUserBaseFromSession`
+// export async function getUserByEmail(email: string): Promise<User | null> {
+//   logger.debug(`👑 getUserByEmail: email: ${email}`)
+//   const user: User | null = await prisma.user.findUnique({
+//     where: {
+//       email,
+//       credential: {
+//         expiry: { gt: new Date() },
+//       },
+//     },
+//     select: {
+//       ...selectUser,
+//     },
+//   })
 
-  logger.debug(
-    `✅ services/user.server.ts ~ 	🌈 user.credential.expiry ✅ ${user
-      ?.credential?.expiry} - ${new Date(
-      user?.credential?.expiry || 0,
-    ).toLocaleString()}`,
-  )
+//   logger.debug(
+//     `✅ services/user.server.ts ~ 	🌈 user.credential.expiry ✅ ${user
+//       ?.credential?.expiry} - ${new Date(
+//       user?.credential?.expiry || 0,
+//     ).toLocaleString()}`,
+//   )
 
-  if (!user || !user.credential) {
-    return null
-  }
+//   if (!user || !user.credential) {
+//     return null
+//   }
 
-  if (!user.stats) user.stats = null
+//   if (!user.stats) user.stats = null
 
-  return user
-  // return returnUser(user)
-}
+//   return user
+//   // return returnUser(user)
+// }
 
 export async function getUserById(userId: number): Promise<User | null> {
   logger.debug(`👑 getUserById: userId: ${userId}`)
-  const user: User | null = await prisma.user.findUnique({
-    where: {
-      id: userId,
-      credential: {
-        expiry: { gt: new Date() },
-      },
-    },
-    select: {
-      ...selectUser,
-    },
-  })
 
-  if (!user || !user.credential) {
-    return null
+  try {
+    const user: User | null = await prisma.user.findUnique({
+      where: {
+        id: userId,
+        credential: {
+          expiry: { gt: new Date() },
+        },
+      },
+      select: {
+        ...selectUser,
+      },
+    })
+    if (!user || !user.credential) {
+      return null
+    }
+
+    if (!user.stats) user.stats = null
+
+    return user
+  } catch (error) {
+    if (error instanceof GaxiosError) {
+      console.error(`👑 getUserById: GaxiosError: ${error.message}`)
+      // throw new Error(`ユーザー情報の取得に失敗しました。`)
+      return null
+    } else if (error instanceof Error) {
+      console.error(`👑 getUserById: Error: ${error.message}`)
+      // throw new Error(`ユーザー情報の取得に失敗しました。`)
+      return null
+    } else {
+      console.error(`👑 getUserById: unknown error: ${error}`)
+      // throw new Error(`ユーザー情報の取得に失敗しました。`)
+      return null
+    }
   }
 
-  if (!user.stats) user.stats = null
-
-  return user
   // return returnUser(user)
 }
 
 export async function getRefreshUserById(userId: number): Promise<User | null> {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-      credential: {
-        refreshTokenExpiry: { gt: new Date() },
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+        credential: {
+          refreshTokenExpiry: { gt: new Date() },
+        },
       },
-    },
-    select: {
-      ...selectUser,
-    },
-  })
+      select: {
+        ...selectUser,
+      },
+    })
 
-  if (!user || !user.credential) {
-    return null
+    if (!user || !user.credential) {
+      return null
+    }
+
+    if (!user.stats) user.stats = null
+
+    return user
+  } catch (error) {
+    if (error instanceof GaxiosError) {
+      console.error(`👑 getRefreshUserById: GaxiosError: ${error.message}`)
+      // throw new Error(`ユーザー情報の取得に失敗しました。`)
+      return null
+    } else if (error instanceof Error) {
+      console.error(`👑 getRefreshUserById: Error: ${error.message}`)
+      // throw new Error(`ユーザー情報の取得に失敗しました。`)
+      return null
+    } else {
+      console.error(`👑 getRefreshUserById: unknown error: ${error}`)
+      // throw new Error(`ユーザー情報の取得に失敗しました。`)
+      return null
+    }
   }
 
-  if (!user.stats) user.stats = null
-
-  return user
   // return returnUser(user)
 }
 

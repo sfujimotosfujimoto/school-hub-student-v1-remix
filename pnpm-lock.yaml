@@ -26,6 +26,9 @@ dependencies:
   clsx:
     specifier: ^2.1.0
     version: 2.1.0
+  gaxios:
+    specifier: ^6.1.1
+    version: 6.1.1
   googleapis:
     specifier: ^129.0.0
     version: 129.0.0
