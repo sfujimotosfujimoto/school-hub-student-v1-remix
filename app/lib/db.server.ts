@@ -6,9 +6,7 @@ const cpuCount = os.cpus().length
 logger.info(`🐳 CPU count: ${cpuCount}`)
 
 const prismaClientSingleton = () => {
-  return new PrismaClient({
-    log: ["info"],
-  })
+  return new PrismaClient()
 }
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>
