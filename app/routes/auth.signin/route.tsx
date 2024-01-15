@@ -19,7 +19,7 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
 
 export const config = {
-  maxDuration: 30,
+  maxDuration: 60,
 }
 
 /**
