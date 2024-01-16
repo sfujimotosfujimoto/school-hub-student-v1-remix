@@ -5,7 +5,7 @@
   "scripts": {
     "seed": "s-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
     "build": "remix build",
-    "dev": "PORT=4000 remix dev --manual",
+    "dev": "PORT=4001 remix dev --manual",
     "start": "remix-serve ./build/index.js",
     "postinstall": "prisma generate",
     "test": "pnpm playwright test --timeout 30000 --project=Chromium",
@@ -41,7 +41,7 @@
     "@remix-run/dev": "^2.5.0",
     "@remix-run/eslint-config": "^2.5.0",
     "@tailwindcss/typography": "^0.5.10",
-    "@types/node": "^20.11.2",
+    "@types/node": "^20.11.4",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "daisyui": "^4.6.0",
