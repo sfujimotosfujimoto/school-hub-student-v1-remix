@@ -10,6 +10,7 @@ import {
   saveDriveFileData,
   updateThumbnails,
 } from "~/lib/services/drive-file-data.server"
+import { logger } from "~/lib/logger"
 
 //update timeout
 export const config = {
@@ -25,20 +26,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // if no "code" , do not touch and resolve
   if (!code) throw redirectToSignin(request)
 
-  console.log(`💥 start: signin()`)
+  logger.debug(`💥 start: signin()`)
   let start1 = performance.now()
   const { folderId, accessToken, userId } = await signin({
     request,
     code,
   })
   let end1 = performance.now()
-  console.log(`🔥   end: signin() time: ${end1 - start1} ms`)
+  logger.debug(`🔥   end: signin() \t\ttime: ${(end1 - start1).toFixed(2)} ms`)
 
   if (folderId === null && userId) {
     return createUserSession(userId, `/admin`)
   }
 
-  console.log(`💥 start: getDriveFiles`)
+  logger.debug(`💥 start: getDriveFiles`)
   let start2 = performance.now()
   // Get drive files from Google Drive API
   const driveFiles = await getDriveFiles(
@@ -46,20 +47,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
     `trashed=false and '${folderId}' in parents`,
   )
   let end2 = performance.now()
-  console.log(`🔥   end: getDriveFiles time: ${end2 - start2} ms`)
+  logger.debug(
+    `🔥   end: getDriveFiles \t\ttime: ${(end2 - start2).toFixed(2)} ms`,
+  )
 
-  console.log(`💥 start: saveDriveFileData`)
+  logger.debug(`💥 start: saveDriveFileData`)
   let start3 = performance.now()
   // Save drive files to DB
   await saveDriveFileData(userId, driveFiles)
   let end3 = performance.now()
-  console.log(`🔥   end: saveDriveFileData time: ${end3 - start3} ms`)
+  logger.debug(
+    `🔥   end: saveDriveFileData \t\ttime: ${(end3 - start3).toFixed(2)} ms`,
+  )
 
-  console.log(`💥 start: updateThumbnails`)
+  logger.debug(`💥 start: updateThumbnails`)
   let start4 = performance.now()
   await updateThumbnails(driveFiles)
   let end4 = performance.now()
-  console.log(`🔥   end: updateThumbnails time: ${end4 - start4} ms`)
+
+  // 2072.33 ms
+  logger.debug(
+    `🔥   end: updateThumbnails \t\ttime: ${(end4 - start4).toFixed(2)} ms`,
+  )
 
   return createUserSession(userId, `/student/${folderId}`)
 }
