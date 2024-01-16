@@ -91,7 +91,10 @@ export async function getRefreshUserFromSession(
   )
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
-  const userId = Number(session.get("userId") || 0)
+  const userId = session.get("userId")
+  if (!userId) {
+    return null
+  }
   // const userJWT = await getUserJWTFromSession(request)
 
   // if (!userJWT) return null

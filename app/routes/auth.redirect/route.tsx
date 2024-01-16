@@ -25,41 +25,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // if no "code" , do not touch and resolve
   if (!code) throw redirectToSignin(request)
 
-  // console.log(`🔥 signin()`)
-  // let start = performance.now()
+  console.log(`💥 start: signin()`)
+  let start1 = performance.now()
   const { folderId, accessToken, userId } = await signin({
     request,
     code,
   })
-  // let end = performance.now()
-  // console.log(`🔥 signin() time: ${end - start} ms`)
+  let end1 = performance.now()
+  console.log(`🔥   end: signin() time: ${end1 - start1} ms`)
 
   if (folderId === null && userId) {
     return createUserSession(userId, `/admin`)
   }
 
-  // console.log("⭐️ in auth.redirect: before getDriveFiles")
-  // start = performance.now()
+  console.log(`💥 start: getDriveFiles`)
+  let start2 = performance.now()
   // Get drive files from Google Drive API
   const driveFiles = await getDriveFiles(
     accessToken,
     `trashed=false and '${folderId}' in parents`,
   )
-  // end = performance.now()
-  // console.log(
-  //   `⭐️ in auth.redirect: after getDriveFiles time: ${end - start} ms`,
-  // )
+  let end2 = performance.now()
+  console.log(`🔥   end: getDriveFiles time: ${end2 - start2} ms`)
 
-  // console.log(
-  //   "🐣 in auth.redirect: before saveDriveFileData & updateThumbnails",
-  // )
-  // start = performance.now()
+  console.log(`💥 start: saveDriveFileData`)
+  let start3 = performance.now()
   // Save drive files to DB
   await saveDriveFileData(userId, driveFiles)
+  let end3 = performance.now()
+  console.log(`🔥   end: saveDriveFileData time: ${end3 - start3} ms`)
+
+  console.log(`💥 start: updateThumbnails`)
+  let start4 = performance.now()
   await updateThumbnails(driveFiles)
-  // const driveFileData = await saveDriveFileData(userId, driveFiles)
-  // end = performance.now()
-  // console.log(`🐣Execution time: ${end - start} ms`)
+  let end4 = performance.now()
+  console.log(`🔥   end: updateThumbnails time: ${end4 - start4} ms`)
 
   return createUserSession(userId, `/student/${folderId}`)
 }

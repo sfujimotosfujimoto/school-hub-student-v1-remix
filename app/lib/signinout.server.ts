@@ -13,7 +13,7 @@ import { getClientFromCode } from "./google/google.server"
 import { logger } from "./logger"
 import { prisma } from "./db.server"
 // import { getStudentDBByEmail } from "./services/student.server"
-import { updateUser } from "./services/user.server"
+// import { updateUser } from "./services/user.server"
 import { redirectToSignin } from "./responses"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
@@ -39,7 +39,12 @@ export async function signin({
   code: string
 }) {
   logger.debug("🍓 signin")
+
+  console.log(`💥 start: getClientFromCode`)
+  let start1 = performance.now()
   const { tokens } = await getClientFromCode(code)
+  let end1 = performance.now()
+  console.log(`🔥   end: getClientFromCode time: ${end1 - start1} ms`)
 
   // verify token with zod
   const result = TokenSchema.safeParse(tokens)
@@ -64,9 +69,11 @@ export async function signin({
     throw redirectToSignin(request, { authstate: "no-access-token" })
   }
 
-  // console.log(`🔥 getPersomFromPeople`)
-  // let start = performance.now()
+  console.log(`💥 start: getPersonFromPeople`)
+  let start2 = performance.now()
   const person = await getPersonFromPeople(access_token)
+  let end2 = performance.now()
+  console.log(`🔥   end: getPersonFromPeople time: ${end2 - start2} ms`)
   if (!person) {
     throw redirectToSignin(request, { authstate: "unauthorized" })
   }
@@ -82,8 +89,6 @@ export async function signin({
       refreshTokenExpiry || 0,
     ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
   )
-  // let end = performance.now()
-  // console.log(`🔥 getPersomFromPeople time: ${end - start} ms`)
 
   // check if email is valid or person is admin
   if (
@@ -93,19 +98,50 @@ export async function signin({
     throw redirectToSignin(request, { authstate: `not-parent-account` })
   }
 
-  let userPrisma = await prisma.user.upsert({
+  console.log(`💥 start: upsert prisma`)
+  let start3 = performance.now()
+
+  let userPrisma = await prisma.user.findUnique({
     where: {
       email: person.email,
     },
-    update: {},
-    create: {
-      first: person.first,
-      last: person.last,
-      email: person.email,
-      picture: person.picture,
-      role: "USER",
-    },
   })
+  if (!userPrisma) {
+    userPrisma = await prisma.user.create({
+      data: {
+        first: person.first,
+        last: person.last,
+        email: person.email,
+        picture: person.picture,
+        role: "USER",
+        activated: true,
+
+        stats: {
+          create: {
+            count: 1,
+            lastVisited: new Date(),
+          },
+        },
+      },
+    })
+  } else {
+  }
+
+  // let userPrisma = await prisma.user.upsert({
+  //   where: {
+  //     email: person.email,
+  //   },
+  //   update: {},
+  //   create: {
+  //     first: person.first,
+  //     last: person.last,
+  //     email: person.email,
+  //     picture: person.picture,
+  //     role: "USER",
+  //   },
+  // })
+  let end3 = performance.now()
+  console.log(`🔥   end: upsert prisma time: ${end3 - start3} ms`)
 
   // convert parent email to student email
   let studentEmail = person.email.replace(/^p/, "b")
@@ -114,47 +150,62 @@ export async function signin({
   // find student in prisma db with student email even if user is parent
   // const studentPrisma = await getStudentDBByEmail(studentEmail)
 
-  const student = await getStudentByEmail(studentEmail)
-  if (!student) {
+  console.log(`💥 start: getStudentByEmail`)
+  let start4 = performance.now()
+  // TODO: check if student is in db
+  let studentPrisma = await prisma.student.findUnique({
+    where: {
+      email: studentEmail,
+    },
+  })
+  let student
+  if (!studentPrisma) {
+    student = await getStudentByEmail(studentEmail)
+  }
+  let end4 = performance.now()
+  console.log(`🔥   end: getStudentByEmail time: ${end4 - start4} ms`)
+  if (!student && !studentPrisma) {
     throw redirectToSignin(request, { authstate: `not-seig-account` })
   }
 
-  // console.log("🍓 signin: before transaction")
-  // start = performance.now()
+  console.log(`💥 start: transaction`)
+  let start5 = performance.now()
 
-  await prisma.$transaction([
-    prisma.stats.upsert({
-      where: {
-        userId: userPrisma.id,
-      },
-      update: {},
-      create: {
-        userId: userPrisma.id,
-      },
-    }),
-    prisma.credential.upsert({
-      where: {
-        userId: userPrisma.id,
-      },
-      update: {
-        accessToken: access_token,
-        scope: scope,
-        tokenType: token_type,
-        expiry: new Date(expiry_date),
-        refreshToken: refresh_token,
-        refreshTokenExpiry: refreshTokenExpiry,
-      },
-      create: {
-        accessToken: access_token,
-        scope: scope,
-        tokenType: token_type,
-        expiry: new Date(expiry_date),
-        userId: userPrisma.id,
-        refreshToken: refresh_token,
-        refreshTokenExpiry: refreshTokenExpiry,
-      },
-    }),
-    prisma.student.upsert({
+  const statsUpsert = prisma.stats.upsert({
+    where: {
+      userId: userPrisma.id,
+    },
+    update: {},
+    create: {
+      userId: userPrisma.id,
+    },
+  })
+
+  const credentialUpsert = prisma.credential.upsert({
+    where: {
+      userId: userPrisma.id,
+    },
+    update: {
+      accessToken: access_token,
+      scope: scope,
+      tokenType: token_type,
+      expiry: new Date(expiry_date),
+      refreshToken: refresh_token,
+      refreshTokenExpiry: refreshTokenExpiry,
+    },
+    create: {
+      accessToken: access_token,
+      scope: scope,
+      tokenType: token_type,
+      expiry: new Date(expiry_date),
+      userId: userPrisma.id,
+      refreshToken: refresh_token,
+      refreshTokenExpiry: refreshTokenExpiry,
+    },
+  })
+  let studentUpsert
+  if (!studentPrisma && student) {
+    studentUpsert = prisma.student.upsert({
       where: {
         gakuseki: student.gakuseki,
       },
@@ -183,23 +234,42 @@ export async function signin({
           },
         },
       },
-    }),
-  ])
-  // end = performance.now()
-  // console.log(`✨ after transaction time: ${end - start} ms`)
-
-  // if user passes email check, set user.activated to true
-  const updatedUser = await updateUser(userPrisma.id)
-
-  if (!updatedUser) {
-    throw redirectToSignin(request, { authstate: `not-seig-account` })
+    })
   }
 
-  // const userJWT = await updateUserJWT(
-  //   userPrisma.email,
-  //   new Date(expiry_date),
-  //   refreshTokenExpiry,
-  // )
+  const userUpdate = prisma.user.update({
+    where: {
+      id: userPrisma.id,
+    },
+    data: {
+      activated: true,
+      stats: {
+        update: {
+          count: {
+            increment: 1,
+          },
+          lastVisited: new Date(),
+        },
+      },
+    },
+  })
+
+  // if student is not in db, create student
+  if (!studentPrisma && studentUpsert) {
+    await prisma.$transaction([
+      statsUpsert,
+      credentialUpsert,
+      studentUpsert,
+      userUpdate,
+    ])
+  } else {
+    await prisma.$transaction([statsUpsert, credentialUpsert, userUpdate])
+  }
+  let end5 = performance.now()
+  console.log(`🔥   end: transaction time: ${end5 - start5} ms`)
+
+  const st = student || studentPrisma
+
   if (["ADMIN", "SUPER"].includes(userPrisma.role)) {
     return {
       userId: userPrisma.id,
@@ -208,10 +278,10 @@ export async function signin({
     }
   }
 
-  if (!student.folderLink) {
+  if (!st?.folderLink) {
     throw new Response(`no-folder`, { status: 401 })
   }
-  const folderId = getFolderId(student.folderLink)
+  const folderId = getFolderId(st.folderLink)
 
   return {
     userId: userPrisma.id,

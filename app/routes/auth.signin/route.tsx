@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // if user is expired, check for refresh token
   if (!user) {
     // get refresh token expiry
-    logger.debug("!! getRefreshUserFromSession: in if (user)")
+    logger.debug("!! getRefreshUserFromSession: in if (!user)")
     const refreshUser = await getRefreshUserFromSession(request)
     if (!refreshUser) {
       return null
@@ -42,14 +42,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const redirectUrl = new URL(request.url).searchParams.get("redirect")
 
-    const jsn = await fetchRefresh(refreshUser)
+    const res = await fetchRefresh(refreshUser)
 
     logger.info(
-      `👑 authenticate: expiry: ${new Date(
-        jsn.data.user.credential.expiry,
+      `👑 auth.signin: expiry: ${new Date(
+        res.data.user.credential.expiry,
       ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
     )
-    if (!jsn.ok) {
+    if (!res.ok) {
       throw redirectToSignin(request, {
         authstate: "unauthorized-refresherror",
       })
@@ -57,11 +57,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // update the session with the new values
-    const headers = await updateSession("userId", jsn.data.user.id)
+    const headers = await updateSession("userId", res.data.user.id)
 
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
-      logger.debug("👑 authenticate: request GET redirect")
+      logger.debug("👑 auth.signin: request GET redirect")
       throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
     }
   }
@@ -84,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 async function fetchRefresh(user: User) {
   logger.debug("🍺 fetchRefresh: ")
 
-  const jsn = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
+  const res = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -100,14 +100,14 @@ async function fetchRefresh(user: User) {
     ),
   })
     .then((res) => {
-      logger.debug("👑 authenticate: fetch res")
+      logger.debug("👑 auth.signin: fetch res")
       return res.json()
     })
     .catch((err) => {
-      console.error(`❌ authenticate: fetch error`, err.message, err)
+      console.error(`❌ auth.signin: fetch error`, err.message, err)
       return { error: "error in fetch" }
     })
-  return jsn
+  return res
 }
 
 const scopes = [
@@ -150,11 +150,11 @@ export default function AuthSigninPage() {
         )}
       >
         <div className="flex items-center">
-          <LogoIcon className=" w-16 sm:w-24" />
-          <DriveLogoIcon className="h-24 w-24" />
+          <LogoIcon className="w-16 sm:w-24" />
+          <DriveLogoIcon className="w-24 h-24" />
         </div>
 
-        <div className="max-w-xl rounded-lg bg-base-100 p-4 shadow-lg">
+        <div className="max-w-xl p-4 rounded-lg shadow-lg bg-base-100">
           <span
             className={clsx(
               `font-bold underline decoration-sfred-200 decoration-4 underline-offset-4`,
@@ -174,7 +174,7 @@ export default function AuthSigninPage() {
 function GoogleSigninButton({ disabled }: { disabled: boolean }) {
   return (
     <>
-      <div className="relative flex w-full items-center justify-center gap-8 ">
+      <div className="relative flex items-center justify-center w-full gap-8 ">
         <Form method="post" action="/auth/signin">
           <Button type="submit" variant="info" size="md" disabled={disabled}>
             <DriveLogoIcon className="h-7" />
