@@ -1,9 +1,4 @@
 import { PrismaClient } from "@prisma/client"
-import os from "os"
-import { logger } from "./logger"
-const cpuCount = os.cpus().length
-
-logger.info(`🐳 CPU count: ${cpuCount}`)
 
 const prismaClientSingleton = () => {
   return new PrismaClient()
