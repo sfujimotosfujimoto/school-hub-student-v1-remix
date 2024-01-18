@@ -1,15 +1,14 @@
 import { logger } from "./logger"
+import { toLocaleString } from "~/lib/utils"
 
 // Check expiration
 export function isExpired(expire: Date): boolean {
   if (expire.getTime() < 10_000_000_000 && expire.getTime() > 0)
     throw Error(`expire is incorrect: ${expire}`)
   logger.info(
-    `🍇 isExpired: ${expire.getTime() < Date.now()}, expire ${new Date(
+    `🍇 isExpired: ${expire.getTime() < Date.now()}, expire ${toLocaleString(
       expire,
-    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}, now ${new Date(
-      Date.now(),
-    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+    )}, now ${toLocaleString(Date.now())}`,
   )
 
   const now = Date.now()

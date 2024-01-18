@@ -4,6 +4,7 @@ import { createCookieSessionStorage, redirect } from "@remix-run/node"
 import type { Payload, User } from "~/types"
 import { logger } from "../logger"
 import { getRefreshUserById, getUserById } from "./user.server"
+import { toLocaleString } from "../utils"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
 
@@ -55,7 +56,7 @@ export async function getUserFromSession(
 
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
-  const userId = Number(session.get("userId") || 0)
+  const userId = session.get("userId")
   // const userJWT = await getUserJWTFromSession(request)
 
   if (!userId) return null
@@ -69,16 +70,12 @@ export async function getUserFromSession(
   // const user = await getUserByEmail(payload.email)
   // if no user, create in prisma db
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   logger.debug(
-    `👑 getUserFromSession: exp ${new Date(
+    `👑 getUserFromSession: exp ${toLocaleString(
       user.credential?.expiry || 0,
-    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} -- request.url ${
-      request.url
-    }`,
+    )} -- request.url ${request.url}`,
   )
   return user
 }
@@ -111,11 +108,9 @@ export async function getRefreshUserFromSession(
   }
 
   logger.debug(
-    `👑 getRefreshUserFromSession: rexp ${new Date(
-      Number(user?.credential?.refreshTokenExpiry) || "",
-    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} -- requrest.url ${
-      request.url
-    }`,
+    `👑 getRefreshUserFromSession: rexp ${toLocaleString(
+      user?.credential?.refreshTokenExpiry || 0,
+    )} -- requrest.url ${request.url}`,
   )
 
   return user

@@ -193,3 +193,7 @@ export function setSearchParams(url: string, key: string, value: string) {
   _url.searchParams.set(key, value ? value : "ALL")
   return _url.href
 }
+
+export function toLocaleString(date: Date | number | string) {
+  return new Date(date).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+}
