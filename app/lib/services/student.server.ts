@@ -1,5 +1,5 @@
 import type { Student } from "~/types"
-import { prisma } from "../db.server"
+import { prisma } from "./db.server"
 
 export async function getStudentDBByEmail(email: string) {
   // find student in prisma db with student email even if user is parent

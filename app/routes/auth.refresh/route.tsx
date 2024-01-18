@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node"
 import type { ActionFunctionArgs } from "@remix-run/node"
 
-import { prisma } from "~/lib/db.server"
+import { prisma } from "~/lib/services/db.server"
 import { getDriveFiles } from "~/lib/google/drive.server"
 import { getRefreshedToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"

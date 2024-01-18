@@ -1,6 +1,6 @@
 import type { User } from "~/types"
 import { GaxiosError } from "gaxios"
-import { prisma } from "../db.server"
+import { prisma } from "./db.server"
 import { logger } from "../logger"
 // import { returnDriveFileData } from "./drive-file-data.server"
 import { redirectToSignin } from "../responses"

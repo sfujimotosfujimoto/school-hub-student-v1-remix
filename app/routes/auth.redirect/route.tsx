@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs } from "@remix-run/node"
 
-import { signin } from "~/lib/signinout.server"
+import { signin } from "~/lib/services/signinout.server"
 
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { redirectToSignin } from "~/lib/responses"
