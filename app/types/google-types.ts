@@ -39,7 +39,7 @@ export type Permission = {
   displayName: string
   type: "user" | "group"
   emailAddress: string
-  role: "owner" | "writer" | "reader"
+  role: "owner" | "writer" | "reader" | "commenter"
 }
 
 // rexp = refresh token expiry date
