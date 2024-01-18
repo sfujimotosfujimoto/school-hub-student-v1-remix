@@ -166,7 +166,7 @@ function Document({ children }: { children: React.ReactNode }) {
       <body>
         <div
           data-name="root.tsx"
-          className="mx-auto grid h-full grid-rows-layout"
+          className="grid h-full mx-auto grid-rows-layout"
         >
           <PageTransitionProgressBar />
           <Navigation />
