@@ -18,36 +18,34 @@ export default function NavRight() {
 
   return (
     <div className="flex">
-      <div className="flex flex-grow items-center gap-1 text-xs sm:gap-2 sm:text-base">
+      <div className="flex items-center flex-grow gap-1 text-xs sm:gap-2 sm:text-base">
         <NavLinkButton to="/" size="xs">
           <span className="">ホーム</span>
         </NavLinkButton>
         {!role && (
-          <Form reloadDocument method="post" action="/auth/signin">
-            <Button type="submit" variant="primary" size="xs">
-              <LoginIcon className="h-5 w-5 sm:hidden" />
-              <span className="hidden sm:block">サインイン</span>
-            </Button>
-          </Form>
+          <NavLinkButton to="/auth/signin" variant="primary" size="xs">
+            <LoginIcon className="w-5 h-5 sm:hidden" />
+            <span className="hidden sm:block">サインイン</span>
+          </NavLinkButton>
         )}
 
         {role && (
           <>
             {role === "ADMIN" && (
               <NavLinkButton to="/admin" size="xs">
-                <DashboardIcon className="h-5 w-5 sm:hidden " />
+                <DashboardIcon className="w-5 h-5 sm:hidden " />
                 <span className="hidden sm:block">ADMIN</span>
               </NavLinkButton>
             )}
             {studentLink && (
               <NavLinkButton to={`/student/${studentLink}`} size="xs">
-                <UserIcon className="h-5 w-5 sm:hidden" />
+                <UserIcon className="w-5 h-5 sm:hidden" />
                 <span className="hidden sm:block">生徒</span>
               </NavLinkButton>
             )}
             <Form method="post" action="/auth/signout">
               <Button type="submit" variant="secondary" size="xs">
-                <LogoutIcon className="h-5 w-5 sm:hidden" />
+                <LogoutIcon className="w-5 h-5 sm:hidden" />
                 <span className="hidden sm:block">サインアウト</span>
               </Button>
             </Form>
