@@ -1,12 +1,9 @@
 import type { Role } from "@prisma/client"
-import users from "../data/User.json"
-
-import students from "../data/Student.json"
-
+import { prisma } from "../app/lib/services/db.server"
 import credentials from "../data/Credential.json"
 import stats from "../data/Stats.json"
-
-import { prisma } from "../app/lib/db.server"
+import students from "../data/Student.json"
+import users from "../data/User.json"
 
 async function main() {
   await prisma.user.deleteMany()
