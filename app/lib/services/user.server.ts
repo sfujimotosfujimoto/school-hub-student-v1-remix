@@ -101,7 +101,9 @@ export const selectUser = {
 //   // return returnUser(user)
 // }
 
-export async function getUserById(userId: number): Promise<User | null> {
+export async function getUserById(
+  userId: number,
+): Promise<{ user: User | null; refreshUser: User | null }> {
   logger.debug(`👑 getUserById: userId: ${userId}`)
 
   try {
@@ -116,26 +118,37 @@ export async function getUserById(userId: number): Promise<User | null> {
         ...selectUser,
       },
     })
-    if (!user || !user.credential) {
-      return null
+
+    if (user) {
+      return { user, refreshUser: null }
     }
 
-    if (!user.stats) user.stats = null
+    const refreshUser = await prisma.user.findUnique({
+      where: {
+        id: userId,
+        credential: {
+          refreshTokenExpiry: { gt: new Date() },
+        },
+      },
+      select: {
+        ...selectUser,
+      },
+    })
 
-    return user
+    return { user: user || null, refreshUser: refreshUser || null }
   } catch (error) {
     if (error instanceof GaxiosError) {
       console.error(`👑 getUserById: GaxiosError: ${error.message}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return null
+      return { user: null, refreshUser: null }
     } else if (error instanceof Error) {
       console.error(`👑 getUserById: Error: ${error.message}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return null
+      return { user: null, refreshUser: null }
     } else {
       console.error(`👑 getUserById: unknown error: ${error}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return null
+      return { user: null, refreshUser: null }
     }
   }
 

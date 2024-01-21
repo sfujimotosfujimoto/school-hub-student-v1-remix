@@ -17,7 +17,7 @@ import { redirectToSignin } from "~/lib/responses"
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin._index ${request.url}`)
-  const user = await getUserFromSession(request)
+  const { user } = await getUserFromSession(request)
   if (!user || !user.credential) {
     throw redirectToSignin(request)
   }
@@ -46,7 +46,7 @@ export default function AdminIndexPage() {
   return (
     <section
       data-name="admin._index"
-      className="mx-auto w-full max-w-5xl overflow-x-auto p-4"
+      className="w-full max-w-5xl p-4 mx-auto overflow-x-auto"
     >
       <div className="mx-auto max-h-[calc(100dvh-200px)] w-full overflow-x-auto">
         {!users && <h1>NO DATA</h1>}

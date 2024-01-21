@@ -28,7 +28,7 @@ import { convertDriveFileDatum } from "~/lib/utils-loader"
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
-  const user = await getUserFromSession(request)
+  const { user } = await getUserFromSession(request)
   if (!user) throw redirectToSignin(request)
   await requireUserRole(request, user)
 

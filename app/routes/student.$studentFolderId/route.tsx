@@ -39,7 +39,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(
     `🍿 loader: student.$studentFolderId ${new URL(request.url).href}`,
   )
-  const user = await getUserFromSession(request)
+  const { user } = await getUserFromSession(request)
   if (!user || !user.credential) throw redirectToSignin(request)
   await requireUserRole(request, user)
 
@@ -88,13 +88,13 @@ export default function StudentFolderIdLayout() {
   }
   // JSX -------------------------
   return (
-    <div className="container mx-auto h-full p-4 sm:p-8">
+    <div className="container h-full p-4 mx-auto sm:p-8">
       <div className="mb-4 space-y-4">
         {resultStudent && <StudentHeader student={resultStudent} />}
       </div>
 
       {/* <Suspense
-        fallback={<h1 className="text3xl font-bold">ファイルを検索中...</h1>}
+        fallback={<h1 className="font-bold text3xl">ファイルを検索中...</h1>}
         key={Math.random()}
       >
         <Await

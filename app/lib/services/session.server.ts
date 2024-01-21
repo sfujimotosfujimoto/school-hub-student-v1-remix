@@ -49,7 +49,7 @@ export async function destroyUserSession(request: Request) {
 
 export async function getUserFromSession(
   request: Request,
-): Promise<User | null> {
+): Promise<{ user: User | null; refreshUser: User | null }> {
   logger.debug(
     `👑 getUserFromSession: request ${request.url}, ${request.method}`,
   )
@@ -57,27 +57,32 @@ export async function getUserFromSession(
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
   const userId = session.get("userId")
-  // const userJWT = await getUserJWTFromSession(request)
+  if (!userId) return { user: null, refreshUser: null }
 
-  if (!userId) return null
-
-  // const payload = await parseVerifyUserJWT(userJWT)
-
-  // if (!payload) return null
-
-  // get UserBase from Prisma
-  const user = await getUserById(userId)
-  // const user = await getUserByEmail(payload.email)
-  // if no user, create in prisma db
-
-  if (!user) return null
-
+  const { user, refreshUser } = await getUserById(userId)
   logger.debug(
-    `👑 getUserFromSession: exp ${toLocaleString(
-      user.credential?.expiry || 0,
-    )} -- request.url ${request.url}`,
+    "✅ lib/session.server.ts ~ 	🌈 user, refreshUser ✅ ",
+    user,
+    refreshUser,
   )
-  return user
+
+  if (user) {
+    logger.debug(
+      `👑 getUserFromSession: exp ${toLocaleString(
+        user.credential?.expiry || "",
+      )} -- request.url ${request.url}`,
+    )
+    return { user, refreshUser: null }
+  } else if (!user && refreshUser) {
+    logger.debug(
+      `👑 getUserFromSession: rexp ${toLocaleString(
+        refreshUser.credential?.refreshTokenExpiry || "",
+      )} -- request.url ${request.url}`,
+    )
+    return { user: null, refreshUser }
+  } else {
+    return { user: null, refreshUser: null }
+  }
 }
 
 export async function getRefreshUserFromSession(

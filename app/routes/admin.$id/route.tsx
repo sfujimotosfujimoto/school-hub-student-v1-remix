@@ -14,7 +14,7 @@ export default function AdminIdLayoutPage() {
   return (
     <div
       data-name="admin.$id layout"
-      className="container mx-auto h-full p-8 pt-14 sm:pt-8"
+      className="container h-full p-8 mx-auto pt-14 sm:pt-8"
     >
       <Outlet />
       <div className="flex gap-8 p-4">
@@ -41,7 +41,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id ${request.url}`)
-  const user = await getUserFromSession(request)
+  const { user } = await getUserFromSession(request)
   if (!user || !user.credential) throw redirectToSignin(request)
 
   await requireAdminRole(request, user)

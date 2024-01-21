@@ -42,7 +42,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { studentFolderId } = params
   if (!studentFolderId) throw Error("id route parameter must be defined")
 
-  const user = await getUserFromSession(request)
+  const { user } = await getUserFromSession(request)
   if (!user || !user.credential) throw redirectToSignin(request)
 
   const student = user.student
@@ -219,36 +219,36 @@ export default function StudentFolderIdIndexPage() {
   // JSX -------------------------
   return (
     <>
-      <section className="flex h-full flex-col space-y-4">
-        <div className="flex flex-none items-center justify-between">
+      <section className="flex flex-col h-full space-y-4">
+        <div className="flex items-center justify-between flex-none">
           <BackButton />
 
           <FileCount driveFiles={dfd} />
         </div>
-        <div className="flex flex-none flex-wrap gap-1">
+        <div className="flex flex-wrap flex-none gap-1">
           <AllPill url={url} studentFolderId={studentFolderId} />
           {nendos.length > 0 && (
-            <div className="divider divider-horizontal mx-0"></div>
+            <div className="mx-0 divider divider-horizontal"></div>
           )}
           <NendoPills url={url} nendos={nendos} />
           {tags.length > 0 && (
-            <div className="divider divider-horizontal mx-0"></div>
+            <div className="mx-0 divider divider-horizontal"></div>
           )}
           <TagPills url={url} tags={tags} />
           {extensions.length > 0 && (
-            <div className="divider divider-horizontal mx-0"></div>
+            <div className="mx-0 divider divider-horizontal"></div>
           )}
           <ExtensionPills url={url} extensions={extensions} />
           {segments.length > 0 && (
-            <div className="divider divider-horizontal mx-0"></div>
+            <div className="mx-0 divider divider-horizontal"></div>
           )}
           <SegmentPills url={url} segments={segments} />
         </div>
 
-        <div className="mb-12 mt-4 flex-auto overflow-x-auto px-2">
+        <div className="flex-auto px-2 mt-4 mb-12 overflow-x-auto">
           <Suspense
             fallback={
-              <h1 className="text3xl font-bold">ファイルを検索中...</h1>
+              <h1 className="font-bold text3xl">ファイルを検索中...</h1>
             }
             key={Math.random()}
           >
@@ -288,7 +288,7 @@ export function ErrorBoundary() {
 
 /*
           <Suspense
-            fallback={<h1 className="text3xl font-bold">Counting...</h1>}
+            fallback={<h1 className="font-bold text3xl">Counting...</h1>}
             key={Math.random()}
           >
             <Await resolve={driveFiles} errorElement={<span></span>}>
@@ -299,7 +299,7 @@ export function ErrorBoundary() {
 
                     <Suspense
             fallback={
-              <h1 className="text3xl font-bold">ファイルを検索中...</h1>
+              <h1 className="font-bold text3xl">ファイルを検索中...</h1>
             }
             key={Math.random()}
           >

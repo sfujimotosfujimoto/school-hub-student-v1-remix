@@ -33,35 +33,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: root ${request.url}`)
   try {
     const headers = new Headers()
-    headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
-    const user = await getUserFromSession(request)
+    // headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
+    const { user, refreshUser } = await getUserFromSession(request)
 
-    if (!user?.email)
-      return json({ role: null, picture: null, folderLink: null, email: null })
+    const folderLink =
+      user?.student?.folderLink || refreshUser?.student?.folderLink
+    if (user?.email) {
+      console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
 
-    console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
-
-    const student = user?.student
-    if (!student)
       return json(
         {
           role: user.role,
           picture: user.picture,
-          folderLink: null,
+          folderLink: folderLink ? folderLink : null,
           email: user.email,
         },
         { headers },
       )
+    } else if (refreshUser?.email) {
+      console.log(
+        `🍟 ${refreshUser.last}${refreshUser.first} - ${refreshUser.email}`,
+      )
+      return json(
+        {
+          role: refreshUser.role,
+          picture: refreshUser.picture,
+          email: refreshUser.email,
+          folderLink: folderLink ? folderLink : null,
+        },
+        {
+          headers,
+        },
+      )
+    }
 
-    return json(
-      {
-        role: user.role,
-        picture: user.picture,
-        folderLink: student.folderLink,
-        email: user.email,
-      },
-      { headers },
-    )
+    return json({ role: null, picture: null, folderLink: null, email: null })
   } catch (error) {
     console.error(`🍿 loader: root ${request.url} - error`)
     return json({ role: null, picture: null, folderLink: null, email: null })

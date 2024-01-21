@@ -12,7 +12,7 @@ import {
 
 import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
-import { getFolderId } from "~/lib/utils"
+import { getFolderId, toLocaleString } from "~/lib/utils"
 import type { User } from "~/types"
 import { redirectToSignin } from "~/lib/responses"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
@@ -27,14 +27,12 @@ export const config = {
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
-  const user = await getUserFromSession(request)
-
-  // TODO: For debug
+  const { user } = await getUserFromSession(request)
 
   // if user is expired, check for refresh token
   if (!user) {
     // get refresh token expiry
-    logger.debug("!! getRefreshUserFromSession: in if (!user)")
+    logger.debug("🐝 before getRefreshUserFromSession: in if (user)")
     const refreshUser = await getRefreshUserFromSession(request)
     if (!refreshUser) {
       return null
@@ -45,9 +43,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const res = await fetchRefresh(refreshUser)
 
     logger.info(
-      `👑 auth.signin: expiry: ${new Date(
+      `👑 auth.signin: expiry: ${toLocaleString(
         res.data.user.credential.expiry,
-      ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+      )}`,
     )
     if (!res.ok) {
       throw redirectToSignin(request, {
