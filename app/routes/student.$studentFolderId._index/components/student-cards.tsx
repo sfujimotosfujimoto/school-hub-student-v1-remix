@@ -28,7 +28,7 @@ export default function StudentCards({
       {dfdz &&
         dfdz.map((d: DriveFileData) => (
           <Link
-            prefetch="intent"
+            prefetch="viewport"
             key={d.fileId}
             id="_StudentCard"
             to={`/student/${studentFolderId}/${d.fileId}`}
