@@ -32,6 +32,8 @@ import type { DriveFileData, Student } from "~/types"
 import { logger } from "~/lib/logger"
 import { convertDriveFileData } from "~/lib/utils-loader"
 
+const CACHE_MAX_AGE = 60 * 10 // 10 minutes
+
 /**
  * LOADER function
  */
@@ -70,7 +72,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const headers = new Headers()
 
-  headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE}`) // 10 minutes
 
   return defer(
     {

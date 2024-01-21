@@ -60,12 +60,12 @@ export async function signin({
     result.data
 
   // TODO: !!DEBUG!!: setting expiryDateDummy to 10 seconds
-  const expiry_date_dummy = new Date().getTime() + 1000 * 15
-  expiry_date = expiry_date_dummy
+  // const expiry_date_dummy = new Date().getTime() + 1000 * 15
+  // expiry_date = expiry_date_dummy
 
   // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
   // let refreshTokenExpiry = refreshTokenExpiryDummy
-  let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 days
+  let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14) // 14 days
 
   if (!access_token) {
     throw redirectToSignin(request, { authstate: "no-access-token" })
