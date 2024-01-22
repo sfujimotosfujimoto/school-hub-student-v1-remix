@@ -14,7 +14,7 @@ import { logger } from "../logger"
 import { prisma } from "./db.server"
 // import { getStudentDBByEmail } from "./services/student.server"
 // import { updateUser } from "./services/user.server"
-import { redirectToSignin } from "../responses"
+import { errorResponses } from "../error-responses"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -53,7 +53,8 @@ export async function signin({
 
   if (!result.success) {
     console.error(result.error.errors)
-    throw redirectToSignin(request)
+    throw errorResponses.unauthorized()
+    // throw redirectToSignin(request)
   }
 
   let { access_token, expiry_date, scope, token_type, refresh_token } =
@@ -68,7 +69,8 @@ export async function signin({
   let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14) // 14 days
 
   if (!access_token) {
-    throw redirectToSignin(request, { authstate: "no-access-token" })
+    throw errorResponses.unauthorized()
+    // throw redirectToSignin(request, { authstate: "no-access-token" })
   }
 
   logger.debug(`💥 start: getPersonFromPeople`)
@@ -79,7 +81,8 @@ export async function signin({
     `🔥   end: getPersonFromPeople \t\ttime: ${(end2 - start2).toFixed(2)} ms`,
   )
   if (!person) {
-    throw redirectToSignin(request, { authstate: "unauthorized" })
+    throw errorResponses.unauthorized()
+    // throw redirectToSignin(request, { authstate: "unauthorized" })
   }
 
   logger.info(
@@ -99,7 +102,8 @@ export async function signin({
     !checkValidStudentOrParentEmail(person.email) &&
     !checkValidAdminEmail(person.email)
   ) {
-    throw redirectToSignin(request, { authstate: `not-parent-account` })
+    throw errorResponses.account()
+    // throw redirectToSignin(request, { authstate: `not-parent-account` })
   }
 
   logger.debug(`💥 start: upsert prisma`)
@@ -171,7 +175,8 @@ export async function signin({
     `🔥   end: getStudentByEmail time: \t\t${(end4 - start4).toFixed(2)} ms`,
   )
   if (!student && !studentPrisma) {
-    throw redirectToSignin(request, { authstate: `not-seig-account` })
+    errorResponses.account()
+    // throw redirectToSignin(request, { authstate: `not-seig-account` })
   }
 
   logger.debug(`💥 start: transaction`)
@@ -287,7 +292,8 @@ export async function signin({
   }
 
   if (!st?.folderLink) {
-    throw new Response(`no-folder`, { status: 401 })
+    throw errorResponses.folder()
+    // throw new Response(`no-folder`, { status: 401 })
   }
   const folderId = getFolderId(st.folderLink)
 
@@ -321,7 +327,8 @@ export async function getFolderIdFromEmail(
   const student = await getStudentByEmail(email)
 
   if (!student?.folderLink) {
-    throw Error(`no-folder`)
+    // throw Error(`no-folder`)
+    throw errorResponses.folder()
   }
 
   const folderId = getFolderId(student?.folderLink)
