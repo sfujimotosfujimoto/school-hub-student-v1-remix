@@ -20,7 +20,7 @@ export const config = {
   maxDuration: 60,
 }
 
-const REFRESH_EXPIRY = Date.now() + 1000 * 60 * 60 * 24
+const REFRESH_EXPIRY = Date.now() + 1000 * 60 * 60 * 24 * 14
 
 /**
  * Loader function
