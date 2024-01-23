@@ -60,11 +60,6 @@ export async function getUserFromSession(
   if (!userId) return { user: null, refreshUser: null }
 
   const { user, refreshUser } = await getUserById(userId)
-  logger.debug(
-    "✅ lib/session.server.ts ~ 	🌈 user, refreshUser ✅ ",
-    user,
-    refreshUser,
-  )
 
   if (user) {
     logger.debug(
@@ -75,7 +70,7 @@ export async function getUserFromSession(
     return { user, refreshUser: null }
   } else if (!user && refreshUser) {
     logger.debug(
-      `👑 getUserFromSession: rexp ${toLocaleString(
+      `👑 getUserFromSession: !user && refreshUser: rexp ${toLocaleString(
         refreshUser.credential?.refreshTokenExpiry || "",
       )} -- request.url ${request.url}`,
     )

@@ -13,7 +13,7 @@ import {
 // import { parseVerifyUserJWT } from "~/lib/services/session.server"
 import { selectUser } from "~/lib/services/user.server"
 // import { updateUserJWT } from "~/lib/signinout.server"
-import { getFolderId } from "~/lib/utils"
+import { getFolderId, toLocaleString } from "~/lib/utils"
 import { REFRESH_EXPIRY } from "~/config"
 
 export const config = {
@@ -36,6 +36,8 @@ export async function loader({ request }: ActionFunctionArgs) {
 
   return json({ ok: true }, 200)
 }
+
+//---------------------------------------------------------
 
 /**
  * Action for refresh token
@@ -61,6 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
     expiry_date,
     refresh_token: newRefreshToken,
   } = await getRefreshedToken(accessToken, refreshToken)
+
   if (!newAccessToken || !expiry_date)
     return json({ ok: false }, { status: 400 })
 
@@ -74,6 +77,12 @@ export async function action({ request }: ActionFunctionArgs) {
     ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
   )
 
+  const newRefreshTokenExpiry = new Date(Date.now() + REFRESH_EXPIRY)
+
+  logger.debug(
+    `✅ in auth.refresh action: newRefreshTokenExpiry ${toLocaleString(newRefreshTokenExpiry)}`,
+  )
+
   // 2. update user.credential in db
   const updatedUser = await prisma.user.update({
     where: {
@@ -85,7 +94,7 @@ export async function action({ request }: ActionFunctionArgs) {
           accessToken: newAccessToken,
           expiry: new Date(expiry_date),
           refreshToken: newRefreshToken,
-          refreshTokenExpiry: new Date(Date.now() + REFRESH_EXPIRY),
+          refreshTokenExpiry: newRefreshTokenExpiry,
         },
       },
     },
@@ -112,22 +121,6 @@ export async function action({ request }: ActionFunctionArgs) {
   await updateThumbnails(driveFiles)
 
   try {
-    // 3. update userJWT in session
-    // const userJWT = await updateUserJWT(
-    //   updatedUser.email,
-    //   new Date(expiry_date),
-    //   updatedUser.credential?.refreshTokenExpiry || new Date(),
-    // )
-    // const payload = await parseVerifyUserJWT(userJWT)
-    // if (!payload) {
-    //   return json({ ok: false }, { status: 400 })
-    // }
-
-    // logger.debug(
-    //   `✅ in auth.refresh action: new payload.exp ${new Date(
-    //     Number(payload.exp),
-    //   ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
-    // )
     const newUser = returnUser(updatedUser)
 
     return json({

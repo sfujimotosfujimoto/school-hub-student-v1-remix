@@ -14,9 +14,9 @@ import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import { getFolderId, toLocaleString } from "~/lib/utils"
 import type { User } from "~/types"
-import { redirectToSignin } from "~/lib/responses"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
+import { errorResponses } from "~/lib/error-responses"
 
 export const config = {
   maxDuration: 60,
@@ -32,14 +32,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // if user is expired, check for refresh token
   if (!user) {
     // get refresh token expiry
-    logger.debug("🐝 before getRefreshUserFromSession: in if (user)")
+    logger.debug("🐝 before getRefreshUserFromSession: in if (!user)")
     const refreshUser = await getRefreshUserFromSession(request)
     if (!refreshUser) {
       // @todo auth.signin/route.tsx: Need to use errorResponses
+      logger.debug("🐝 auth.signin: !refreshUser: returnin null")
       return null
     }
-
-    const redirectUrl = new URL(request.url).searchParams.get("redirect")
 
     const res = await fetchRefresh(refreshUser)
 
@@ -48,28 +47,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
         res.data.user.credential.expiry,
       )}`,
     )
+
+    // if couldn't get new access_token, expiry_date, refresh_token from google
     if (!res.ok) {
-      // @todo auth.signin/route.tsx: Need to use errorResponses
-      throw redirectToSignin(request, {
-        authstate: "unauthorized-refresherror",
-      })
-      // throw redirect("/auth/signin?authstate=unauthorized-refresherror")
+      throw errorResponses.unauthroized()
     }
 
     // update the session with the new values
     const headers = await updateSession("userId", res.data.user.id)
 
+    const redirectUrl = new URL(request.url).searchParams.get("redirect")
     // redirect to the same URL if the request was a GET (loader)
     if (request.method === "GET") {
-      logger.debug("👑 auth.signin: request GET redirect")
+      logger.debug(`👑 auth.signin: request GET redirect: ${redirectUrl}`)
       throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
     }
   }
 
   // get redirect from search params
-  // @todo auth.signin/route.tsx: Is this redirect working?
   const redirectUrl = new URL(request.url).searchParams.get("redirect")
   if (redirectUrl) {
+    logger.debug(
+      `👑 auth.signin: found redirectURL, redirecting to ${redirectUrl}`,
+    )
     throw redirect(redirectUrl)
   }
 

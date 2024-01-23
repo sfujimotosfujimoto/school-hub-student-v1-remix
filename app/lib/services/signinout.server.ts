@@ -15,6 +15,7 @@ import { prisma } from "./db.server"
 // import { getStudentDBByEmail } from "./services/student.server"
 // import { updateUser } from "./services/user.server"
 import { errorResponses } from "../error-responses"
+import { REFRESH_EXPIRY } from "~/config"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -66,7 +67,7 @@ export async function signin({
 
   // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
   // let refreshTokenExpiry = refreshTokenExpiryDummy
-  let refreshTokenExpiry = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14) // 14 days
+  let refreshTokenExpiry = new Date(Date.now() + REFRESH_EXPIRY) // 14 days
 
   if (!access_token) {
     throw errorResponses.unauthorized()
