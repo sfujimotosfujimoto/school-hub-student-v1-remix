@@ -14,13 +14,12 @@ import {
 import { selectUser } from "~/lib/services/user.server"
 // import { updateUserJWT } from "~/lib/signinout.server"
 import { getFolderId } from "~/lib/utils"
+import { REFRESH_EXPIRY } from "~/config"
 
 export const config = {
   // TODO: set maxDuration for production
   maxDuration: 60,
 }
-
-const REFRESH_EXPIRY = Date.now() + 1000 * 60 * 60 * 24 * 14
 
 /**
  * Loader function
@@ -86,7 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
           accessToken: newAccessToken,
           expiry: new Date(expiry_date),
           refreshToken: newRefreshToken,
-          refreshTokenExpiry: new Date(REFRESH_EXPIRY),
+          refreshTokenExpiry: new Date(Date.now() + REFRESH_EXPIRY),
         },
       },
     },

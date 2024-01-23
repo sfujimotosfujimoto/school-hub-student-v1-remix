@@ -35,6 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     logger.debug("🐝 before getRefreshUserFromSession: in if (user)")
     const refreshUser = await getRefreshUserFromSession(request)
     if (!refreshUser) {
+      // @todo auth.signin/route.tsx: Need to use errorResponses
       return null
     }
 
@@ -48,6 +49,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       )}`,
     )
     if (!res.ok) {
+      // @todo auth.signin/route.tsx: Need to use errorResponses
       throw redirectToSignin(request, {
         authstate: "unauthorized-refresherror",
       })
@@ -65,6 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   // get redirect from search params
+  // @todo auth.signin/route.tsx: Is this redirect working?
   const redirectUrl = new URL(request.url).searchParams.get("redirect")
   if (redirectUrl) {
     throw redirect(redirectUrl)
