@@ -1,27 +1,22 @@
 import {
-  type MetaFunction,
-  type LoaderFunctionArgs,
   json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
   type SerializeFrom,
 } from "@remix-run/node"
-
-import React from "react"
-
-import type { DriveFileData } from "~/types"
-import { getUserFromSession } from "~/lib/services/session.server"
+import { useLoaderData, useNavigation, useParams } from "@remix-run/react"
+import BackButton from "~/components/back-button"
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { logger } from "~/lib/logger"
 import { requireUserRole } from "~/lib/require-roles.server"
-
-import ErrorBoundaryDocument from "~/components/error-boundary-document"
-
-import ToFolderBtn from "./to-folder-button"
-import BackButton from "~/components/back-button"
-import StudentCard from "../student.$studentFolderId._index/components/student-card"
-
-import { useLoaderData, useNavigation, useParams } from "@remix-run/react"
 import { redirectToSignin } from "~/lib/responses"
 import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
+import { getUserFromSession } from "~/lib/services/session.server"
 import { convertDriveFileDatum } from "~/lib/utils-loader"
+import type { DriveFileData } from "~/types"
+import StudentCard from "../student.$studentFolderId._index/student-card"
+import ToFolderBtn from "./to-folder-button"
+import { CACHE_MAX_AGE_SECONDS } from "~/config"
 
 /**
  * Loader Function
@@ -44,7 +39,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     },
     {
       headers: {
-        "Cache-Control": "max-age=300",
+        "Cache-Control": `max-age=${CACHE_MAX_AGE_SECONDS}`,
       },
     },
   )
@@ -54,11 +49,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
  * Meta Function
  */
 export const meta: MetaFunction = () => {
-  // added
-  // const title =
-  //   `${data?.student.gakunen}${data?.student.hr}${data?.student.hrNo}${data?.student.last}${data?.student.first}` ||
-  //   ""
-
   return [
     {
       title: `SCHOOL HUB`,

@@ -26,12 +26,23 @@ export default function AdminIdLayoutPage() {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data) {
-    const { targetUser } = data
+    const {
+      targetUser: { user, refreshUser },
+    } = data
+    const last = user?.last
+      ? user.last
+      : refreshUser?.last
+        ? refreshUser.last
+        : null
+    const first = user?.first
+      ? user.first
+      : refreshUser?.first
+        ? refreshUser.first
+        : null
+
     return [
       {
-        title: `${
-          targetUser ? `${targetUser.last}${targetUser.first}` : "ADMIN"
-        } | SCHOOL HUB`,
+        title: `${last && first ? `${last}${first}` : "ADMIN"} | SCHOOL HUB`,
       },
     ]
   } else {

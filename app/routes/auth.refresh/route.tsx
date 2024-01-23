@@ -1,20 +1,17 @@
-import { json, redirect } from "@remix-run/node"
 import type { ActionFunctionArgs } from "@remix-run/node"
-
-import { prisma } from "~/lib/services/db.server"
+import { json, redirect } from "@remix-run/node"
+import { REFRESH_EXPIRY } from "~/config"
 import { getDriveFiles } from "~/lib/google/drive.server"
 import { getRefreshedToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import { returnUser } from "~/lib/return-user"
+import { prisma } from "~/lib/services/db.server"
 import {
   saveDriveFileData,
   updateThumbnails,
 } from "~/lib/services/drive-file-data.server"
-// import { parseVerifyUserJWT } from "~/lib/services/session.server"
 import { selectUser } from "~/lib/services/user.server"
-// import { updateUserJWT } from "~/lib/signinout.server"
 import { getFolderId, toLocaleString } from "~/lib/utils"
-import { REFRESH_EXPIRY } from "~/config"
 
 export const config = {
   // TODO: set maxDuration for production
@@ -72,9 +69,9 @@ export async function action({ request }: ActionFunctionArgs) {
   // expiry_date = expiryDateDummy
 
   logger.debug(
-    `✅ in auth.refresh action: expiry ${new Date(
-      Number(expiry_date),
-    ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
+    `✅ in auth.refresh action: expiry ${toLocaleString(
+      new Date(Number(expiry_date)),
+    )}`,
   )
 
   const newRefreshTokenExpiry = new Date(Date.now() + REFRESH_EXPIRY)

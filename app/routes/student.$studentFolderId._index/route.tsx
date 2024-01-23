@@ -1,38 +1,33 @@
 import {
+  defer,
+  type LoaderFunctionArgs,
+  type SerializeFrom,
+} from "@remix-run/node"
+import {
   Await,
   useLoaderData,
   useNavigation,
   useParams,
   useRouteError,
 } from "@remix-run/react"
-import {
-  defer,
-  type SerializeFrom,
-  type LoaderFunctionArgs,
-} from "@remix-run/node"
-
+import { Suspense } from "react"
+import BackButton from "~/components/back-button"
+import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import { CACHE_MAX_AGE_SECONDS } from "~/config"
+import { logger } from "~/lib/logger"
+import { redirectToSignin } from "~/lib/responses"
+import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { filterSegments, parseTags } from "~/lib/utils"
-
-import ErrorBoundaryDocument from "~/components/error-boundary-document"
-import BackButton from "~/components/back-button"
-
-import FileCount from "./components/file-count"
-import NendoPills from "./components/nendo-pills"
-import TagPills from "./components/tag-pills"
-import SegmentPills from "./components/segment-pills"
-import AllPill from "./components/all-pill"
-import ExtensionPills from "./components/extensions-pills"
-import StudentCards from "./components/student-cards"
-
-import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
-import { redirectToSignin } from "~/lib/responses"
-import { Suspense } from "react"
-import type { DriveFileData, Student } from "~/types"
-import { logger } from "~/lib/logger"
 import { convertDriveFileData } from "~/lib/utils-loader"
-
-const CACHE_MAX_AGE = 60 * 10 // 10 minutes
+import type { DriveFileData, Student } from "~/types"
+import AllPill from "./all-pill"
+import ExtensionPills from "./extensions-pills"
+import FileCount from "./file-count"
+import NendoPills from "./nendo-pills"
+import SegmentPills from "./segment-pills"
+import StudentCards from "./student-cards"
+import TagPills from "./tag-pills"
 
 /**
  * LOADER function
@@ -72,7 +67,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const headers = new Headers()
 
-  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE}`) // 10 minutes
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
 
   return defer(
     {

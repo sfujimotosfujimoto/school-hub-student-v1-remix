@@ -1,5 +1,5 @@
 import { AButton } from "~/components/buttons/button"
-import FolderIcon from "~/components/icons/folder-icon"
+import { FolderIcon } from "~/components/icons"
 
 export default function ToFolderBtn({ parentId }: { parentId: string }) {
   return (

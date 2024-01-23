@@ -11,6 +11,20 @@ import { requireAdminRole } from "~/lib/require-roles.server"
 import AdminCard from "../auth.signin/admin-card"
 import { redirectToSignin } from "~/lib/responses"
 
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  logger.debug(`🍿 loader: admin.$id._index ${request.url}`)
+  const { user } = await getUserFromSession(request)
+  if (!user || !user.credential) throw redirectToSignin(request)
+  await requireAdminRole(request, user)
+  const { id } = params
+
+  const targetUser = await userS.getUserById(Number(id))
+
+  return {
+    targetUser,
+  }
+}
+
 export default function AdminIdIndexPage() {
   let { targetUser } = useLoaderData<typeof loader>()
 
@@ -34,18 +48,4 @@ export default function AdminIdIndexPage() {
       </div>
     </article>
   )
-}
-
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  logger.debug(`🍿 loader: admin.$id._index ${request.url}`)
-  const { user } = await getUserFromSession(request)
-  if (!user || !user.credential) throw redirectToSignin(request)
-  await requireAdminRole(request, user)
-  const { id } = params
-
-  const targetUser = await userS.getUserById(Number(id))
-
-  return {
-    targetUser,
-  }
 }
