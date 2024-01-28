@@ -1,8 +1,4 @@
-import {
-  defer,
-  type LoaderFunctionArgs,
-  type SerializeFrom,
-} from "@remix-run/node"
+import { defer, type LoaderFunctionArgs } from "@remix-run/node"
 import {
   Await,
   useLoaderData,
@@ -51,19 +47,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const segmentsString = url.searchParams.get("segments")
   const extensionsString = url.searchParams.get("extensions")
 
-  // Get DriveFileData from DB
-  let driveFileData = await getDriveFileDataByFolderId(studentFolderId)
+  const promiseData: Promise<{
+    nendos: string[]
+    segments: string[]
+    extensions: string[]
+    tags: string[]
+    driveFileData: DriveFileData[]
+  }> = new Promise(async (resolve, reject) => {
+    // Get DriveFileData from DB
+    let driveFileData = await getDriveFileDataByFolderId(studentFolderId)
 
-  // Filter by nendo, tags, segments, extensions
-  driveFileData = getFilteredDriveFiles(
-    driveFileData || [],
-    nendoString,
-    tagString,
-    segmentsString,
-    extensionsString,
-  )
-  const { nendos, segments, extensions, tags } =
-    getNendosSegmentsExtensionsTags(driveFileData, student)
+    // Filter by nendo, tags, segments, extensions
+    driveFileData = getFilteredDriveFiles(
+      driveFileData || [],
+      nendoString,
+      tagString,
+      segmentsString,
+      extensionsString,
+    )
+    const { nendos, segments, extensions, tags } =
+      getNendosSegmentsExtensionsTags(driveFileData, student)
+
+    resolve({
+      nendos,
+      segments,
+      extensions,
+      tags,
+      driveFileData,
+    })
+  })
 
   const headers = new Headers()
 
@@ -71,20 +83,30 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   return defer(
     {
-      nendoString,
       tagString,
       url: request.url,
-      nendos,
-      segments,
-      extensions,
-      tags,
       studentFolderId,
-      driveFileData,
+      promiseData,
     },
     {
       headers,
     },
   )
+  // return defer(
+  //   {
+  //     tagString,
+  //     url: request.url,
+  //     nendos,
+  //     segments,
+  //     extensions,
+  //     tags,
+  //     studentFolderId,
+  //     driveFileData,
+  //   },
+  //   {
+  //     headers,
+  //   },
+  // )
 }
 
 function getFilteredDriveFiles(
@@ -201,74 +223,86 @@ export default function StudentFolderIdIndexPage() {
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
 
-  const {
-    studentFolderId,
-    url,
-    nendos,
-    tags,
-    extensions,
-    segments,
-    driveFileData,
-  } = useLoaderData<SerializeFrom<typeof loader>>()
+  const { studentFolderId, url, promiseData } = useLoaderData<typeof loader>()
+  // const {
+  //   studentFolderId,
+  //   url,
+  //   nendos,
+  //   tags,
+  //   extensions,
+  //   segments,
+  //   driveFileData,
+  // } = useLoaderData<SerializeFrom<typeof loader>>()
 
-  const dfd = convertDriveFileData(driveFileData)
+  // const dfd = convertDriveFileData(driveFileData)
 
   // JSX -------------------------
   return (
     <>
       <section className="flex flex-col h-full space-y-4">
-        <div className="flex items-center justify-between flex-none">
-          <BackButton />
-
-          <FileCount driveFiles={dfd} />
-        </div>
-        <div className="flex flex-wrap flex-none gap-1">
-          <AllPill url={url} studentFolderId={studentFolderId} />
-          {nendos.length > 0 && (
-            <div className="mx-0 divider divider-horizontal"></div>
-          )}
-          <NendoPills url={url} nendos={nendos} />
-          {tags.length > 0 && (
-            <div className="mx-0 divider divider-horizontal"></div>
-          )}
-          <TagPills url={url} tags={tags} />
-          {extensions.length > 0 && (
-            <div className="mx-0 divider divider-horizontal"></div>
-          )}
-          <ExtensionPills url={url} extensions={extensions} />
-          {segments.length > 0 && (
-            <div className="mx-0 divider divider-horizontal"></div>
-          )}
-          <SegmentPills url={url} segments={segments} />
-        </div>
-
-        <div className="flex-auto px-2 mt-4 mb-12 overflow-x-auto">
-          <Suspense
-            fallback={
-              <h1 className="font-bold text3xl">ファイルを検索中...</h1>
+        <Suspense fallback={<SkeletonUI />} key={Math.random()}>
+          <Await
+            resolve={promiseData}
+            errorElement={
+              <ErrorBoundaryDocument
+                toHome={true}
+                message="ファイルが見つかりませんでした。"
+              />
             }
-            key={Math.random()}
           >
-            <Await
-              resolve={dfd}
-              errorElement={
-                <ErrorBoundaryDocument
-                  toHome={true}
-                  message="ファイルが見つかりませんでした。"
-                />
-              }
-            >
-              {(resolved) => (
-                <StudentCards
-                  driveFiles={resolved}
-                  isNavigating={isNavigating}
-                />
-              )}
-            </Await>
-          </Suspense>
-        </div>
+            {({ driveFileData, nendos, tags, extensions, segments }) => {
+              const dfd = convertDriveFileData(driveFileData)
+              return (
+                <>
+                  <div className="flex items-center justify-between flex-none">
+                    <BackButton />
+
+                    <FileCount driveFiles={dfd} />
+                  </div>
+                  <div className="flex flex-wrap flex-none gap-1">
+                    <AllPill url={url} studentFolderId={studentFolderId} />
+                    {nendos.length > 0 && (
+                      <div className="mx-0 divider divider-horizontal"></div>
+                    )}
+                    <NendoPills url={url} nendos={nendos} />
+                    {tags.length > 0 && (
+                      <div className="mx-0 divider divider-horizontal"></div>
+                    )}
+                    <TagPills url={url} tags={tags} />
+                    {extensions.length > 0 && (
+                      <div className="mx-0 divider divider-horizontal"></div>
+                    )}
+                    <ExtensionPills url={url} extensions={extensions} />
+                    {segments.length > 0 && (
+                      <div className="mx-0 divider divider-horizontal"></div>
+                    )}
+                    <SegmentPills url={url} segments={segments} />
+                  </div>
+
+                  <div className="flex-auto px-2 mt-4 mb-12 overflow-x-auto">
+                    <StudentCards
+                      driveFiles={dfd}
+                      isNavigating={isNavigating}
+                    />
+                  </div>
+                </>
+              )
+            }}
+          </Await>
+        </Suspense>
       </section>
     </>
+  )
+}
+
+function SkeletonUI() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="skeleton h-64"></div>
+      <div className="skeleton h-64"></div>
+      <div className="skeleton h-64"></div>
+      <div className="skeleton h-64"></div>
+    </div>
   )
 }
 
