@@ -15,3 +15,5 @@ START*.md
 
 data/*.json
 **/log*.txt
+
+logs
