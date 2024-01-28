@@ -4,26 +4,6 @@ import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
 import type { loader as rootLoader } from "~/root"
 
-/**
- * Root loader
- */
-// export async function loader({ request }: LoaderFunctionArgs) {
-//   logger.debug(`🍿 loader: _index ${request.url}`)
-//   // throw Error("error!!!!!")
-//   try {
-//     const user = await getUserFromSession(request)
-
-//     return json({
-//       role: user?.role || null,
-//       picture: user?.picture || null,
-//       email: user?.email || null,
-//     })
-//   } catch (error) {
-//     console.error(`_index.tsx: ${error}`)
-//     return null
-//   }
-// }
-
 export default function Index() {
   const data = useRouteLoaderData<typeof rootLoader>("root")
   // throw Error("error!!!!!")

@@ -12,7 +12,7 @@ import { signin } from "~/lib/services/signinout.server"
 
 //update timeout
 export const config = {
-  // TODO: set maxDuration for production
+  // @note auth.redirect/route.tsx: set maxDuration for production
   maxDuration: 60,
 }
 

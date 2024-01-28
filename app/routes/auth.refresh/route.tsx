@@ -14,7 +14,7 @@ import { selectUser } from "~/lib/services/user.server"
 import { getFolderId, toLocaleString } from "~/lib/utils"
 
 export const config = {
-  // TODO: set maxDuration for production
+  // @note auth.refresh/route.tsx: set maxDuration for production
   maxDuration: 60,
 }
 
@@ -103,18 +103,20 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ ok: false }, { status: 400 })
   }
   const folderId = getFolderId(updatedUser.student?.folderLink || "")
-  // TODO: update error response
+  // @todo auth.refresh/route.tsx: Update errorResponse
   if (!folderId) {
     return json({ ok: false }, { status: 400 })
   }
 
-  // Update drive file data in Database
-  // !! Wasn't using newAccessToken
+  // Update drive file data in Database,
+  // Must use newAccessToken
   const driveFiles = await getDriveFiles(
-    newAccessToken, // !! was using accessToken which is old and outdated
+    newAccessToken,
     `trashed=false and '${folderId}' in parents`,
   )
   await saveDriveFileData(updatedUser.id, driveFiles)
+
+  // @todo auth.refresh/route.tsx: Need to make this faster!!
   await updateThumbnails(driveFiles)
 
   try {

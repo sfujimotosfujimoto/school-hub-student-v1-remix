@@ -161,7 +161,7 @@ export async function signin({
 
   logger.debug(`💥 start: getStudentByEmail`)
   let start4 = performance.now()
-  // TODO: check if student is in db
+  // @note services/signinout.server.ts: check if student is in db
   let studentPrisma = await prisma.student.findUnique({
     where: {
       email: studentEmail,

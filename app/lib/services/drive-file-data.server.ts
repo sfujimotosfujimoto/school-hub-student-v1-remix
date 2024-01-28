@@ -111,6 +111,7 @@ export async function updateDriveFileData(
   }
 }
 
+// @todo services/drive-file-data.server.ts: Need to make this faster!!
 export async function updateThumbnails(driveFiles: DriveFile[]) {
   await prisma.$transaction([
     ...driveFiles.map((driveFile) =>
