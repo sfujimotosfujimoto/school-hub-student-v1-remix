@@ -41,7 +41,6 @@ setup("authenticate in example", async ({ page }) => {
   // await navigationPromise2
   // await page.waitForURL(/challenge/, { waitUntil: "load" })
 
-  // TODO:
   // I don't know why but when running `pnpm run test:e2e` it fails with
   // Error: : Timeout 30000ms exceeded.
   // Below is a workaround.
