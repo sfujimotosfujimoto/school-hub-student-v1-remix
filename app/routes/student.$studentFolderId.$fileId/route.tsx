@@ -33,14 +33,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let dfd: DriveFileData | undefined
   dfd = await updateDriveFileData(fileId)
 
+  const headers = new Headers()
+
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`)
+
   return json(
     {
       driveFileDatum: dfd,
     },
     {
-      headers: {
-        "Cache-Control": `private, max-age=${CACHE_MAX_AGE_SECONDS}`,
-      },
+      headers: headers,
     },
   )
 }
