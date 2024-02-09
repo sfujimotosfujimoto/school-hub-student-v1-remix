@@ -268,14 +268,16 @@ export async function signin({
 
   // if student is not in db, create student
   if (!studentPrisma && studentUpsert) {
-    await prisma.$transaction([
+    // await prisma.$transaction([
+    prisma.$transaction([
       statsUpsert,
       credentialUpsert,
       studentUpsert,
       userUpdate,
     ])
   } else {
-    await prisma.$transaction([statsUpsert, credentialUpsert, userUpdate])
+    prisma.$transaction([statsUpsert, credentialUpsert, userUpdate])
+    // await prisma.$transaction([statsUpsert, credentialUpsert, userUpdate])
   }
   let end5 = performance.now()
   logger.debug(

@@ -47,6 +47,9 @@ export async function destroyUserSession(request: Request) {
   })
 }
 
+/**
+ * Get User From Session
+ */
 export async function getUserFromSession(
   request: Request,
 ): Promise<{ user: User | null; refreshUser: User | null }> {

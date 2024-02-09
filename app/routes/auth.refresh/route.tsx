@@ -117,7 +117,8 @@ export async function action({ request }: ActionFunctionArgs) {
   await saveDriveFileData(updatedUser.id, driveFiles)
 
   // @todo auth.refresh/route.tsx: Need to make this faster!!
-  await updateThumbnails(driveFiles)
+  updateThumbnails(driveFiles)
+  // await updateThumbnails(driveFiles)
 
   try {
     const newUser = returnUser(updatedUser)

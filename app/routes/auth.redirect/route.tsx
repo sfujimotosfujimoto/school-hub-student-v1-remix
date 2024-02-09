@@ -60,7 +60,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   logger.debug(`💥 start: updateThumbnails`)
   let start4 = performance.now()
-  await updateThumbnails(driveFiles)
+  updateThumbnails(driveFiles)
+  // await updateThumbnails(driveFiles)
   let end4 = performance.now()
 
   // 2072.33 ms
