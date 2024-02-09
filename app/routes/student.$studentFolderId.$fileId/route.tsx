@@ -10,7 +10,10 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { logger } from "~/lib/logger"
 import { requireUserRole } from "~/lib/require-roles.server"
 import { redirectToSignin } from "~/lib/responses"
-import { updateDriveFileData } from "~/lib/services/drive-file-data.server"
+import {
+  getDriveFileDataByFileId,
+  // updateDriveFileData,
+} from "~/lib/services/drive-file-data.server"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { convertDriveFileDatum } from "~/lib/utils-loader"
 import type { DriveFileData } from "~/types"
@@ -30,8 +33,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { fileId } = params
   if (!fileId) throw redirectToSignin(request)
 
-  let dfd: DriveFileData | undefined
-  dfd = await updateDriveFileData(fileId)
+  let dfd: DriveFileData | undefined | null
+  // dfd = await updateDriveFileData(fileId)
+
+  dfd = await getDriveFileDataByFileId(fileId)
 
   const headers = new Headers()
 
