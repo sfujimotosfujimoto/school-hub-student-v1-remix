@@ -39,7 +39,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     },
     {
       headers: {
-        "Cache-Control": `max-age=${CACHE_MAX_AGE_SECONDS}`,
+        "Cache-Control": `private, max-age=${CACHE_MAX_AGE_SECONDS}`,
       },
     },
   )
