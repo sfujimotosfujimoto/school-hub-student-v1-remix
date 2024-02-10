@@ -15,7 +15,7 @@ import { redirectToSignin } from "~/lib/responses"
 import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { filterSegments, parseTags } from "~/lib/utils"
-import { convertDriveFileData } from "~/lib/utils-loader"
+import { convertDriveFileData, convertStudent } from "~/lib/utils-loader"
 import type { DriveFileData, Student } from "~/types"
 import AllPill from "./all-pill"
 import ExtensionPills from "./extensions-pills"
@@ -24,6 +24,7 @@ import NendoPills from "./nendo-pills"
 import SegmentPills from "./segment-pills"
 import StudentCards from "./student-cards"
 import TagPills from "./tag-pills"
+import StudentHeader from "./student-header"
 
 /**
  * LOADER function
@@ -38,8 +39,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { user } = await getUserFromSession(request)
   if (!user || !user.credential) throw redirectToSignin(request)
 
-  const student = user.student
+  const student = user.student as Student
   if (!student || !student.folderLink) throw redirectToSignin(request)
+  student.users = null
 
   const url = new URL(request.url)
   const nendoString = url.searchParams.get("nendo")
@@ -49,6 +51,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const promiseData: Promise<{
     nendos: string[]
+    // student: Student
     segments: string[]
     extensions: string[]
     tags: string[]
@@ -69,6 +72,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       getNendosSegmentsExtensionsTags(driveFileData, student)
 
     resolve({
+      // student,
       nendos,
       segments,
       extensions,
@@ -83,6 +87,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   return defer(
     {
+      student,
       tagString,
       url: request.url,
       studentFolderId,
@@ -224,21 +229,16 @@ export default function StudentFolderIdIndexPage() {
   const isNavigating = navigation.state !== "idle"
 
   const { studentFolderId, url, promiseData } = useLoaderData<typeof loader>()
-  // const {
-  //   studentFolderId,
-  //   url,
-  //   nendos,
-  //   tags,
-  //   extensions,
-  //   segments,
-  //   driveFileData,
-  // } = useLoaderData<SerializeFrom<typeof loader>>()
 
-  // const dfd = convertDriveFileData(driveFileData)
+  let { student } = useLoaderData<typeof loader>()
+  let student2 = convertStudent(student)
 
   // JSX -------------------------
   return (
-    <>
+    <div className="container h-full p-4 mx-auto sm:p-8">
+      <div className="mb-4 space-y-4">
+        {student2 && <StudentHeader student={student2} />}
+      </div>
       <section className="flex flex-col h-full space-y-4">
         <Suspense fallback={<SkeletonUI />} key={Math.random()}>
           <Await
@@ -291,7 +291,7 @@ export default function StudentFolderIdIndexPage() {
           </Await>
         </Suspense>
       </section>
-    </>
+    </div>
   )
 }
 

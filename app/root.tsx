@@ -38,6 +38,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const folderLink =
       user?.student?.folderLink || refreshUser?.student?.folderLink
+
+    // if there is a user
     if (user?.email) {
       console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
 
@@ -51,6 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         { headers },
       )
     } else if (refreshUser?.email) {
+      // if there is a refreshUser
       console.log(
         `🍟 ${refreshUser.last}${refreshUser.first} - ${refreshUser.email}`,
       )

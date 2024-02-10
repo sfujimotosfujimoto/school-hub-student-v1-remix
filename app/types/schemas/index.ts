@@ -11,12 +11,12 @@ export const StudentSchema = z.object({
   mei: z.string(),
   email: z.string(),
   folderLink: z.string().nullable(),
-  // createdAt: z.date(),
-  createdAt: z
-    .string()
-    .or(z.date())
-    .transform((arg) => new Date(arg))
-    .nullable(),
+  createdAt: z.date(),
+  // createdAt: z
+  //   .string()
+  //   .or(z.date())
+  //   .transform((arg) => new Date(arg))
+  //   .nullable(),
   expiry: z.date(),
   // expiry: z.string().datetime(),
   users: z.array(z.number()).nullable(),

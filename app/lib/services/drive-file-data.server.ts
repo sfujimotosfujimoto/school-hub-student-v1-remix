@@ -1,5 +1,4 @@
 import type { DriveFileData as PrismaDriveFileData } from "@prisma/client"
-
 import { prisma } from "./db.server"
 import type { DriveFile, DriveFileData } from "~/types"
 
@@ -18,42 +17,6 @@ export async function getDriveFileDataByFileId(
 
   return returnDriveFileDatum(driveFileData)
 }
-
-// export async function getFilteredDriveFileData({
-//   nendoString,
-//   // tagString,
-//   // extensionString,
-//   // segmentString,
-//   fileId,
-// }: {
-//   nendoString: string
-//   // tagString: string
-//   // extensionString: string
-//   // segmentString: string
-//   fileId: string
-// }) {
-//   const driveFileData = await prisma.driveFileData.findMany({
-//     where: {
-//       AND: [
-//         {
-//           fileId,
-//         },
-//         {
-//           appProperties: {
-//             equals: { nendo: null },
-//           },
-//         },
-//       ],
-//     },
-//   })
-
-//   if (!driveFileData) {
-//     return null
-//   }
-
-//   return returnDriveFileData(driveFileData)
-// }
-//
 
 export async function getDriveFileDataByFolderId(
   folderId: string,

@@ -1,5 +1,9 @@
-import { DriveFileDataSchema, DriveFileDatasSchema } from "~/types/schemas"
-import type { DriveFileData } from "~/types"
+import {
+  DriveFileDataSchema,
+  DriveFileDatasSchema,
+  StudentSchema,
+} from "~/types/schemas"
+import type { DriveFileData, Student } from "~/types"
 
 // Function to convert date strings to Date objects for specified keys
 export function convertDateStringsToDateObjects(
@@ -45,6 +49,21 @@ export function convertDriveFileDatum(serializedDriveFileDatum: {
     ["createdTime", "modifiedTime", "firstSeen", "lastSeen"],
   )
   const res = DriveFileDataSchema.safeParse(obj.at(0))
+  if (!res.success) {
+    throw new Error(res.error.message)
+  }
+
+  return res.data
+}
+
+export function convertStudent(serializedStudent: {
+  [key: string]: any
+}): Student {
+  const obj = convertDateStringsToDateObjects(
+    [serializedStudent],
+    ["createdAt", "expiry"],
+  )
+  const res = StudentSchema.safeParse(obj.at(0))
   if (!res.success) {
     throw new Error(res.error.message)
   }
