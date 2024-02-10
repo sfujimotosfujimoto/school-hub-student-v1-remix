@@ -70,6 +70,10 @@ export default function StudentFolderIdFileIdPage() {
   // console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
   const { driveFileDatum } = useLoaderData<SerializeFrom<typeof loader>>()
 
+  if (!driveFileDatum) {
+    throw new Error("Could not find file.")
+  }
+
   const dfd = convertDriveFileDatum(driveFileDatum)
 
   const navigation = useNavigation()
