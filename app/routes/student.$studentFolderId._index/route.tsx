@@ -25,6 +25,7 @@ import SegmentPills from "./segment-pills"
 import StudentCards from "./student-cards"
 import TagPills from "./tag-pills"
 import StudentHeader from "./student-header"
+import SkeletonUI from "~/components/skeleton-ui"
 
 /**
  * LOADER function
@@ -97,21 +98,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       headers,
     },
   )
-  // return defer(
-  //   {
-  //     tagString,
-  //     url: request.url,
-  //     nendos,
-  //     segments,
-  //     extensions,
-  //     tags,
-  //     studentFolderId,
-  //     driveFileData,
-  //   },
-  //   {
-  //     headers,
-  //   },
-  // )
 }
 
 function getFilteredDriveFiles(
@@ -291,17 +277,6 @@ export default function StudentFolderIdIndexPage() {
           </Await>
         </Suspense>
       </section>
-    </div>
-  )
-}
-
-function SkeletonUI() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="skeleton h-64"></div>
-      <div className="skeleton h-64"></div>
-      <div className="skeleton h-64"></div>
-      <div className="skeleton h-64"></div>
     </div>
   )
 }
