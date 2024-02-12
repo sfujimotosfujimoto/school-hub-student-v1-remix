@@ -1,18 +1,18 @@
 import { Link, useParams } from "@remix-run/react"
 import StudentCard from "./student-card"
-import type { DriveFileData } from "~/types"
-import { DriveFileDatasSchema } from "~/types/schemas"
+import type { DriveFile } from "~/types"
+import { DriveFilesSchema } from "~/types/schemas"
 
 export default function StudentCards({
   driveFiles,
   isNavigating = false,
 }: {
-  driveFiles: DriveFileData[]
+  driveFiles: DriveFile[]
   isNavigating?: boolean
 }) {
   const { studentFolderId } = useParams()
 
-  const result = DriveFileDatasSchema.safeParse(driveFiles)
+  const result = DriveFilesSchema.safeParse(driveFiles)
 
   if (!result.success) {
     throw new Error(result.error.message)
@@ -26,18 +26,14 @@ export default function StudentCards({
       className="grid grid-cols-1 gap-4 pt-4 outline-sfgreen-200 md:grid-cols-2 xl:grid-cols-3"
     >
       {dfdz &&
-        dfdz.map((d: DriveFileData) => (
+        dfdz.map((d: DriveFile) => (
           <Link
             prefetch="viewport"
-            key={d.fileId}
+            key={d.id}
             id="_StudentCard"
-            to={`/student/${studentFolderId}/${d.fileId}`}
+            to={`/student/${studentFolderId}/${d.id}`}
           >
-            <StudentCard
-              driveFile={d}
-              isViewed={d.views > 0}
-              isNavigating={isNavigating}
-            />
+            <StudentCard driveFile={d} isNavigating={isNavigating} />
           </Link>
         ))}
     </div>

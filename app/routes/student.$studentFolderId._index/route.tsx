@@ -12,11 +12,10 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { CACHE_MAX_AGE_SECONDS } from "~/config"
 import { logger } from "~/lib/logger"
 import { redirectToSignin } from "~/lib/responses"
-import { getDriveFileDataByFolderId } from "~/lib/services/drive-file-data.server"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { filterSegments, parseTags } from "~/lib/utils"
-import { convertDriveFileData, convertStudent } from "~/lib/utils-loader"
-import type { DriveFileData, Student } from "~/types"
+import { convertDriveFiles, convertStudent } from "~/lib/utils-loader"
+import type { DriveFile, Student } from "~/types"
 import AllPill from "./all-pill"
 import ExtensionPills from "./extensions-pills"
 import FileCount from "./file-count"
@@ -27,6 +26,7 @@ import TagPills from "./tag-pills"
 import StudentHeader from "./student-header"
 import SkeletonUI from "~/components/skeleton-ui"
 import { SearchIcon } from "~/components/icons"
+import { getDriveFiles } from "~/lib/google/drive.server"
 
 /**
  * LOADER function
@@ -40,6 +40,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const { user } = await getUserFromSession(request)
   if (!user || !user.credential) throw redirectToSignin(request)
+  const accessToken = user.credential.accessToken
 
   const student = user.student as Student
   if (!student || !student.folderLink) throw redirectToSignin(request)
@@ -57,21 +58,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     segments: string[]
     extensions: string[]
     tags: string[]
-    driveFileData: DriveFileData[]
+    driveFiles: DriveFile[]
   }> = new Promise(async (resolve, reject) => {
     // Get DriveFileData from DB
-    let driveFileData = await getDriveFileDataByFolderId(studentFolderId)
+
+    // @todo student.$studentFolderId._index/route.tsx: need to update to google drive
+    let driveFiles = await getDriveFiles(
+      accessToken,
+      `trashed=false and '${studentFolderId}' in parents `,
+    )
+
+    console.log("✅ after getDriveFiles", driveFiles.length)
+
+    // let driveFileData = convertDriveFileData(driveFiles)
+    // let driveFileData = await getDriveFileDataByFolderId(studentFolderId)
 
     // Filter by nendo, tags, segments, extensions
-    driveFileData = getFilteredDriveFiles(
-      driveFileData || [],
+    driveFiles = getFilteredDriveFiles(
+      driveFiles || [],
       nendoString,
       tagString,
       segmentsString,
       extensionsString,
     )
+
+    console.log("✅ after getFilteredDriveFiles", driveFiles.length)
+
     const { nendos, segments, extensions, tags } =
-      getNendosSegmentsExtensionsTags(driveFileData, student)
+      getNendosSegmentsExtensionsTags(driveFiles, student)
+    console.log("✅ after getNendosSegementsExtensionTags", driveFiles.length)
 
     resolve({
       // student,
@@ -79,7 +94,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       segments,
       extensions,
       tags,
-      driveFileData,
+      driveFiles,
     })
   })
 
@@ -102,7 +117,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 function getFilteredDriveFiles(
-  driveFiles: DriveFileData[],
+  driveFiles: DriveFile[],
   nendoString: string | null,
   tagString: string | null,
   segmentsString: string | null,
@@ -150,15 +165,16 @@ function getFilteredDriveFiles(
   }
 
   return (
-    driveFiles.sort(
-      (a, b) =>
-        new Date(b.modifiedTime).getTime() - new Date(a.modifiedTime).getTime(),
-    ) || []
+    driveFiles.sort((a, b) => {
+      const atime = a.modifiedTime ? a.modifiedTime.getTime() : 0
+      const btime = b.modifiedTime ? b.modifiedTime.getTime() : 0
+      return btime - atime
+    }) || []
   )
 }
 
 function getNendosSegmentsExtensionsTags(
-  driveFiles: DriveFileData[],
+  driveFiles: DriveFile[],
   student: Omit<Student, "users">,
 ) {
   let segments: string[] = Array.from(
@@ -245,8 +261,8 @@ export default function StudentFolderIdIndexPage() {
               />
             }
           >
-            {({ driveFileData, nendos, tags, extensions, segments }) => {
-              const dfd = convertDriveFileData(driveFileData)
+            {({ driveFiles, nendos, tags, extensions, segments }) => {
+              const dfd = convertDriveFiles(driveFiles)
               return (
                 <>
                   <div className="flex items-center justify-between flex-none">

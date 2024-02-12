@@ -9,6 +9,7 @@ export type DriveFile = {
   createdTime?: Date
   modifiedTime?: Date
   webContentLink?: string
+  webViewLink?: string
   parents?: string[]
   appProperties?: string
   // meta?: DriveFileMeta

@@ -1,15 +1,11 @@
 import type { ActionFunctionArgs } from "@remix-run/node"
 import { json, redirect } from "@remix-run/node"
 import { REFRESH_EXPIRY } from "~/config"
-import { getDriveFiles } from "~/lib/google/drive.server"
 import { getRefreshedToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import { returnUser } from "~/lib/return-user"
 import { prisma } from "~/lib/services/db.server"
-import {
-  saveDriveFileData,
-  updateThumbnails,
-} from "~/lib/services/drive-file-data.server"
+
 import { selectUser } from "~/lib/services/user.server"
 import { getFolderId, toLocaleString } from "~/lib/utils"
 
@@ -108,17 +104,12 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ ok: false }, { status: 400 })
   }
 
-  // Update drive file data in Database,
-  // Must use newAccessToken
-  const driveFiles = await getDriveFiles(
-    newAccessToken,
-    `trashed=false and '${folderId}' in parents`,
-  )
-  await saveDriveFileData(updatedUser.id, driveFiles)
-
-  // @todo auth.refresh/route.tsx: Need to make this faster!!
-  updateThumbnails(driveFiles)
-  // await updateThumbnails(driveFiles)
+  // // Update drive file data in Database,
+  // // Must use newAccessToken
+  // const driveFiles = await getDriveFiles(
+  //   newAccessToken,
+  //   `trashed=false and '${folderId}' in parents`,
+  // )
 
   try {
     const newUser = returnUser(updatedUser)

@@ -10,16 +10,12 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { logger } from "~/lib/logger"
 import { requireUserRole } from "~/lib/require-roles.server"
 import { redirectToSignin } from "~/lib/responses"
-import {
-  getDriveFileDataByFileId,
-  // updateDriveFileData,
-} from "~/lib/services/drive-file-data.server"
 import { getUserFromSession } from "~/lib/services/session.server"
-import { convertDriveFileDatum } from "~/lib/utils-loader"
-import type { DriveFileData } from "~/types"
+import { convertDriveFile } from "~/lib/utils-loader"
 import StudentCard from "../student.$studentFolderId._index/student-card"
 import ToFolderBtn from "./to-folder-button"
 import { CACHE_MAX_AGE_SECONDS } from "~/config"
+import { getDriveFileByFileId } from "~/lib/google/drive.server"
 
 /**
  * Loader Function
@@ -27,16 +23,17 @@ import { CACHE_MAX_AGE_SECONDS } from "~/config"
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: student.$studentFolderId.$fileId ${request.url}`)
   const { user } = await getUserFromSession(request)
-  if (!user) throw redirectToSignin(request)
+  if (!user || !user.credential) throw redirectToSignin(request)
+  const accessToken = user.credential.accessToken
   await requireUserRole(request, user)
 
   const { fileId } = params
   if (!fileId) throw redirectToSignin(request)
 
-  let dfd: DriveFileData | undefined | null
-  // dfd = await updateDriveFileData(fileId)
-
-  dfd = await getDriveFileDataByFileId(fileId)
+  let driveFile = await getDriveFileByFileId(accessToken, fileId)
+  if (!driveFile) throw Error(`Could not find file: ${fileId}`)
+  driveFile = convertDriveFile(driveFile)
+  // dfd = await getDriveFileDataByFileId(fileId)
 
   const headers = new Headers()
 
@@ -44,7 +41,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   return json(
     {
-      driveFileDatum: dfd,
+      driveFile,
     },
     {
       headers,
@@ -68,13 +65,13 @@ export const meta: MetaFunction = () => {
  */
 export default function StudentFolderIdFileIdPage() {
   // console.log("✅ student.$studentFolderId2.$fileId/route.tsx ~ 	😀")
-  const { driveFileDatum } = useLoaderData<SerializeFrom<typeof loader>>()
+  const { driveFile } = useLoaderData<SerializeFrom<typeof loader>>()
 
-  if (!driveFileDatum) {
+  if (!driveFile) {
     throw new Error("Could not find file.")
   }
 
-  const dfd = convertDriveFileDatum(driveFileDatum)
+  const df = convertDriveFile(driveFile)
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
@@ -87,22 +84,21 @@ export default function StudentFolderIdFileIdPage() {
         <BackButton />
         {/* <BackButton to={`/student/${studentFolderId}`} /> */}
 
-        {dfd && dfd.parents && <ToFolderBtn parentId={dfd.parents[0]} />}
+        {df && df.parents && <ToFolderBtn parentId={df.parents[0]} />}
       </div>
 
       {/* Student file card */}
       <div className="mt-4">
-        {dfd && (
+        {df && (
           <a
             id="_StudentCard"
             target="_blank"
             rel="noopener noreferrer"
-            href={`${dfd.webViewLink}`}
+            href={`${df.webViewLink}`}
           >
             <StudentCard
-              driveFile={dfd}
+              driveFile={df}
               thumbnailSize={"big"}
-              isViewed={dfd.views > 0}
               isNavigating={isNavigating}
             />
           </a>

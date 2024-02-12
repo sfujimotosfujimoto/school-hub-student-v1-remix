@@ -1,7 +1,7 @@
 import { type drive_v3, google } from "googleapis"
 import { getClient } from "./google.server"
 import { logger } from "../logger"
-import { QUERY_FILES_FIELDS } from "../config"
+import { QUERY_FILES_FIELDS, QUERY_FILE_FIELDS } from "../config"
 import type { DriveFile } from "~/types"
 
 export function createQuery({
@@ -55,6 +55,33 @@ export async function getDriveFiles(
   } catch (error) {
     console.error(`getDriveFiles: ${error}`)
     return []
+  }
+}
+
+export async function getDriveFileByFileId(
+  accessToken: string,
+  fileId: string,
+): Promise<DriveFile | null> {
+  try {
+    const drive = await getDrive(accessToken)
+    if (!drive) throw new Error("Couldn't get drive")
+
+    const js = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${fileId}?fields=${QUERY_FILE_FIELDS}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    ).then((r) => r.json())
+
+    return mapFileToDriveFile(js)
+    // return mapFileToDriveFile(res.data.files.at(0))
+  } catch (error) {
+    console.error(`getDriveFiles: ${error}`)
+    return null
   }
 }
 
@@ -126,13 +153,13 @@ export function mapFilesToDriveFiles(
   files: drive_v3.Schema$File[],
 ): DriveFile[] {
   const driveFiles: DriveFile[] = files.map((d) => {
-    return mapFilesToDriveFile(d)
+    return mapFileToDriveFile(d)
   })
 
   return driveFiles
 }
 
-function mapFilesToDriveFile(file: drive_v3.Schema$File): DriveFile {
+function mapFileToDriveFile(file: drive_v3.Schema$File): DriveFile {
   // const permissions = convertPermissions(file.permissions)
 
   return {

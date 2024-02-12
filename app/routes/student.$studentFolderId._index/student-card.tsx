@@ -1,7 +1,7 @@
 import clsx from "clsx"
 import { RenewIcon, TimeIcon } from "~/components/icons"
 import { dateFormat, parseTags, stripText } from "~/lib/utils"
-import type { DriveFileData } from "~/types"
+import type { DriveFile } from "~/types"
 
 export default function StudentCard({
   driveFile,
@@ -10,7 +10,7 @@ export default function StudentCard({
   isViewed = false,
   isNavigating = false,
 }: {
-  driveFile: DriveFileData
+  driveFile: DriveFile
   thumbnailSize?: "small" | "big"
   size?: "small" | "big"
   isViewed?: boolean
@@ -29,9 +29,6 @@ export default function StudentCard({
           "opacity-40": isNavigating,
         })}
       >
-        {!isViewed && (
-          <span className="absolute -right-2 -top-2 z-10 rounded-full bg-gradient-to-r from-sfred-200 to-sfred-600  p-3 shadow-md"></span>
-        )}
         <div
           className={`card-body p-6 sm:p-10  ${
             size === "small" ? "p-2 sm:p-4" : "p-6 sm:p-10"
@@ -78,13 +75,17 @@ export default function StudentCard({
                 <TimeIcon className="h-3 w-4" />
 
                 <span>
-                  {dateFormat(new Date(driveFile.createdTime).getTime()) || ""}
+                  {driveFile.createdTime
+                    ? dateFormat(driveFile.createdTime.getTime())
+                    : ""}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <RenewIcon className="h-3 w-3" />
                 <span>
-                  {dateFormat(new Date(driveFile.modifiedTime).getTime()) || ""}
+                  {driveFile.modifiedTime
+                    ? dateFormat(driveFile.modifiedTime.getTime())
+                    : ""}
                 </span>
               </div>
             </div>

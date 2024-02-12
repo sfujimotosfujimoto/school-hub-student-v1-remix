@@ -45,8 +45,10 @@ export const DriveFileSchema = z.object({
   //   .transform((arg) => new Date(arg))
   //   .optional(),
   webContentLink: z.string().optional(),
+  webViewLink: z.string().optional(),
   parents: z.array(z.string()),
-  appProperties: z.record(z.string(), z.string()).optional(),
+  appProperties: z.string().optional(),
+  // appProperties: z.record(z.string(), z.string()).optional(),
   // meta: DriveFileMetaSchema.optional(),
 })
 
