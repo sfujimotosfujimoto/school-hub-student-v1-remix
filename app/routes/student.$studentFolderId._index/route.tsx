@@ -68,8 +68,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       `trashed=false and '${studentFolderId}' in parents `,
     )
 
-    console.log("✅ after getDriveFiles", driveFiles.length)
-
     // let driveFileData = convertDriveFileData(driveFiles)
     // let driveFileData = await getDriveFileDataByFolderId(studentFolderId)
 
@@ -82,11 +80,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       extensionsString,
     )
 
-    console.log("✅ after getFilteredDriveFiles", driveFiles.length)
-
     const { nendos, segments, extensions, tags } =
       getNendosSegmentsExtensionsTags(driveFiles, student)
-    console.log("✅ after getNendosSegementsExtensionTags", driveFiles.length)
 
     resolve({
       // student,

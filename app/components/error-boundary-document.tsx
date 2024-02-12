@@ -15,7 +15,7 @@ export default function ErrorBoundaryDocument({
   const error = useRouteError()
 
   if (isRouteErrorResponse(error)) {
-    console.log("✅ error: ", error)
+    console.error("✅ error: ", error)
     // message = getErrorMessage(error.data)
     message = error.data
   }
