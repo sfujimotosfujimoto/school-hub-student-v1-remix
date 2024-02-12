@@ -26,6 +26,7 @@ import StudentCards from "./student-cards"
 import TagPills from "./tag-pills"
 import StudentHeader from "./student-header"
 import SkeletonUI from "~/components/skeleton-ui"
+import { SearchIcon } from "~/components/icons"
 
 /**
  * LOADER function
@@ -212,10 +213,17 @@ function getNendosSegmentsExtensionsTags(
  */
 export default function StudentFolderIdIndexPage() {
   const navigation = useNavigation()
+
   const isNavigating =
     navigation.state !== "idle" && !!navigation.location.pathname
 
   const { studentFolderId, url, promiseData } = useLoaderData<typeof loader>()
+
+  const _url = new URL(url)
+  const urlNendo = _url.searchParams.get("nendo") || ""
+  const urlSegment = _url.searchParams.get("segments") || ""
+  const urlExtension = _url.searchParams.get("extensions") || ""
+  const urlTag = _url.searchParams.get("tags") || ""
 
   let { student } = useLoaderData<typeof loader>()
   let student2 = convertStudent(student)
@@ -223,10 +231,10 @@ export default function StudentFolderIdIndexPage() {
   // JSX -------------------------
   return (
     <div className="container h-full p-4 mx-auto sm:p-8">
-      <div className="mb-4 space-y-4">
+      <div className="mb-4 space-y-2">
         {student2 && <StudentHeader student={student2} />}
       </div>
-      <section className="flex flex-col h-full space-y-4">
+      <section className="flex flex-col h-full space-y-2">
         <Suspense fallback={<SkeletonUI />} key={Math.random()}>
           <Await
             resolve={promiseData}
@@ -242,28 +250,48 @@ export default function StudentFolderIdIndexPage() {
               return (
                 <>
                   <div className="flex items-center justify-between flex-none">
-                    <BackButton />
+                    <div className="flex items-center gap-2">
+                      <BackButton />
+                      <AllPill url={url} studentFolderId={studentFolderId} />
+                      <div className="dropdown self-end">
+                        <div
+                          tabIndex={0}
+                          role="button"
+                          className="btn btn-sm bg-sky-400 hover:bg-sky-300 btn-circle avatar"
+                        >
+                          <SearchIcon />
+                        </div>
+                        <ul
+                          tabIndex={0}
+                          className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-slate-100 bg-opacity-80 rounded-box w-56"
+                        >
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            <NendoPills url={url} nendos={nendos} />
+                            <ExtensionPills url={url} extensions={extensions} />
+
+                            <TagPills url={url} tags={tags} />
+
+                            <SegmentPills url={url} segments={segments} />
+                          </div>
+                        </ul>
+                      </div>
+                    </div>
 
                     <FileCount driveFiles={dfd} />
                   </div>
-                  <div className="flex flex-wrap flex-none gap-1">
-                    <AllPill url={url} studentFolderId={studentFolderId} />
-                    {nendos.length > 0 && (
-                      <div className="mx-0 divider divider-horizontal"></div>
-                    )}
-                    <NendoPills url={url} nendos={nendos} />
-                    {tags.length > 0 && (
-                      <div className="mx-0 divider divider-horizontal"></div>
-                    )}
-                    <TagPills url={url} tags={tags} />
-                    {extensions.length > 0 && (
-                      <div className="mx-0 divider divider-horizontal"></div>
-                    )}
-                    <ExtensionPills url={url} extensions={extensions} />
-                    {segments.length > 0 && (
-                      <div className="mx-0 divider divider-horizontal"></div>
-                    )}
-                    <SegmentPills url={url} segments={segments} />
+                  <div className="flex flex-wrap items-center gap-1 pt-2">
+                    <Pill name="年度" text={urlNendo} color={"bg-sky-400"} />
+                    <Pill
+                      name="単語"
+                      text={urlSegment}
+                      color={"bg-sfgreen-400"}
+                    />
+                    <Pill
+                      name="タイプ"
+                      text={urlExtension}
+                      color={"bg-sfyellow-300"}
+                    />
+                    <Pill name="タグ" text={urlTag} color={"bg-sfred-300"} />
                   </div>
 
                   <div className="flex-auto px-2 mt-4 mb-12 overflow-x-auto">
@@ -279,6 +307,28 @@ export default function StudentFolderIdIndexPage() {
         </Suspense>
       </section>
     </div>
+  )
+}
+
+function Pill({
+  name,
+  text,
+  color,
+}: {
+  color: string
+  name: string
+  text: string
+}) {
+  if (!text) return null
+  return (
+    <>
+      <span
+        className={`btn btn-xs ${color} border-none font-bold shadow-md duration-300 hover:scale-105`}
+      >
+        {name}
+      </span>
+      <h3 className="ml-1 mr-2">{text}</h3>
+    </>
   )
 }
 
