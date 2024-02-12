@@ -1,6 +1,7 @@
-import type { MetaFunction } from "@remix-run/node"
-import { Outlet, useParams } from "@remix-run/react"
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node"
+import { Outlet, json, useParams } from "@remix-run/react"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import { CACHE_MAX_AGE_SECONDS } from "~/config"
 /**
  * Meta Function
  */
@@ -14,6 +15,14 @@ export const meta: MetaFunction = () => {
       title: `SCHOOL HUB`,
     },
   ]
+}
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const headers = new Headers()
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`)
+  return json(null, {
+    headers,
+  })
 }
 
 /**

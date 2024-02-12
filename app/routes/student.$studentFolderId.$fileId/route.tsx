@@ -47,7 +47,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       driveFileDatum: dfd,
     },
     {
-      headers: headers,
+      headers,
     },
   )
 }
