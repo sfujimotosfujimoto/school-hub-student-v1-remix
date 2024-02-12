@@ -135,8 +135,8 @@ export async function action({ request }: ActionFunctionArgs) {
     // access_type: "offline",
     scope: scopes,
     include_granted_scopes: true,
-    prompt: "select_account",
-    // prompt: "consent select_account",
+    // prompt: "select_account",
+    prompt: "consent select_account",
   })
 
   return redirect(authUrl, { status: 302 })
