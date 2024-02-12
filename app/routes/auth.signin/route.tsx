@@ -112,8 +112,8 @@ async function fetchRefresh(user: User) {
 }
 
 const scopes = [
-  "https://www.googleapis.com/auth/drive",
-  "https://www.googleapis.com/auth/spreadsheets",
+  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/spreadsheets.readonly",
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
 ]
@@ -127,12 +127,16 @@ export async function action({ request }: ActionFunctionArgs) {
   // create OAuth2 client with id and secret
   const oauth2Client = initializeClient()
 
+  // @note auth.signin/route.tsx: changed access_type to "online" and prompt to "select_account" only
+  // This means that the user will not bet a refresh token and will have to sign in again
   // get authorization URL from created client
   const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "offline",
+    access_type: "online",
+    // access_type: "offline",
     scope: scopes,
     include_granted_scopes: true,
-    prompt: "consent select_account",
+    prompt: "select_account",
+    // prompt: "consent select_account",
   })
 
   return redirect(authUrl, { status: 302 })
