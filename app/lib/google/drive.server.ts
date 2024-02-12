@@ -173,6 +173,7 @@ function mapFileToDriveFile(file: drive_v3.Schema$File): DriveFile {
     createdTime: file.createdTime ? new Date(file.createdTime) : undefined,
     modifiedTime: file.modifiedTime ? new Date(file.modifiedTime) : undefined,
     webContentLink: file.webContentLink || undefined,
+    webViewLink: file.webViewLink || undefined,
     parents: file.parents || undefined,
     appProperties: file.appProperties
       ? JSON.stringify(file.appProperties)
