@@ -44,9 +44,9 @@ export default function SegmentPills({
           className="select select-primary select-sm w-48 max-w-sm "
           onChange={handleClick}
           disabled={isNavigating}
-          // value={"NONE"}
+          value={"単語で検索"}
         >
-          <option disabled selected defaultValue={"NONE"}>
+          <option disabled value={"単語で検索"}>
             {urlSegment ?? "単語で検索"}
           </option>
           {segments.sort().map((segment, idx) => (

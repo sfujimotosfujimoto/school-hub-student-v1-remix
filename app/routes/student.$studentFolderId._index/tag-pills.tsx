@@ -39,9 +39,9 @@ export default function TagPills({
           className="select select-primary select-sm w-48 max-w-sm "
           onChange={handleClick}
           disabled={isNavigating}
-          // value={"NONE"}
+          value={"タグで検索"}
         >
-          <option disabled selected defaultValue={"NONE"}>
+          <option disabled value={"タグで検索"}>
             {urlTag ?? "タグで検索"}
           </option>
           {tags.sort().map((segment, idx) => (

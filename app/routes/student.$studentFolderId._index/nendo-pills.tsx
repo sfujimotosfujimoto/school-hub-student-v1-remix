@@ -37,9 +37,9 @@ export default function NendoPills({
           className="select select-primary select-sm w-48 max-w-sm "
           onChange={handleClick}
           disabled={isNavigating}
-          // value={"NONE"}
+          value={"年度で検索"}
         >
-          <option disabled selected defaultValue={"NONE"}>
+          <option disabled value={"年度で検索"}>
             {urlNendo ?? "年度で検索"}
           </option>
           {nendos

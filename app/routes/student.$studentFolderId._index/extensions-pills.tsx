@@ -38,11 +38,12 @@ export default function ExtensionPills({
           className="select select-primary select-sm w-48 max-w-sm "
           onChange={handleClick}
           disabled={isNavigating}
-          // value={"NONE"}
+          value={"ファイルタイプで検索"}
         >
-          <option disabled selected defaultValue={"NONE"}>
+          <option disabled value="ファイルタイプで検索">
             {urlExtension ?? "ファイルタイプで検索"}
           </option>
+          <option value={"ALL"}>ALL</option>
           {extensions.sort().map((extension, idx) => (
             <option key={idx} value={extension}>
               {extension}
