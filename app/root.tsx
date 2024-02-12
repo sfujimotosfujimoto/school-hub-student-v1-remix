@@ -2,7 +2,7 @@ import sharedStyles from "~/styles/shared.css"
 import tailwindStyles from "~/styles/tailwind.css"
 import { Analytics } from "@vercel/analytics/react"
 import {
-  json,
+  defer,
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -25,56 +25,58 @@ import ErrorDocument from "./root/error-document"
 import { getUserFromSession } from "./lib/services/session.server"
 import { logger } from "./lib/logger"
 import { PageTransitionProgressBar } from "./components/progress-bar"
+import { CACHE_MAX_AGE_SECONDS } from "./config"
 
 /**
  * LOADER function
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: root ${request.url}`)
-  try {
-    const headers = new Headers()
-    // headers.set("Cache-Control", `private, max-age=${60 * 10}`) // 10 minutes
-    const { user, refreshUser } = await getUserFromSession(request)
+  // try {
+  const headers = new Headers()
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
+  const userPromise = getUserFromSession(request)
 
-    const folderLink =
-      user?.student?.folderLink || refreshUser?.student?.folderLink
+  // const folderLink =
+  //   user?.student?.folderLink || refreshUser?.student?.folderLink
+  return defer({ userPromise }, { headers })
 
-    // if there is a user
-    if (user?.email) {
-      console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
+  // // if there is a user
+  // if (user?.email) {
+  //   console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
 
-      return json(
-        {
-          role: user.role,
-          picture: user.picture,
-          folderLink: folderLink ? folderLink : null,
-          email: user.email,
-        },
-        { headers },
-      )
-    } else if (refreshUser?.email) {
-      // if there is a refreshUser
-      console.log(
-        `🍟 ${refreshUser.last}${refreshUser.first} - ${refreshUser.email}`,
-      )
-      return json(
-        {
-          role: refreshUser.role,
-          picture: refreshUser.picture,
-          email: refreshUser.email,
-          folderLink: folderLink ? folderLink : null,
-        },
-        {
-          headers,
-        },
-      )
-    }
+  //   return json(
+  //     {
+  //       role: user.role,
+  //       picture: user.picture,
+  //       folderLink: folderLink ? folderLink : null,
+  //       email: user.email,
+  //     },
+  //     { headers },
+  //   )
+  // } else if (refreshUser?.email) {
+  //   // if there is a refreshUser
+  //   console.log(
+  //     `🍟 ${refreshUser.last}${refreshUser.first} - ${refreshUser.email}`,
+  //   )
+  //   return json(
+  //     {
+  //       role: refreshUser.role,
+  //       picture: refreshUser.picture,
+  //       email: refreshUser.email,
+  //       folderLink: folderLink ? folderLink : null,
+  //     },
+  //     {
+  //       headers,
+  //     },
+  //   )
+  // }
 
-    return json({ role: null, picture: null, folderLink: null, email: null })
-  } catch (error) {
-    console.error(`🍿 loader: root ${request.url} - error`)
-    return json({ role: null, picture: null, folderLink: null, email: null })
-  }
+  //   return json({ role: null, picture: null, folderLink: null, email: null })
+  // } catch (error) {
+  //   console.error(`🍿 loader: root ${request.url} - error`)
+  //   return json({ role: null, picture: null, folderLink: null, email: null })
+  // }
 }
 
 /**
@@ -178,6 +180,7 @@ function Document({ children }: { children: React.ReactNode }) {
           className="grid h-full mx-auto grid-rows-layout"
         >
           <PageTransitionProgressBar />
+
           <Navigation />
           <main className="h-full">{children}</main>
           <Footer />

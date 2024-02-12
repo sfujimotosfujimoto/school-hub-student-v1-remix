@@ -212,7 +212,8 @@ function getNendosSegmentsExtensionsTags(
  */
 export default function StudentFolderIdIndexPage() {
   const navigation = useNavigation()
-  const isNavigating = navigation.state !== "idle"
+  const isNavigating =
+    navigation.state !== "idle" && !!navigation.location.pathname
 
   const { studentFolderId, url, promiseData } = useLoaderData<typeof loader>()
 
