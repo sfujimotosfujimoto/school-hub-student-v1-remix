@@ -99,7 +99,7 @@ const Button = React.forwardRef(function Button(
     <button
       ref={ref}
       className={clsx(
-        `btn ${btnVariant} ${btnSize} shadow-lg hover:scale-[102%]`,
+        `btn ${btnVariant} ${btnSize} border-none shadow-lg hover:scale-[102%]`,
         className,
       )}
       {...props}

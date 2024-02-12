@@ -21,6 +21,7 @@ export default function BackButton({
   } else {
     return (
       <Button
+        variant="primary"
         onClick={() => navigate(-1)}
         size="sm"
         className="text-sfblue-400"
