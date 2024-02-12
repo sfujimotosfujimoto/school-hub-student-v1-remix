@@ -69,7 +69,7 @@ export async function getServiceAccountClient() {
       client_email: credential.client_email,
       private_key: credential.private_key,
     },
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   })
 
   return client
