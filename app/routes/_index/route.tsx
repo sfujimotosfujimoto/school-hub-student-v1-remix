@@ -2,8 +2,6 @@ import { Await, useRouteLoaderData } from "@remix-run/react"
 import { Suspense } from "react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
-import SkeletonUI from "~/components/skeleton-ui"
-// import { getFolderId } from "~/lib/utils"
 import type { loader as rootLoader } from "~/root"
 
 export default function Index() {
@@ -33,7 +31,7 @@ export default function Index() {
           <Explanation />
         </div>
 
-        <Suspense fallback={<SkeletonUI />}>
+        <Suspense fallback={<SkeletonUIForLoginButton />}>
           <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
             {({ user, refreshUser }) => {
               return (
@@ -128,6 +126,22 @@ function Explanation() {
       </span>{" "}
       と連携するアプリです。
     </p>
+  )
+}
+
+function SkeletonUIForLoginButton() {
+  return (
+    <div className="relative flex items-center justify-center w-full gap-8 h-44">
+      <button className="btn btn-md disabled">
+        <LogoIcon className="w-4 h-7" />
+        <span
+          id="signin"
+          className="ml-2 sm:ml-4 sm:inline bg-opacity-60 text-slate-300"
+        >
+          SCHOOL HUB サインイン
+        </span>
+      </button>
+    </div>
   )
 }
 

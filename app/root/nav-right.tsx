@@ -11,7 +11,6 @@ import { getFolderId } from "~/lib/utils"
 import type { loader } from "~/root"
 import { Button, NavLinkButton } from "~/components/buttons/button"
 import { Suspense } from "react"
-import SkeletonUI from "~/components/skeleton-ui"
 
 export default function NavRight() {
   const { userPromise } = useLoaderData<typeof loader>()
@@ -25,7 +24,7 @@ export default function NavRight() {
           <span className="">ホーム</span>
         </NavLinkButton>
 
-        <Suspense fallback={<SkeletonUI />}>
+        <Suspense fallback={<SkeletonUIForNav />}>
           <Await resolve={userPromise} errorElement={<h1>Error....</h1>}>
             {({ user, refreshUser }) => {
               const role = user?.role
@@ -92,6 +91,20 @@ export default function NavRight() {
             }}
           </Await>
         </Suspense>
+      </div>
+    </div>
+  )
+}
+
+function SkeletonUIForNav() {
+  return (
+    <div className="flex gap-1 items-center">
+      <button className="btn btn-disabled btn-xs">loading</button>
+      <button className="btn btn-disabled btn-xs">loading</button>
+      <div className="avatar placeholder">
+        <div className="bg-opacity-60 bg-sfred-300 disabled text-slate-400 rounded-full w-6">
+          <span className="text-xs"></span>
+        </div>
       </div>
     </div>
   )
