@@ -2,22 +2,16 @@ import { Await, useRouteLoaderData } from "@remix-run/react"
 import { Suspense } from "react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
+import { getFolderId } from "~/lib/utils"
 import type { loader as rootLoader } from "~/root"
 
 export default function Index() {
   const data = useRouteLoaderData<typeof rootLoader>("root")
-  // throw Error("error!!!!!")
 
   if (!data) {
     throw Error("no data")
   }
 
-  // const { email, folderLink } = data.userPro
-
-  // let folderId
-  // if (folderLink) {
-  //   folderId = getFolderId(folderLink)
-  // }
   return (
     <>
       <section className="flex flex-col items-center justify-center w-screen h-full gap-8 mx-auto max-w-7xl">
@@ -33,23 +27,12 @@ export default function Index() {
 
         <Suspense fallback={<SkeletonUIForLoginButton />}>
           <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
-            {({ user, refreshUser }) => {
+            {({ user }) => {
+              const folderId = getFolderId(user?.student?.folderLink || "")
               return (
                 <LoginButton
-                  email={
-                    user
-                      ? user.email
-                      : refreshUser
-                        ? refreshUser.email
-                        : undefined
-                  }
-                  folderId={
-                    user?.student
-                      ? user.student.folderLink
-                      : refreshUser?.student
-                        ? refreshUser.student.folderLink
-                        : undefined
-                  }
+                  email={user ? user.email : undefined}
+                  folderId={user?.student ? folderId : undefined}
                 />
               )
             }}
