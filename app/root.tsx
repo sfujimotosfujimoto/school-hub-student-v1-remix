@@ -2,7 +2,7 @@ import sharedStyles from "~/styles/shared.css"
 import tailwindStyles from "~/styles/tailwind.css"
 import { Analytics } from "@vercel/analytics/react"
 import {
-  defer,
+  json,
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -35,11 +35,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // try {
   const headers = new Headers()
   headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
-  const userPromise = getUserFromSession(request)
+  const { user } = await getUserFromSession(request)
 
   // const folderLink =
   //   user?.student?.folderLink || refreshUser?.student?.folderLink
-  return defer({ userPromise }, { headers })
+  return json(
+    {
+      user,
+    },
+    { headers },
+  )
+  // return defer({ userPromise }, { headers })
 
   // // if there is a user
   // if (user?.email) {

@@ -183,8 +183,8 @@ export default function AuthSigninPage() {
         </div>
 
         <Suspense fallback={<SkeletonUIForLoginButton />}>
-          <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
-            {({ user }) => {
+          <Await resolve={data.user} errorElement={<h1>Error....</h1>}>
+            {(user) => {
               const folderId = getFolderId(user?.student?.folderLink || "")
               return (
                 <>
@@ -256,3 +256,77 @@ export function ErrorBoundary() {
 
   return <ErrorBoundaryDocument toHome={true} message={message} />
 }
+
+/*
+
+export default function AuthSigninPage() {
+  // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
+  const data = useRouteLoaderData<typeof rootLoader>("root")
+
+  if (!data) {
+    throw Error("no data")
+  }
+
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== "idle"
+
+  return (
+    <>
+      <section
+        className={clsx(
+          `mx-auto flex h-full w-screen max-w-7xl flex-col items-center justify-center gap-8 text-sfblue-300`,
+          { "opacity-40": isNavigating },
+        )}
+      >
+        <div className="flex items-center">
+          <LogoIcon className="w-16 sm:w-24" />
+          <DriveLogoIcon className="w-24 h-24" />
+        </div>
+
+        <div className="max-w-xl p-4 rounded-lg shadow-lg bg-base-100">
+          <span
+            className={clsx(
+              `font-bold underline decoration-sfred-200 decoration-4 underline-offset-4`,
+            )}
+          >
+            Google アカウント
+          </span>
+          でサインインしてください。
+        </div>
+
+        <Suspense fallback={<SkeletonUIForLoginButton />}>
+          <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
+            {({ user }) => {
+              const folderId = getFolderId(user?.student?.folderLink || "")
+              return (
+                <>
+                  {user ? (
+                    <div className="flex flex-col gap-4 mt-8">
+                      <h3 className="text-xl ">Hello, </h3>
+                      <h2 className="text-2xl font-bold text-sfblue-400">
+                        {user.email}
+                      </h2>
+                      <NavLinkButton
+                        className="mt-4"
+                        to={`/student/${folderId}`}
+                        size="md"
+                      >
+                        <LogoIcon className="w-4 h-7" />
+                        <DriveLogoIcon className="w-4 h-4" />
+                        フォルダへ
+                      </NavLinkButton>
+                    </div>
+                  ) : (
+                    <GoogleSigninButton disabled={isNavigating} />
+                  )}
+                </>
+              )
+            }}
+          </Await>
+        </Suspense>
+      </section>
+    </>
+  )
+}
+
+*/

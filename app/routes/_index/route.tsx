@@ -26,8 +26,8 @@ export default function Index() {
         </div>
 
         <Suspense fallback={<SkeletonUIForLoginButton />}>
-          <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
-            {({ user }) => {
+          <Await resolve={data.user} errorElement={<h1>Error....</h1>}>
+            {(user) => {
               const folderId = getFolderId(user?.student?.folderLink || "")
               return (
                 <LoginButton
@@ -129,6 +129,47 @@ function SkeletonUIForLoginButton() {
 }
 
 /*
+
+
+
+export default function Index() {
+  const data = useRouteLoaderData<typeof rootLoader>("root")
+
+  if (!data) {
+    throw Error("no data")
+  }
+
+  return (
+    <>
+      <section className="flex flex-col items-center justify-center w-screen h-full gap-8 mx-auto max-w-7xl">
+        <div className="flex items-center">
+          <LogoIcon className="w-16 sm:w-24" />
+          <LogoTextIcon className="w-40 sm:w-48" />
+        </div>
+
+        <div className="max-w-xl p-4 rounded-lg bg-slate-50">
+          <WhatIsSchoolHub />
+          <Explanation />
+        </div>
+
+        <Suspense fallback={<SkeletonUIForLoginButton />}>
+          <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
+            {({ user }) => {
+              const folderId = getFolderId(user?.student?.folderLink || "")
+              return (
+                <LoginButton
+                  email={user ? user.email : undefined}
+                  folderId={user?.student ? folderId : undefined}
+                />
+              )
+            }}
+          </Await>
+        </Suspense>
+      </section>
+    </>
+  )
+}
+
 
   return (
     <>
