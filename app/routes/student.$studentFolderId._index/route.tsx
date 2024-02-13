@@ -13,7 +13,6 @@ import { CACHE_MAX_AGE_SECONDS } from "~/config"
 import { logger } from "~/lib/logger"
 import { redirectToSignin } from "~/lib/responses"
 import { getUserFromSession } from "~/lib/services/session.server"
-import { filterSegments, parseTags } from "~/lib/utils"
 import { convertDriveFiles, convertStudent } from "~/lib/utils-loader"
 import type { DriveFile, Student } from "~/types"
 import AllPill from "./all-pill"
@@ -27,6 +26,8 @@ import StudentHeader from "./student-header"
 import SkeletonUI from "~/components/skeleton-ui"
 import { SearchIcon } from "~/components/icons"
 import { getDriveFiles } from "~/lib/google/drive.server"
+import { getFilteredDriveFiles, getNendosSegmentsExtensionsTags } from "./utils"
+import { Pill } from "./pill"
 
 /**
  * LOADER function
@@ -39,11 +40,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!studentFolderId) throw Error("id route parameter must be defined")
 
   const { user } = await getUserFromSession(request)
-  if (!user || !user.credential) throw redirectToSignin(request)
+  if (!user || !user.credential)
+    throw redirectToSignin(request, { urlParams: "user=none" })
   const accessToken = user.credential.accessToken
 
   const student = user.student as Student
-  if (!student || !student.folderLink) throw redirectToSignin(request)
+  if (!student || !student.folderLink)
+    throw redirectToSignin(request, { urlParams: "student=none" })
   student.users = null
 
   const url = new URL(request.url)
@@ -111,113 +114,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   )
 }
 
-function getFilteredDriveFiles(
-  driveFiles: DriveFile[],
-  nendoString: string | null,
-  tagString: string | null,
-  segmentsString: string | null,
-  extensionsString: string | null,
-) {
-  // filter by nendo
-  if (nendoString) {
-    driveFiles =
-      driveFiles?.filter((df) => {
-        const props = JSON.parse(df.appProperties || "[]")
-        if (props.nendo === nendoString) return true
-        return false
-      }) || []
-  }
-
-  // filter by tag
-  if (tagString) {
-    driveFiles =
-      driveFiles?.filter((df) => {
-        const props = JSON.parse(df.appProperties || "[]")
-        if (props.tags) {
-          const tagsArr = parseTags(props.tags)
-          return tagsArr.includes(tagString || "")
-        }
-        return false
-      }) || []
-  }
-
-  // filter by extensions
-  if (extensionsString) {
-    driveFiles =
-      driveFiles?.filter((df) => {
-        const ext = df.mimeType.split(/[/.]/).at(-1) || ""
-        return ext === extensionsString
-      }) || []
-  }
-
-  // filter by segments
-  if (segmentsString) {
-    driveFiles =
-      driveFiles?.filter((df) => {
-        const segments = df.name.split(/[-_.]/)
-        return segments.includes(segmentsString)
-      }) || []
-  }
-
-  return (
-    driveFiles.sort((a, b) => {
-      const atime = a.modifiedTime ? a.modifiedTime.getTime() : 0
-      const btime = b.modifiedTime ? b.modifiedTime.getTime() : 0
-      return btime - atime
-    }) || []
-  )
-}
-
-function getNendosSegmentsExtensionsTags(
-  driveFiles: DriveFile[],
-  student: Omit<Student, "users">,
-) {
-  let segments: string[] = Array.from(
-    new Set(driveFiles?.map((d) => d.name.split(/[-_.]/)).flat()),
-  )
-
-  segments = filterSegments(segments, student)
-
-  const extensions: string[] =
-    Array.from(new Set(driveFiles?.map((d) => d.mimeType))).map(
-      (ext) => ext.split(/[/.]/).at(-1) || "",
-    ) || []
-
-  const tags: string[] = Array.from(
-    new Set(
-      driveFiles
-        ?.map((df) => {
-          const appProps = JSON.parse(df.appProperties || "[]")
-          if (appProps.tags) return parseTags(appProps.tags) || null
-          return null
-        })
-        .filter((g): g is string[] => g !== null)
-        .flat(),
-    ),
-  ).sort()
-
-  const nendos: string[] = Array.from(
-    new Set(
-      driveFiles
-        ?.map((df) => {
-          const appProps = JSON.parse(df.appProperties || "[]")
-          if (appProps.nendo) return appProps.nendo.trim() || null
-          return null
-        })
-        .filter((g): g is string => g !== null)
-        .flat(),
-    ),
-  )
-    .sort((a, b) => Number(b) - Number(a))
-    .filter((n): n is string => n !== null)
-
-  return {
-    nendos,
-    segments,
-    extensions,
-    tags,
-  }
-}
 // type LoaderData = SerializeFrom<typeof loader>
 /**
  * StudentFolderIndexPage Component
@@ -321,28 +217,6 @@ export default function StudentFolderIdIndexPage() {
         </Suspense>
       </section>
     </div>
-  )
-}
-
-function Pill({
-  name,
-  text,
-  color,
-}: {
-  color: string
-  name: string
-  text: string
-}) {
-  if (!text) return null
-  return (
-    <>
-      <span
-        className={`select-none rounded-lg px-2 py-1 text-xs ${color} border-none font-bold shadow-md`}
-      >
-        {name}
-      </span>
-      <h3 className="ml-1 mr-2 select-none">{text}</h3>
-    </>
   )
 }
 

@@ -104,21 +104,21 @@ function Explanation() {
   )
 }
 
-function SkeletonUIForLoginButton() {
-  return (
-    <div className="relative flex items-center justify-center w-full gap-8 h-44">
-      <button className="btn btn-md disabled">
-        <LogoIcon className="w-4 h-7" />
-        <span
-          id="signin"
-          className="ml-2 sm:ml-4 sm:inline bg-opacity-60 text-slate-300"
-        >
-          SCHOOL HUB サインイン
-        </span>
-      </button>
-    </div>
-  )
-}
+// function SkeletonUIForLoginButton() {
+//   return (
+//     <div className="relative flex items-center justify-center w-full gap-8 h-44">
+//       <button className="btn btn-md disabled">
+//         <LogoIcon className="w-4 h-7" />
+//         <span
+//           id="signin"
+//           className="ml-2 sm:ml-4 sm:inline bg-opacity-60 text-slate-300"
+//         >
+//           SCHOOL HUB サインイン
+//         </span>
+//       </button>
+//     </div>
+//   )
+// }
 
 /*
 
