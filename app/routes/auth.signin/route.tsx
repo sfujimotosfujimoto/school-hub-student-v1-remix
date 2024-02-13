@@ -1,22 +1,17 @@
 import { redirect } from "@remix-run/node"
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node"
 import { Form, useNavigation } from "@remix-run/react"
-
 import { initializeClient } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
-import {
-  getRefreshUserFromSession,
-  getUserFromSession,
-  updateSession,
-} from "~/lib/services/session.server"
+import {} from // getRefreshUserFromSession,
+// getUserFromSession,
+// updateSession,
+"~/lib/services/session.server"
 
 import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
-import { getFolderId, toLocaleString } from "~/lib/utils"
-import type { User } from "~/types"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
-import { errorResponses } from "~/lib/error-responses"
 
 export const config = {
   maxDuration: 60,
@@ -27,42 +22,43 @@ export const config = {
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
-  const { user } = await getUserFromSession(request)
+  // const { user } = await getUserFromSession(request)
 
-  // if user is expired, check for refresh token
-  if (!user) {
-    // get refresh token expiry
-    logger.debug("🐝 before getRefreshUserFromSession: in if (!user)")
-    const refreshUser = await getRefreshUserFromSession(request)
-    if (!refreshUser) {
-      // @todo auth.signin/route.tsx: Need to use errorResponses
-      logger.debug("🐝 auth.signin: !refreshUser: returnin null")
-      return null
-    }
+  // // if user is expired, check for refresh token
+  // if (!user) {
+  //   // get refresh token expiry
+  //   logger.debug("🐝 before getRefreshUserFromSession: in if (!user)")
+  //   const refreshUser = await getRefreshUserFromSession(request)
+  //   if (!refreshUser) {
+  //     // @todo auth.signin/route.tsx: Need to use errorResponses
+  //     logger.debug("🐝 auth.signin: !refreshUser: returnin null")
+  //     return null
+  //   }
 
-    const res = await fetchRefresh(refreshUser)
+  //   const res = await fetchRefresh(refreshUser)
 
-    logger.info(
-      `👑 auth.signin: expiry: ${toLocaleString(
-        res.data.user.credential.expiry,
-      )}`,
-    )
+  //   logger.info(
+  //     `👑 auth.signin: expiry: ${toLocaleString(
+  //       res.data.user.credential.expiry,
+  //     )}`,
+  //   )
 
-    // if couldn't get new access_token, expiry_date, refresh_token from google
-    if (!res.ok) {
-      throw errorResponses.unauthroized()
-    }
+  //   // if couldn't get new access_token, expiry_date, refresh_token from google
+  //   if (!res.ok) {
+  //     throw errorResponses.unauthroized()
+  //   }
 
-    // update the session with the new values
-    const headers = await updateSession("userId", res.data.user.id)
+  //   // update the session with the new values
+  //   const headers = await updateSession("userId", res.data.user.id)
 
-    const redirectUrl = new URL(request.url).searchParams.get("redirect")
-    // redirect to the same URL if the request was a GET (loader)
-    if (request.method === "GET") {
-      logger.debug(`👑 auth.signin: request GET redirect: ${redirectUrl}`)
-      throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
-    }
-  }
+  //   const redirectUrl = new URL(request.url).searchParams.get("redirect")
+  //   // redirect to the same URL if the request was a GET (loader)
+  // if (request.method === "GET") {
+  //   logger.debug(`👑 auth.signin: request GET redirect: ${redirectUrl}`)
+  //   throw redirect(redirectUrl ? redirectUrl : request.url)
+  //   // throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
+  // }
+  // }
 
   // get redirect from search params
   const redirectUrl = new URL(request.url).searchParams.get("redirect")
@@ -73,43 +69,45 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw redirect(redirectUrl)
   }
 
-  const folderId = getFolderId(user?.student?.folderLink || "")
+  return null
 
-  if (folderId) {
-    throw redirect(`/student/${folderId}`)
-  } else {
-    throw redirect(`/`)
-  }
+  // const folderId = getFolderId(user?.student?.folderLink || "")
+
+  // if (folderId) {
+  //   throw redirect(`/student/${folderId}`)
+  // } else {
+  //   throw redirect(`/`)
+  // }
 }
 
-async function fetchRefresh(user: User) {
-  logger.debug("🍺 fetchRefresh: ")
+// async function fetchRefresh(user: User) {
+//   logger.debug("🍺 fetchRefresh: ")
 
-  const res = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(
-      {
-        user,
-        email: user.email,
-        accessToken: user.credential?.accessToken,
-        refreshToken: user.credential?.refreshToken,
-      },
-      // (key, value) => (typeof value === "bigint" ? Number(value) : value),
-    ),
-  })
-    .then((res) => {
-      logger.debug("👑 auth.signin: fetch res")
-      return res.json()
-    })
-    .catch((err) => {
-      console.error(`❌ auth.signin: fetch error`, err.message, err)
-      return { error: "error in fetch" }
-    })
-  return res
-}
+//   const res = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(
+//       {
+//         user,
+//         email: user.email,
+//         accessToken: user.credential?.accessToken,
+//         refreshToken: user.credential?.refreshToken,
+//       },
+//       // (key, value) => (typeof value === "bigint" ? Number(value) : value),
+//     ),
+//   })
+//     .then((res) => {
+//       logger.debug("👑 auth.signin: fetch res")
+//       return res.json()
+//     })
+//     .catch((err) => {
+//       console.error(`❌ auth.signin: fetch error`, err.message, err)
+//       return { error: "error in fetch" }
+//     })
+//   return res
+// }
 
 const scopes = [
   "https://www.googleapis.com/auth/drive.readonly",

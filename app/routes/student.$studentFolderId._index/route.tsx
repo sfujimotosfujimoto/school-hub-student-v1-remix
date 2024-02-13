@@ -290,20 +290,33 @@ export default function StudentFolderIdIndexPage() {
 
                     <FileCount driveFiles={dfd} />
                   </div>
-                  <div className="flex flex-wrap items-center gap-1 pt-2">
-                    <Pill name="年度" text={urlNendo} color={"bg-sky-400"} />
-                    <Pill
-                      name="単語"
-                      text={urlSegment}
-                      color={"bg-sfgreen-400"}
-                    />
-                    <Pill
-                      name="タイプ"
-                      text={urlExtension}
-                      color={"bg-sfyellow-300"}
-                    />
-                    <Pill name="タグ" text={urlTag} color={"bg-sfred-300"} />
-                  </div>
+                  {urlNendo ||
+                    urlSegment ||
+                    urlExtension ||
+                    (urlTag && (
+                      <div className="flex flex-wrap items-center gap-1 pt-2">
+                        <Pill
+                          name="年度"
+                          text={urlNendo}
+                          color={"bg-sky-400"}
+                        />
+                        <Pill
+                          name="単語"
+                          text={urlSegment}
+                          color={"bg-sfgreen-400"}
+                        />
+                        <Pill
+                          name="タイプ"
+                          text={urlExtension}
+                          color={"bg-sfyellow-300"}
+                        />
+                        <Pill
+                          name="タグ"
+                          text={urlTag}
+                          color={"bg-sfred-300"}
+                        />
+                      </div>
+                    ))}
 
                   <div className="flex-auto px-2 mt-4 mb-12 overflow-x-auto">
                     <StudentCards
@@ -334,11 +347,11 @@ function Pill({
   return (
     <>
       <span
-        className={`btn btn-xs ${color} border-none font-bold shadow-md duration-300 hover:scale-105`}
+        className={`select-none rounded-lg px-2 py-1 text-xs ${color} border-none font-bold shadow-md`}
       >
         {name}
       </span>
-      <h3 className="ml-1 mr-2">{text}</h3>
+      <h3 className="ml-1 mr-2 select-none">{text}</h3>
     </>
   )
 }
