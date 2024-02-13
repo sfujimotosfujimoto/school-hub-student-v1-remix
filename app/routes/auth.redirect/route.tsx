@@ -33,38 +33,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return createUserSession(userId, `/admin`)
   }
 
-  // logger.debug(`💥 start: getDriveFiles`)
-  // let start2 = performance.now()
-  // // Get drive files from Google Drive API
-  // const driveFiles = await getDriveFiles(
-  //   accessToken,
-  //   `trashed=false and '${folderId}' in parents`,
-  // )
-  // let end2 = performance.now()
-  // logger.debug(
-  //   `🔥   end: getDriveFiles \t\ttime: ${(end2 - start2).toFixed(2)} ms`,
-  // )
-
-  // logger.debug(`💥 start: saveDriveFileData`)
-  // let start3 = performance.now()
-  // // Save drive files to DB
-  // await saveDriveFileData(userId, driveFiles)
-  // let end3 = performance.now()
-  // logger.debug(
-  //   `🔥   end: saveDriveFileData \t\ttime: ${(end3 - start3).toFixed(2)} ms`,
-  // )
-
-  // logger.debug(`💥 start: updateThumbnails`)
-  // let start4 = performance.now()
-  // updateThumbnails(driveFiles)
-  // // await updateThumbnails(driveFiles)
-  // let end4 = performance.now()
-
-  // // 2072.33 ms
-  // logger.debug(
-  //   `🔥   end: updateThumbnails \t\ttime: ${(end4 - start4).toFixed(2)} ms`,
-  // )
-
   return createUserSession(userId, `/student/${folderId}`)
 }
 

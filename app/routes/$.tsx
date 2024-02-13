@@ -3,7 +3,7 @@ import { redirect, useLocation } from "@remix-run/react"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { logger } from "~/lib/logger"
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const p = Object.values(params).at(0)
   logger.debug(`✅ routes/$.tsx ~ 	${p}`)
 
@@ -13,10 +13,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw redirect("/favicon.png")
   }
 
-  throw new Response("Not found", { status: 404 })
+  throw new Response("Not found", { status: 404, statusText: `${request.url}` })
 }
 
 export default function NotFound() {
+  console.error("✅ routes/$.tsx ~ 404")
   // due to the loader, this component will never be rendered, but we'll return
   // the error boundary just in case.
   return <ErrorBoundary />

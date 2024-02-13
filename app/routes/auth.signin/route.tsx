@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/node"
+import { json, redirect } from "@remix-run/node"
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node"
 import {
   Await,
@@ -8,9 +8,10 @@ import {
 } from "@remix-run/react"
 import { initializeClient } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
-import {} from // getUserFromSession,
-// updateSession,
-"~/lib/services/session.server"
+import {
+  getUserFromSession, // getUserFromSession,
+  // updateSession,
+} from "~/lib/services/session.server"
 import type { loader as rootLoader } from "~/root"
 import { Button, NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
@@ -28,43 +29,7 @@ export const config = {
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
-  // const { user } = await getUserFromSession(request)
-
-  // // if user is expired, check for refresh token
-  // if (!user) {
-  //   // get refresh token expiry
-  //   logger.debug("🐝 before getRefreshUserFromSession: in if (!user)")
-  //   const refreshUser = await getRefreshUserFromSession(request)
-  //   if (!refreshUser) {
-  //     // @todo auth.signin/route.tsx: Need to use errorResponses
-  //     logger.debug("🐝 auth.signin: !refreshUser: returnin null")
-  //     return null
-  //   }
-
-  //   const res = await fetchRefresh(refreshUser)
-
-  //   logger.info(
-  //     `👑 auth.signin: expiry: ${toLocaleString(
-  //       res.data.user.credential.expiry,
-  //     )}`,
-  //   )
-
-  //   // if couldn't get new access_token, expiry_date, refresh_token from google
-  //   if (!res.ok) {
-  //     throw errorResponses.unauthroized()
-  //   }
-
-  //   // update the session with the new values
-  //   const headers = await updateSession("userId", res.data.user.id)
-
-  //   const redirectUrl = new URL(request.url).searchParams.get("redirect")
-  //   // redirect to the same URL if the request was a GET (loader)
-  // if (request.method === "GET") {
-  //   logger.debug(`👑 auth.signin: request GET redirect: ${redirectUrl}`)
-  //   throw redirect(redirectUrl ? redirectUrl : request.url)
-  //   // throw redirect(redirectUrl ? redirectUrl : request.url, { headers })
-  // }
-  // }
+  const { user } = await getUserFromSession(request)
 
   // get redirect from search params
   const redirectUrl = new URL(request.url).searchParams.get("redirect")
@@ -75,45 +40,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw redirect(redirectUrl)
   }
 
-  return null
-
-  // const folderId = getFolderId(user?.student?.folderLink || "")
-
-  // if (folderId) {
-  //   throw redirect(`/student/${folderId}`)
-  // } else {
-  //   throw redirect(`/`)
-  // }
+  return json({ user })
 }
-
-// async function fetchRefresh(user: User) {
-//   logger.debug("🍺 fetchRefresh: ")
-
-//   const res = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify(
-//       {
-//         user,
-//         email: user.email,
-//         accessToken: user.credential?.accessToken,
-//         refreshToken: user.credential?.refreshToken,
-//       },
-//       // (key, value) => (typeof value === "bigint" ? Number(value) : value),
-//     ),
-//   })
-//     .then((res) => {
-//       logger.debug("👑 auth.signin: fetch res")
-//       return res.json()
-//     })
-//     .catch((err) => {
-//       console.error(`❌ auth.signin: fetch error`, err.message, err)
-//       return { error: "error in fetch" }
-//     })
-//   return res
-// }
 
 const scopes = [
   "https://www.googleapis.com/auth/drive.readonly",
@@ -149,6 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AuthSigninPage() {
   // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
+  // const { user } = useLoaderData<typeof loader>()
   const data = useRouteLoaderData<typeof rootLoader>("root")
 
   if (!data) {
@@ -258,6 +187,38 @@ export function ErrorBoundary() {
 }
 
 /*
+
+
+
+async function fetchRefresh(user: User) {
+  logger.debug("🍺 fetchRefresh: ")
+
+  const res = await fetch(`${process.env.BASE_URL}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(
+      {
+        user,
+        email: user.email,
+        accessToken: user.credential?.accessToken,
+        refreshToken: user.credential?.refreshToken,
+      },
+      // (key, value) => (typeof value === "bigint" ? Number(value) : value),
+    ),
+  })
+    .then((res) => {
+      logger.debug("👑 auth.signin: fetch res")
+      return res.json()
+    })
+    .catch((err) => {
+      console.error(`❌ auth.signin: fetch error`, err.message, err)
+      return { error: "error in fetch" }
+    })
+  return res
+}
+
 
 export default function AuthSigninPage() {
   // console.log("✅ auth.signin/route.tsx ~ 	😀 ")

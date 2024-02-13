@@ -157,9 +157,9 @@ export const UserSchema = z.object({
   student: StudentSchema.omit({
     users: true,
   }).nullable(),
-  driveFileData: DriveFileDataSchema.omit({
-    userId: true,
-  }).array(),
+  // driveFileData: DriveFileDataSchema.omit({
+  //   userId: true,
+  // }).array(),
   // driveFileData: DriveFileDataSchema.optional().nullable(),
 })
 

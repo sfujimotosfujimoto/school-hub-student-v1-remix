@@ -52,7 +52,7 @@ export async function destroyUserSession(request: Request) {
  */
 export async function getUserFromSession(
   request: Request,
-): Promise<{ user: User | null; refreshUser: User | null }> {
+): Promise<{ user: User | null }> {
   logger.debug(
     `👑 getUserFromSession: request ${request.url}, ${request.method}`,
   )
@@ -60,27 +60,18 @@ export async function getUserFromSession(
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
   const userId = session.get("userId")
-  if (!userId) return { user: null, refreshUser: null }
+  if (!userId) return { user: null }
 
-  const { user, refreshUser } = await getUserById(userId)
+  const { user } = await getUserById(userId)
 
-  if (user) {
-    logger.debug(
-      `👑 getUserFromSession: exp ${toLocaleString(
-        user.credential?.expiry || "",
-      )} -- request.url ${request.url}`,
-    )
-    return { user, refreshUser: null }
-  } else if (!user && refreshUser) {
-    logger.debug(
-      `👑 getUserFromSession: !user && refreshUser: rexp ${toLocaleString(
-        refreshUser.credential?.refreshTokenExpiry || "",
-      )} -- request.url ${request.url}`,
-    )
-    return { user: null, refreshUser }
-  } else {
-    return { user: null, refreshUser: null }
-  }
+  if (!user) return { user: null }
+
+  logger.debug(
+    `👑 getUserFromSession: exp ${toLocaleString(
+      user.credential?.expiry || "",
+    )} -- request.url ${request.url}`,
+  )
+  return { user }
 }
 
 export async function getRefreshUserFromSession(

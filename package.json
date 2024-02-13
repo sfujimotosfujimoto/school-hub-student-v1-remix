@@ -6,7 +6,7 @@
     "seed": "s-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
     "build": "remix build",
     "dev": "PORT=4001 remix dev --manual",
-    "start": "remix-serve ./build/index.js",
+    "start": "PORT=4001 remix-serve ./build/index.js",
     "postinstall": "prisma generate",
     "test": "pnpm playwright test --timeout 30000 --project=Chromium",
     "test:e2e": "pnpm playwright test --config=e2e.config.ts --project=Chromium",

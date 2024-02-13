@@ -47,25 +47,25 @@ export const selectUser = {
     },
   },
   studentGakuseki: true,
-  driveFileData: {
-    select: {
-      fileId: true,
-      name: true,
-      mimeType: true,
-      iconLink: true,
-      hasThumbnail: true,
-      thumbnailLink: true,
-      webViewLink: true,
-      webContentLink: true,
-      parents: true,
-      appProperties: true,
-      createdTime: true,
-      modifiedTime: true,
-      views: true,
-      firstSeen: true,
-      lastSeen: true,
-    },
-  },
+  // driveFileData: {
+  //   select: {
+  //     fileId: true,
+  //     name: true,
+  //     mimeType: true,
+  //     iconLink: true,
+  //     hasThumbnail: true,
+  //     thumbnailLink: true,
+  //     webViewLink: true,
+  //     webContentLink: true,
+  //     parents: true,
+  //     appProperties: true,
+  //     createdTime: true,
+  //     modifiedTime: true,
+  //     views: true,
+  //     firstSeen: true,
+  //     lastSeen: true,
+  //   },
+  // },
 }
 
 // // Get UserBase
@@ -103,7 +103,7 @@ export const selectUser = {
 
 export async function getUserById(
   userId: number,
-): Promise<{ user: User | null; refreshUser: User | null }> {
+): Promise<{ user: User | null }> {
   logger.debug(`👑 getUserById: userId: ${userId}`)
 
   try {
@@ -120,35 +120,35 @@ export async function getUserById(
     })
 
     if (user) {
-      return { user, refreshUser: null }
+      return { user }
     }
 
-    const refreshUser = await prisma.user.findUnique({
-      where: {
-        id: userId,
-        credential: {
-          refreshTokenExpiry: { gt: new Date() },
-        },
-      },
-      select: {
-        ...selectUser,
-      },
-    })
+    // const refreshUser = await prisma.user.findUnique({
+    //   where: {
+    //     id: userId,
+    //     credential: {
+    //       refreshTokenExpiry: { gt: new Date() },
+    //     },
+    //   },
+    //   select: {
+    //     ...selectUser,
+    //   },
+    // })
 
-    return { user: user || null, refreshUser: refreshUser || null }
+    return { user: null }
   } catch (error) {
     if (error instanceof GaxiosError) {
       console.error(`👑 getUserById: GaxiosError: ${error.message}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return { user: null, refreshUser: null }
+      return { user: null }
     } else if (error instanceof Error) {
       console.error(`👑 getUserById: Error: ${error.message}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return { user: null, refreshUser: null }
+      return { user: null }
     } else {
       console.error(`👑 getUserById: unknown error: ${error}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return { user: null, refreshUser: null }
+      return { user: null }
     }
   }
 
