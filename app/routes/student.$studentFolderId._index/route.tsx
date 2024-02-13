@@ -264,11 +264,11 @@ export default function StudentFolderIdIndexPage() {
                     <div className="flex items-center gap-2">
                       <BackButton />
                       <AllPill url={url} studentFolderId={studentFolderId} />
-                      <div className="dropdown self-end">
+                      <div className={`dropdown self-end `}>
                         <div
                           tabIndex={0}
                           role="button"
-                          className="btn btn-sm bg-sky-400 hover:bg-sky-300 btn-circle avatar"
+                          className={`btn btn-sm bg-sky-400 hover:bg-sky-300 btn-circle avatar ${isNavigating ? " disabled" : ""}`}
                         >
                           <SearchIcon />
                         </div>
@@ -290,33 +290,23 @@ export default function StudentFolderIdIndexPage() {
 
                     <FileCount driveFiles={dfd} />
                   </div>
-                  {urlNendo ||
-                    urlSegment ||
-                    urlExtension ||
-                    (urlTag && (
-                      <div className="flex flex-wrap items-center gap-1 pt-2">
-                        <Pill
-                          name="年度"
-                          text={urlNendo}
-                          color={"bg-sky-400"}
-                        />
-                        <Pill
-                          name="単語"
-                          text={urlSegment}
-                          color={"bg-sfgreen-400"}
-                        />
-                        <Pill
-                          name="タイプ"
-                          text={urlExtension}
-                          color={"bg-sfyellow-300"}
-                        />
-                        <Pill
-                          name="タグ"
-                          text={urlTag}
-                          color={"bg-sfred-300"}
-                        />
-                      </div>
-                    ))}
+
+                  {(urlNendo || urlSegment || urlExtension || urlTag) && (
+                    <div className="flex flex-wrap items-center gap-1 pt-2">
+                      <Pill name="年度" text={urlNendo} color={"bg-sky-400"} />
+                      <Pill
+                        name="単語"
+                        text={urlSegment}
+                        color={"bg-sfgreen-400"}
+                      />
+                      <Pill
+                        name="タイプ"
+                        text={urlExtension}
+                        color={"bg-sfyellow-300"}
+                      />
+                      <Pill name="タグ" text={urlTag} color={"bg-sfred-300"} />
+                    </div>
+                  )}
 
                   <div className="flex-auto px-2 mt-4 mb-12 overflow-x-auto">
                     <StudentCards
