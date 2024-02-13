@@ -60,11 +60,19 @@ export async function getUserFromSession(
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
   const userId = session.get("userId")
-  if (!userId) return { user: null }
+  if (!userId) {
+    logger.debug(
+      `👑 getUserFromSession: no userId -- request.url ${request.url}`,
+    )
+    return { user: null }
+  }
 
   const { user } = await getUserById(userId)
 
-  if (!user) return { user: null }
+  if (!user) {
+    logger.debug(`👑 getUserFromSession: no user -- request.url ${request.url}`)
+    return { user: null }
+  }
 
   logger.debug(
     `👑 getUserFromSession: exp ${toLocaleString(
