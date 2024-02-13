@@ -1,5 +1,4 @@
-import { Await, useRouteLoaderData } from "@remix-run/react"
-import { Suspense } from "react"
+import { useRouteLoaderData } from "@remix-run/react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
@@ -11,7 +10,9 @@ export default function Index() {
   if (!data) {
     throw Error("no data")
   }
+  const user = data.user
 
+  const folderId = getFolderId(user?.student?.folderLink || "")
   return (
     <>
       <section className="flex flex-col items-center justify-center w-screen h-full gap-8 mx-auto max-w-7xl">
@@ -25,19 +26,10 @@ export default function Index() {
           <Explanation />
         </div>
 
-        <Suspense fallback={<SkeletonUIForLoginButton />}>
-          <Await resolve={data.user} errorElement={<h1>Error....</h1>}>
-            {(user) => {
-              const folderId = getFolderId(user?.student?.folderLink || "")
-              return (
-                <LoginButton
-                  email={user ? user.email : undefined}
-                  folderId={user?.student ? folderId : undefined}
-                />
-              )
-            }}
-          </Await>
-        </Suspense>
+        <LoginButton
+          email={user ? user.email : undefined}
+          folderId={user?.student ? folderId : undefined}
+        />
       </section>
     </>
   )
