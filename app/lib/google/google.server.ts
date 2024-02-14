@@ -37,7 +37,7 @@ export async function getRefreshedToken(
 }
 
 export async function getClient(accessToken: string) {
-  logger.debug(`✅ getClient`)
+  // logger.debug(`✅ getClient`)
   const client = initializeClient()
   client.setCredentials({ access_token: accessToken })
 
