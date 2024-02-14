@@ -1,6 +1,5 @@
 // import * as jose from "jose"
 import { z } from "zod"
-
 import { getPersonFromPeople } from "../google/people.server"
 import { getStudentByEmail } from "../google/sheets.server"
 import { destroyUserSession } from "./session.server"
