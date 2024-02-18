@@ -34,6 +34,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw redirect(redirectUrl)
   }
 
+  logger.info(
+    `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}`,
+  )
+
   return json({ user })
 }
 
@@ -77,6 +81,7 @@ export default function AuthSigninPage() {
   // if (!data) {
   //   throw Error("no data")
   // }
+  // console.log("🍺 user: ", user)
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
