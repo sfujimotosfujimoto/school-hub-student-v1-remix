@@ -106,7 +106,7 @@ export default function AuthSigninPage() {
           でサインインしてください。
         </div>
         <>
-          {user ? (
+          {user && folderId ? (
             <div className="flex flex-col gap-4 mt-8">
               <h3 className="text-xl ">Hello, </h3>
               <h2 className="text-2xl font-bold text-sfblue-400">
