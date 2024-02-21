@@ -66,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
     scope: scopes,
     include_granted_scopes: false,
     // include_granted_scopes: true,
-    prompt: "consent select_account",
+    prompt: "select_account",
     // prompt: "consent select_account",
   })
 
