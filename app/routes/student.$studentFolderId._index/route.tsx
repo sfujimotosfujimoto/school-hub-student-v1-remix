@@ -14,7 +14,7 @@ import { logger } from "~/lib/logger"
 import { redirectToSignin } from "~/lib/responses"
 import { getUserFromSession } from "~/lib/services/session.server"
 import { convertDriveFiles, convertStudent } from "~/lib/utils-loader"
-import type { DriveFile, Student } from "~/types"
+import type { DriveFile } from "~/types"
 import AllPill from "./all-pill"
 import ExtensionPills from "./extensions-pills"
 import FileCount from "./file-count"
@@ -28,6 +28,7 @@ import { SearchIcon } from "~/components/icons"
 import { getDriveFiles } from "~/lib/google/drive.server"
 import { getFilteredDriveFiles, getNendosSegmentsExtensionsTags } from "./utils"
 import { Pill } from "./pill"
+import { getStudentByEmail } from "~/lib/google/sheets.server"
 
 /**
  * LOADER function
@@ -44,7 +45,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw redirectToSignin(request, { urlParams: "user=none" })
   const accessToken = user.credential.accessToken
 
-  const student = user.student as Student
+  const student = await getStudentByEmail(user.email)
+  // const student = user.student as Student
   if (!student || !student.folderLink)
     throw redirectToSignin(request, { urlParams: "student=none" })
   student.users = null
