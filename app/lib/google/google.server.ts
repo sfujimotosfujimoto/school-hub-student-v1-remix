@@ -1,11 +1,11 @@
 import { type Auth, google } from "googleapis"
-import { logger } from "../logger"
+// import { logger } from "../logger"
 
 export async function getClientFromCode(code: string): Promise<{
   client: Auth.OAuth2Client
   tokens: Auth.Credentials
 }> {
-  logger.debug(`✅ getClientFromCode`)
+  // logger.debug(`✅ getClientFromCode`)
   // creates oauth2Client from client_id and client_secret
   const client = initializeClient()
 
@@ -25,7 +25,7 @@ export async function getRefreshedToken(
   accessToken: string,
   refreshToken: string,
 ): Promise<Auth.Credentials> {
-  logger.debug(`✅ getRefreshedToken`)
+  // logger.debug(`✅ getRefreshedToken`)
   const client = initializeClient()
   client.setCredentials({
     access_token: accessToken,
