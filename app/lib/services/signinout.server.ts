@@ -153,7 +153,7 @@ export async function signin({
 
   // convert parent email to student email
   let studentEmail = person.email.replace(/^p/, "b")
-  logger.debug(`🍓 signin: studentEmail ${studentEmail}`)
+  logger.info(`🍓 signin: studentEmail ${studentEmail}`)
 
   // find student in prisma db with student email even if user is parent
   // const studentPrisma = await getStudentDBByEmail(studentEmail)

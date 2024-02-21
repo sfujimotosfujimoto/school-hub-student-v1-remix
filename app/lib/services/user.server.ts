@@ -123,18 +123,6 @@ export async function getUserById(
       return { user }
     }
 
-    // const refreshUser = await prisma.user.findUnique({
-    //   where: {
-    //     id: userId,
-    //     credential: {
-    //       refreshTokenExpiry: { gt: new Date() },
-    //     },
-    //   },
-    //   select: {
-    //     ...selectUser,
-    //   },
-    // })
-
     return { user: null }
   } catch (error) {
     if (error instanceof GaxiosError) {
