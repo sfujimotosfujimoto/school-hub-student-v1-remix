@@ -13,6 +13,7 @@ import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
 import { getFolderId } from "~/lib/utils"
+import { getStudentByEmail } from "~/lib/google/sheets.server"
 
 export const config = {
   maxDuration: 60,
@@ -24,6 +25,13 @@ export const config = {
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
   const { user } = await getUserFromSession(request)
+
+  let folderId
+
+  if (user) {
+    const student = await getStudentByEmail(user.email)
+    folderId = getFolderId(student?.folderLink || "")
+  }
 
   // get redirect from search params
   const redirectUrl = new URL(request.url).searchParams.get("redirect")
@@ -38,7 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}`,
   )
 
-  return json({ user })
+  return json({ user, folderId })
 }
 
 const scopes = [
@@ -75,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AuthSigninPage() {
   // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
-  const { user } = useLoaderData<typeof loader>()
+  const { user, folderId } = useLoaderData<typeof loader>()
   // const data = useRouteLoaderData<typeof rootLoader>("root")
 
   // if (!data) {
@@ -85,7 +93,6 @@ export default function AuthSigninPage() {
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
-  const folderId = getFolderId(user?.student?.folderLink || "")
 
   return (
     <>

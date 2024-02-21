@@ -322,21 +322,21 @@ export async function signout({ request }: { request: Request }) {
  * 	folderId: string | null
  * }>)}
  */
-export async function getFolderIdFromEmail(
-  email: string,
-): Promise<string | null> {
-  // console.log("✅ getFolderIdFromEmail", email)
-  const student = await getStudentByEmail(email)
+// export async function getFolderIdFromEmail(
+//   email: string,
+// ): Promise<string | null> {
+//   // console.log("✅ getFolderIdFromEmail", email)
+//   const student = await getStudentByEmail(email)
 
-  if (!student?.folderLink) {
-    // throw Error(`no-folder`)
-    throw errorResponses.folder()
-  }
+//   if (!student?.folderLink) {
+//     // throw Error(`no-folder`)
+//     throw errorResponses.folder()
+//   }
 
-  const folderId = getFolderId(student?.folderLink)
+//   const folderId = getFolderId(student?.folderLink)
 
-  return folderId
-}
+//   return folderId
+// }
 
 // used in authenticate
 // export async function updateUserJWT(
