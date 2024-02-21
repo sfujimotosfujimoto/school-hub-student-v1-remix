@@ -61,8 +61,8 @@ export async function getUserFromSession(
 
   const userId = session.get("userId")
   if (!userId) {
-    logger.debug(
-      `👑 getUserFromSession: no userId -- request.url ${request.url}`,
+    logger.info(
+      `👑 getUserFromSession: no userId in session -- request.url ${request.url}`,
     )
     return { user: null }
   }
@@ -70,7 +70,9 @@ export async function getUserFromSession(
   const { user } = await getUserById(userId)
 
   if (!user) {
-    logger.debug(`👑 getUserFromSession: no user -- request.url ${request.url}`)
+    logger.info(
+      `👑 getUserFromSession: no user in DB -- request.url ${request.url}`,
+    )
     return { user: null }
   }
 

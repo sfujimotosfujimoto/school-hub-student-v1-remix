@@ -14,6 +14,7 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
 import { getFolderId } from "~/lib/utils"
 import { getStudentByEmail } from "~/lib/google/sheets.server"
+import { SCOPES } from "~/config"
 
 export const config = {
   maxDuration: 60,
@@ -43,18 +44,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   logger.info(
-    `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}`,
+    `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}, folderId: ${folderId}`,
   )
 
   return json({ user, folderId })
 }
-
-const scopes = [
-  "https://www.googleapis.com/auth/drive.readonly",
-  "https://www.googleapis.com/auth/spreadsheets.readonly",
-  "https://www.googleapis.com/auth/userinfo.email",
-  "https://www.googleapis.com/auth/userinfo.profile",
-]
 
 /**
  * ACTION
@@ -71,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "online",
     // access_type: "offline",
-    scope: scopes,
+    scope: SCOPES,
     include_granted_scopes: false,
     // include_granted_scopes: true,
     prompt: "select_account",
@@ -84,12 +78,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function AuthSigninPage() {
   // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
   const { user, folderId } = useLoaderData<typeof loader>()
-  // const data = useRouteLoaderData<typeof rootLoader>("root")
-
-  // if (!data) {
-  //   throw Error("no data")
-  // }
-  // console.log("🍺 user: ", user)
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"

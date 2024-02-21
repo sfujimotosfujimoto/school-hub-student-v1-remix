@@ -1,8 +1,8 @@
 import { type drive_v3, google } from "googleapis"
 import { getClient } from "./google.server"
-import { logger } from "../logger"
-import { QUERY_FILES_FIELDS, QUERY_FILE_FIELDS } from "../config"
+import { logger } from "~/lib/logger"
 import type { DriveFile } from "~/types"
+import { QUERY_FILES_FIELDS, QUERY_FILE_FIELDS } from "~/config"
 
 export function createQuery({
   folderId,
