@@ -43,9 +43,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw redirect(redirectUrl)
   }
 
-  logger.info(
-    `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}, folderId: ${folderId}`,
-  )
+  if (user) {
+    logger.info(
+      `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}, folderId: ${folderId}`,
+    )
+  }
 
   return json({ user, folderId })
 }

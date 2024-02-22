@@ -61,7 +61,7 @@ export async function getUserFromSession(
 
   const userId = session.get("userId")
   if (!userId) {
-    logger.info(
+    logger.debug(
       `👑 getUserFromSession: no userId in session -- request.url ${request.url}`,
     )
     return { user: null }
@@ -70,7 +70,7 @@ export async function getUserFromSession(
   const { user } = await getUserById(userId)
 
   if (!user) {
-    logger.info(
+    logger.debug(
       `👑 getUserFromSession: no user in DB -- request.url ${request.url}`,
     )
     return { user: null }
@@ -80,6 +80,10 @@ export async function getUserFromSession(
     `👑 getUserFromSession: exp ${toLocaleString(
       user.credential?.expiry || "",
     )} -- request.url ${request.url}`,
+  )
+
+  logger.info(
+    `👑 getUserFromSession: ${user.last}${user.first}, ${user.id} ${request.url}`,
   )
   return { user }
 }
