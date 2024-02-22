@@ -1,9 +1,7 @@
-import * as jose from "jose"
-
 import { createCookieSessionStorage, redirect } from "@remix-run/node"
-import type { Payload, User } from "~/types"
+import type { User } from "~/types"
 import { logger } from "../logger"
-import { getRefreshUserById, getUserById } from "./user.server"
+import { getUserById } from "./user.server"
 import { toLocaleString } from "../utils"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -88,60 +86,60 @@ export async function getUserFromSession(
   return { user }
 }
 
-export async function getRefreshUserFromSession(
-  request: Request,
-): Promise<User | null> {
-  logger.debug(
-    `👑 getRefreshUserFromSession: request ${request.url}, ${request.method}`,
-  )
-  const session = await sessionStorage.getSession(request.headers.get("Cookie"))
+// export async function getRefreshUserFromSession(
+//   request: Request,
+// ): Promise<User | null> {
+//   logger.debug(
+//     `👑 getRefreshUserFromSession: request ${request.url}, ${request.method}`,
+//   )
+//   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
-  const userId = session.get("userId")
-  if (!userId) {
-    return null
-  }
-  // const userJWT = await getUserJWTFromSession(request)
+//   const userId = session.get("userId")
+//   if (!userId) {
+//     return null
+//   }
+//   // const userJWT = await getUserJWTFromSession(request)
 
-  // if (!userJWT) return null
+//   // if (!userJWT) return null
 
-  // const payload = await parseVerifyUserJWT(userJWT)
+//   // const payload = await parseVerifyUserJWT(userJWT)
 
-  // if (!payload) return null
+//   // if (!payload) return null
 
-  // get UserBase from Prisma
-  const user = await getRefreshUserById(userId)
-  // if no user, create in prisma db
-  if (!user) {
-    return null
-  }
+//   // get UserBase from Prisma
+//   const user = await getRefreshUserById(userId)
+//   // if no user, create in prisma db
+//   if (!user) {
+//     return null
+//   }
 
-  logger.debug(
-    `👑 getRefreshUserFromSession: rexp ${toLocaleString(
-      user?.credential?.refreshTokenExpiry || 0,
-    )} -- requrest.url ${request.url}`,
-  )
+//   logger.debug(
+//     `👑 getRefreshUserFromSession: rexp ${toLocaleString(
+//       user?.credential?.refreshTokenExpiry || 0,
+//     )} -- requrest.url ${request.url}`,
+//   )
 
-  return user
-}
+//   return user
+// }
 
-export async function updateSession(
-  key: string,
-  value: string,
-  headers = new Headers(),
-) {
-  logger.debug("✅ updateSession")
-  try {
-    // update the session with the new values
-    const session = await sessionStorage.getSession()
-    session.set(key, value)
-    // commit the session and append the Set-Cookie header
-    headers.append("Set-Cookie", await sessionStorage.commitSession(session))
-    return headers
-  } catch (error) {
-    if (error instanceof Error) throw error
-    throw new Error("Error updating session")
-  }
-}
+// export async function updateSession(
+//   key: string,
+//   value: string,
+//   headers = new Headers(),
+// ) {
+//   logger.debug("✅ updateSession")
+//   try {
+//     // update the session with the new values
+//     const session = await sessionStorage.getSession()
+//     session.set(key, value)
+//     // commit the session and append the Set-Cookie header
+//     headers.append("Set-Cookie", await sessionStorage.commitSession(session))
+//     return headers
+//   } catch (error) {
+//     if (error instanceof Error) throw error
+//     throw new Error("Error updating session")
+//   }
+// }
 
 //-------------------------------------------
 // LOCAL FUNCTIONS
@@ -149,51 +147,52 @@ export async function updateSession(
 // Gets session in Request Headers -------------------------
 // then gets "userId"
 // Also check if token is expired
-export async function getUserWTFromSession(
-  request: Request,
-): Promise<string | null> {
-  logger.debug("👑 getUserJWTFromSession")
-  const session = await sessionStorage.getSession(request.headers.get("Cookie"))
+// export async function getUserWTFromSession(
+//   request: Request,
+// ): Promise<string | null> {
+//   logger.debug("👑 getUserJWTFromSession")
+//   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
-  const userJWT = session.get("userJWT") as string | null | undefined
+//   const userJWT = session.get("userJWT") as string | null | undefined
 
-  if (!userJWT) {
-    return null
-  }
+//   if (!userJWT) {
+//     return null
+//   }
 
-  return userJWT
-}
-export async function getUserJWTFromSession(
-  request: Request,
-): Promise<string | null> {
-  logger.debug("👑 getUserJWTFromSession")
-  const session = await sessionStorage.getSession(request.headers.get("Cookie"))
+//   return userJWT
+// }
 
-  const userJWT = session.get("userJWT") as string | null | undefined
+// export async function getUserJWTFromSession(
+//   request: Request,
+// ): Promise<string | null> {
+//   logger.debug("👑 getUserJWTFromSession")
+//   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
-  if (!userJWT) {
-    return null
-  }
+//   const userJWT = session.get("userJWT") as string | null | undefined
 
-  return userJWT
-}
+//   if (!userJWT) {
+//     return null
+//   }
 
-export async function parseVerifyUserJWT(
-  userJWT: string,
-): Promise<Payload | null> {
-  logger.debug("✨ parseVerifyUserJWT")
+//   return userJWT
+// }
 
-  // decode the JWT and get payload<email,exp>
-  const secret = new TextEncoder().encode(process.env.SESSION_SECRET)
-  // console.log("✅ parseVerifyUserJWT: secret", secret)
-  const { payload } = await jose.jwtVerify(userJWT, secret)
-  // console.log("✅ parseVerifyUserJWT: payload", payload)
-  // const payload = jose.decodeJwt(userJWT) as { email: string; exp: number }
-  if (payload.email === undefined || payload.exp === undefined) return null
+// export async function parseVerifyUserJWT(
+//   userJWT: string,
+// ): Promise<Payload | null> {
+//   logger.debug("✨ parseVerifyUserJWT")
 
-  const typedPayload = payload as Payload
-  return typedPayload
-}
+//   // decode the JWT and get payload<email,exp>
+//   const secret = new TextEncoder().encode(process.env.SESSION_SECRET)
+//   // console.log("✅ parseVerifyUserJWT: secret", secret)
+//   const { payload } = await jose.jwtVerify(userJWT, secret)
+//   // console.log("✅ parseVerifyUserJWT: payload", payload)
+//   // const payload = jose.decodeJwt(userJWT) as { email: string; exp: number }
+//   if (payload.email === undefined || payload.exp === undefined) return null
+
+//   const typedPayload = payload as Payload
+//   return typedPayload
+// }
 
 // // Gets payload<email, exp> from "userJWT"
 // async function verifyUserTokenJWT(userToken: string) {

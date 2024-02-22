@@ -1,5 +1,4 @@
 import invariant from "tiny-invariant"
-import { getFolderId } from "../utils"
 import { getServiceAccountClient } from "./google.server"
 import { createClient } from "@vercel/kv"
 import { logger } from "../logger"
@@ -20,18 +19,18 @@ export async function getStudentByEmail(
   return student
 }
 
-export function getStudentByFolderId(
-  folderId: string,
-  studentData: Student[],
-): Student | null {
-  const studentD = studentData.find(
-    (d) => d.folderLink && folderId === getFolderId(d.folderLink),
-  )
+// export function getStudentByFolderId(
+//   folderId: string,
+//   studentData: Student[],
+// ): Student | null {
+//   const studentD = studentData.find(
+//     (d) => d.folderLink && folderId === getFolderId(d.folderLink),
+//   )
 
-  if (studentD) return studentD
+//   if (studentD) return studentD
 
-  return null
-}
+//   return null
+// }
 
 async function getSheetsWithServiceAccount() {
   const client = await getServiceAccountClient()

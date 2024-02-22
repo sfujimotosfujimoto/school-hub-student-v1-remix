@@ -2,8 +2,6 @@ import type { User } from "~/types"
 import { GaxiosError } from "gaxios"
 import { prisma } from "./db.server"
 import { logger } from "../logger"
-// import { returnDriveFileData } from "./drive-file-data.server"
-import { redirectToSignin } from "../responses"
 
 export const selectUser = {
   id: true,
@@ -143,45 +141,45 @@ export async function getUserById(
   // return returnUser(user)
 }
 
-export async function getRefreshUserById(userId: number): Promise<User | null> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-        credential: {
-          refreshTokenExpiry: { gt: new Date() },
-        },
-      },
-      select: {
-        ...selectUser,
-      },
-    })
+// export async function getRefreshUserById(userId: number): Promise<User | null> {
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: {
+//         id: userId,
+//         credential: {
+//           refreshTokenExpiry: { gt: new Date() },
+//         },
+//       },
+//       select: {
+//         ...selectUser,
+//       },
+//     })
 
-    if (!user || !user.credential) {
-      return null
-    }
+//     if (!user || !user.credential) {
+//       return null
+//     }
 
-    if (!user.stats) user.stats = null
+//     if (!user.stats) user.stats = null
 
-    return user
-  } catch (error) {
-    if (error instanceof GaxiosError) {
-      console.error(`👑 getRefreshUserById: GaxiosError: ${error.message}`)
-      // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return null
-    } else if (error instanceof Error) {
-      console.error(`👑 getRefreshUserById: Error: ${error.message}`)
-      // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return null
-    } else {
-      console.error(`👑 getRefreshUserById: unknown error: ${error}`)
-      // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return null
-    }
-  }
+//     return user
+//   } catch (error) {
+//     if (error instanceof GaxiosError) {
+//       console.error(`👑 getRefreshUserById: GaxiosError: ${error.message}`)
+//       // throw new Error(`ユーザー情報の取得に失敗しました。`)
+//       return null
+//     } else if (error instanceof Error) {
+//       console.error(`👑 getRefreshUserById: Error: ${error.message}`)
+//       // throw new Error(`ユーザー情報の取得に失敗しました。`)
+//       return null
+//     } else {
+//       console.error(`👑 getRefreshUserById: unknown error: ${error}`)
+//       // throw new Error(`ユーザー情報の取得に失敗しました。`)
+//       return null
+//     }
+//   }
 
-  // return returnUser(user)
-}
+//   // return returnUser(user)
+// }
 
 // export async function getRefreshUserByEmail(
 //   email: string,
@@ -208,21 +206,21 @@ export async function getRefreshUserById(userId: number): Promise<User | null> {
 //   // return returnUser(user)
 // }
 
-export async function requireUserRole(request: Request, user: User) {
-  logger.debug("👑 requireUserRole start")
+// export async function requireUserRole(request: Request, user: User) {
+//   logger.debug("👑 requireUserRole start")
 
-  if (user && !["SUPER", "ADMIN", "MODERATOR", "USER"].includes(user.role)) {
-    throw redirectToSignin(request)
-  }
-}
+//   if (user && !["SUPER", "ADMIN", "MODERATOR", "USER"].includes(user.role)) {
+//     throw redirectToSignin(request)
+//   }
+// }
 
-export async function requireAdminRole(request: Request, user: User) {
-  logger.debug("👑 requireAdminRole start")
+// export async function requireAdminRole(request: Request, user: User) {
+//   logger.debug("👑 requireAdminRole start")
 
-  if (user && !["SUPER", "ADMIN"].includes(user.role)) {
-    throw redirectToSignin(request)
-  }
-}
+//   if (user && !["SUPER", "ADMIN"].includes(user.role)) {
+//     throw redirectToSignin(request)
+//   }
+// }
 
 export async function getUsers(): Promise<User[] | null> {
   const users = await prisma.user.findMany({
@@ -271,24 +269,24 @@ export async function getUsers(): Promise<User[] | null> {
 //   // return returnUser(user)
 // }
 
-export async function updateUser(userId: number) {
-  return await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      activated: true,
-      stats: {
-        update: {
-          count: {
-            increment: 1,
-          },
-          lastVisited: new Date(),
-        },
-      },
-    },
-  })
-}
+// export async function updateUser(userId: number) {
+//   return await prisma.user.update({
+//     where: {
+//       id: userId,
+//     },
+//     data: {
+//       activated: true,
+//       stats: {
+//         update: {
+//           count: {
+//             increment: 1,
+//           },
+//           lastVisited: new Date(),
+//         },
+//       },
+//     },
+//   })
+// }
 
 //-------------------------------------------
 // LOCAL FUNCTIONS
