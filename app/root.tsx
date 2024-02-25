@@ -37,52 +37,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
   const { user } = await getUserFromSession(request)
 
-  // const folderLink =
-  //   user?.student?.folderLink || refreshUser?.student?.folderLink
+  if (!user?.email) {
+    return { role: null, picture: null, email: null, folderLink: null }
+  }
+
+  console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
   return json(
     {
-      user,
+      role: user.role,
+      picture: user.picture,
+      email: user.email,
+      folderLink: user.student?.folderLink,
     },
     { headers },
   )
-  // return defer({ userPromise }, { headers })
-
-  // // if there is a user
-  // if (user?.email) {
-  //   console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
-
-  //   return json(
-  //     {
-  //       role: user.role,
-  //       picture: user.picture,
-  //       folderLink: folderLink ? folderLink : null,
-  //       email: user.email,
-  //     },
-  //     { headers },
-  //   )
-  // } else if (refreshUser?.email) {
-  //   // if there is a refreshUser
-  //   console.log(
-  //     `🍟 ${refreshUser.last}${refreshUser.first} - ${refreshUser.email}`,
-  //   )
-  //   return json(
-  //     {
-  //       role: refreshUser.role,
-  //       picture: refreshUser.picture,
-  //       email: refreshUser.email,
-  //       folderLink: folderLink ? folderLink : null,
-  //     },
-  //     {
-  //       headers,
-  //     },
-  //   )
-  // }
-
-  //   return json({ role: null, picture: null, folderLink: null, email: null })
-  // } catch (error) {
-  //   console.error(`🍿 loader: root ${request.url} - error`)
-  //   return json({ role: null, picture: null, folderLink: null, email: null })
-  // }
 }
 
 /**
