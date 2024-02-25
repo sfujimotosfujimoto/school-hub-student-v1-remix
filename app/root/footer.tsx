@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="">
-      <div className="flex h-8 items-center justify-center">
+      <div className="flex items-center justify-center h-8">
         <p className="">
           &copy; {new Date().getFullYear()} by{" "}
           <a

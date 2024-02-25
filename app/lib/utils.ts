@@ -129,69 +129,10 @@ export function formatDate(date: Date, locals = "ja-JP") {
   })
 
   return formatter.format(date)
-  // return formatter.format(new Date(date))
 }
-
-// export function rawUserToUser(rawUser: PrismaUser): User {
-//   let stats = null
-//   if (rawUser.stats) {
-//     stats = {
-//       count: rawUser.stats.count,
-//       lastVisited: new Date(rawUser.stats.lastVisited),
-//     }
-//   }
-
-//   const tUser: User = {
-//     ...rawUser,
-//     credential: {
-//       ...rawUser.credential,
-//       expiry: Number(rawUser.credential?.expiry),
-//       refreshTokenExpiry: Number(rawUser.credential?.refreshTokenExpiry),
-//     },
-
-//     createdAt: rawUser?.createdAt ? rawUser.createdAt : new Date(),
-//     updatedAt: rawUser?.updatedAt ? rawUser.updatedAt : new Date(),
-//     stats,
-//   }
-//   return tUser
-// }
 
 export function parseTags(genres: string) {
   return genres.split(",").map((g) => g.trim())
-}
-
-type ErrorMessage =
-  | "expired"
-  | "unauthorized"
-  | "no-login"
-  | "not-parent-account"
-  | "no-folder"
-  | "login-error"
-
-export function getErrorMessage(errorMessage: ErrorMessage): string {
-  // console.log("✅ lib/utils.ts ~ 	😀 in getErrorMessage", errorMessage)
-  switch (errorMessage) {
-    case "expired":
-      return "アクセス期限が切れました。"
-    case "unauthorized":
-      return "アクセス権限がありません。"
-    case "no-login":
-      return "ログインをしてください。"
-    case "not-parent-account":
-      return "保護者・生徒Googleアカウントでログインをしてください。"
-    case "no-folder":
-      return "Googleフォルダがないか、名簿のGoogleSheetが共有されていません。"
-    case "login-error":
-      return "ログインに失敗しました。"
-    default:
-      return "エラーが発生しました。"
-  }
-}
-
-export function setSearchParams(url: string, key: string, value: string) {
-  const _url = new URL(url)
-  _url.searchParams.set(key, value ? value : "ALL")
-  return _url.href
 }
 
 export function toLocaleString(date: Date | number | string) {

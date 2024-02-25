@@ -1,9 +1,9 @@
-import invariant from "tiny-invariant"
 import { getServiceAccountClient } from "./google.server"
 import { createClient } from "@vercel/kv"
 import { logger } from "../logger"
 import { google } from "googleapis"
 import type { Student } from "~/types"
+import { errorResponses } from "../error-responses"
 
 const KV_EXPIRE_SECONDS = 60
 
@@ -19,19 +19,6 @@ export async function getStudentByEmail(
   return student
 }
 
-// export function getStudentByFolderId(
-//   folderId: string,
-//   studentData: Student[],
-// ): Student | null {
-//   const studentD = studentData.find(
-//     (d) => d.folderLink && folderId === getFolderId(d.folderLink),
-//   )
-
-//   if (studentD) return studentD
-
-//   return null
-// }
-
 async function getSheetsWithServiceAccount() {
   const client = await getServiceAccountClient()
   if (!client) return null
@@ -43,10 +30,10 @@ async function getSheetsWithServiceAccount() {
   return sheets
 }
 
-export async function getStudentDataWithServiceAccount() {
+async function getStudentDataWithServiceAccount() {
   try {
     const sheets = await getSheetsWithServiceAccount()
-    invariant(sheets, "Unauthorized google account")
+    if (!sheets) return errorResponses.google()
 
     let studentData: Student[]
 

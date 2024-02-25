@@ -11,8 +11,6 @@ import {
 import { getClientFromCode } from "../google/google.server"
 import { logger } from "../logger"
 import { prisma } from "./db.server"
-// import { getStudentDBByEmail } from "./services/student.server"
-// import { updateUser } from "./services/user.server"
 import { errorResponses } from "../error-responses"
 import { REFRESH_EXPIRY } from "~/config"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
@@ -115,6 +113,7 @@ export async function signin({
     },
   })
   if (!userPrisma) {
+    logger.debug(`creating user: ${person.email}`)
     userPrisma = await prisma.user.create({
       data: {
         first: person.first,
@@ -133,19 +132,7 @@ export async function signin({
       },
     })
   }
-  // let userPrisma = await prisma.user.upsert({
-  //   where: {
-  //     email: person.email,
-  //   },
-  //   update: {},
-  //   create: {
-  //     first: person.first,
-  //     last: person.last,
-  //     email: person.email,
-  //     picture: person.picture,
-  //     role: "USER",
-  //   },
-  // })
+
   let end3 = performance.now()
   logger.debug(
     `🔥   end: upsert prisma \t\ttime: ${(end3 - start3).toFixed(2)} ms`,
@@ -268,16 +255,13 @@ export async function signin({
   // if student is not in db, create student
   if (!studentPrisma && studentUpsert) {
     // await prisma.$transaction([
-    await prisma.$transaction([
-      statsUpsert,
-      credentialUpsert,
-      studentUpsert,
-      userUpdate,
-    ])
+    prisma.$transaction([statsUpsert, studentUpsert, userUpdate])
+    await prisma.$transaction([credentialUpsert])
   } else {
-    await prisma.$transaction([statsUpsert, credentialUpsert, userUpdate])
-    // await prisma.$transaction([statsUpsert, credentialUpsert, userUpdate])
+    prisma.$transaction([statsUpsert, userUpdate])
+    await prisma.$transaction([credentialUpsert])
   }
+
   let end5 = performance.now()
   logger.debug(
     `🔥   end: transaction \t\ttime: ${(end5 - start5).toFixed(2)} ms`,
@@ -312,47 +296,3 @@ export async function signin({
 export async function signout({ request }: { request: Request }) {
   return destroyUserSession(request)
 }
-
-/**
- * Gets folderId from email
- *
- * @export
- * @param {string} email
- * @return {*}  {(Promise<{
- * 	folderId: string | null
- * }>)}
- */
-// export async function getFolderIdFromEmail(
-//   email: string,
-// ): Promise<string | null> {
-//   // console.log("✅ getFolderIdFromEmail", email)
-//   const student = await getStudentByEmail(email)
-
-//   if (!student?.folderLink) {
-//     // throw Error(`no-folder`)
-//     throw errorResponses.folder()
-//   }
-
-//   const folderId = getFolderId(student?.folderLink)
-
-//   return folderId
-// }
-
-// used in authenticate
-// export async function updateUserJWT(
-//   email: string,
-//   expiry: Date,
-//   refreshTokenExpiry: Date,
-// ): Promise<string> {
-//   logger.debug(`🍓 signin: updateUserJWT: email ${email}`)
-//   const secret = process.env.SESSION_SECRET
-//   const secretEncoded = new TextEncoder().encode(secret)
-//   const userJWT = await new jose.SignJWT({
-//     email,
-//     rexp: refreshTokenExpiry.getTime(),
-//   })
-//     .setProtectedHeader({ alg: "HS256" })
-//     .setExpirationTime(expiry)
-//     .sign(secretEncoded)
-//   return userJWT
-// }

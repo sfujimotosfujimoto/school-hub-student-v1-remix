@@ -14,7 +14,7 @@ export default function BackButton({
   if (!isLink && to) {
     return (
       <LinkButton to={to} size="sm" className="text-sfblue-400">
-        <LeftArrowIcon className="mr-2 h-5 w-5 " />
+        <LeftArrowIcon className="w-5 h-5 mr-2 " />
         Back
       </LinkButton>
     )
@@ -26,7 +26,7 @@ export default function BackButton({
         size="sm"
         className="text-sfblue-400"
       >
-        <LeftArrowIcon className="mr-2 h-5 w-5" />
+        <LeftArrowIcon className="w-5 h-5 mr-2" />
         Back
       </Button>
     )

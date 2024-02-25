@@ -7,13 +7,11 @@ export async function requireUserRole(request: Request, user: User) {
 
   if (user && !["ADMIN", "USER"].includes(user.role)) {
     redirectToSignin(request)
-    // throw redirect("/auth/signin?authstate=unauthorized")
   }
 }
 
 export async function requireAdminRole(request: Request, user: User) {
   if (user && !["SUPER", "ADMIN"].includes(user.role)) {
     redirectToSignin(request)
-    // throw redirect("/auth/signin?authstate=unauthorized")
   }
 }

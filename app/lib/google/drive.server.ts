@@ -4,41 +4,6 @@ import { logger } from "~/lib/logger"
 import type { DriveFile } from "~/types"
 import { QUERY_FILES_FIELDS, QUERY_FILE_FIELDS } from "~/config"
 
-// export function createQuery({
-//   folderId,
-//   mimeType,
-//   query = undefined,
-// }: {
-//   folderId: string
-//   mimeType?: string
-//   query?: string
-// }) {
-//   const outputQuery = []
-
-//   outputQuery.push("trashed=false")
-//   let parentsQuery: string
-//   if (folderId) {
-//     parentsQuery = `'${folderId.trim()}' in parents`
-//     outputQuery.push(parentsQuery)
-//   }
-
-//   let mimeTypeQuery: string
-//   if (mimeType) {
-//     mimeTypeQuery = `mimeType='${mimeType.trim()}'`
-//     outputQuery.push(mimeTypeQuery)
-//   }
-
-//   let queryString: string
-//   if (query) {
-//     queryString = `${query.trim()}`
-//     outputQuery.push(queryString)
-//   }
-
-//   if (!outputQuery) return null
-
-//   return outputQuery.join(" and ")
-// }
-
 export async function getDriveFiles(
   accessToken: string,
   query: string,
