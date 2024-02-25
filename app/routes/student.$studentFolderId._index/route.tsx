@@ -174,7 +174,7 @@ export default function StudentFolderIdIndexPage() {
                           tabIndex={0}
                           className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-slate-100 bg-opacity-80 rounded-box w-56"
                         >
-                          <div className="flex flex-wrap gap-2 justify-center">
+                          <div className="flex flex-wrap justify-center gap-2">
                             <NendoPills url={url} nendos={nendos} />
                             <ExtensionPills url={url} extensions={extensions} />
 

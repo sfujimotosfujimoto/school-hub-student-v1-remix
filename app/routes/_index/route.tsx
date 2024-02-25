@@ -61,11 +61,7 @@ function LoginButton({
             <div className="flex flex-col gap-4 mt-8">
               <h3 className="text-xl ">Hello, </h3>
               <h2 className="text-2xl font-bold text-sfblue-400">{email}</h2>
-              <NavLinkButton
-                className="mt-4"
-                to={`/student/${folderId}`}
-                size="md"
-              >
+              <NavLinkButton className="mt-4" to={`/auth/signin`} size="md">
                 <LogoIcon className="w-4 h-7" />
                 <DriveLogoIcon className="w-4 h-4" />
                 フォルダへ

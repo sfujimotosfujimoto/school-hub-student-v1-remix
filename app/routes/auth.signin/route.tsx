@@ -1,6 +1,6 @@
 import { json, redirect } from "@remix-run/node"
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node"
-import { Form, useLoaderData, useNavigation } from "@remix-run/react"
+import { Form, useNavigation } from "@remix-run/react"
 import { initializeClient } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import {
@@ -8,7 +8,7 @@ import {
   // updateSession,
 } from "~/lib/services/session.server"
 // import type { loader as rootLoader } from "~/root"
-import { Button, NavLinkButton } from "~/components/buttons/button"
+import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
@@ -32,6 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (user) {
     const student = await getStudentByEmail(user.email)
     folderId = getFolderId(student?.folderLink || "")
+    return redirect(`/student/${folderId}`)
   }
 
   // get redirect from search params
@@ -43,13 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw redirect(redirectUrl)
   }
 
-  if (user) {
-    logger.info(
-      `🍺 auth.signin: user: ${user?.last} ${user?.first}, gakuseki: ${user?.student?.gakuseki}, folderId: ${folderId}`,
-    )
-  }
-
-  return json({ user, folderId })
+  return json(null)
 }
 
 /**
@@ -79,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AuthSigninPage() {
   // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
-  const { user, folderId } = useLoaderData<typeof loader>()
+  // const { user, folderId } = useLoaderData<typeof loader>()
 
   const navigation = useNavigation()
   const isNavigating = navigation.state !== "idle"
@@ -107,27 +102,8 @@ export default function AuthSigninPage() {
           </span>
           でサインインしてください。
         </div>
-        <>
-          {user && folderId ? (
-            <div className="flex flex-col gap-4 mt-8">
-              <h3 className="text-xl ">Hello, </h3>
-              <h2 className="text-2xl font-bold text-sfblue-400">
-                {user.email}
-              </h2>
-              <NavLinkButton
-                className="mt-4"
-                to={`/student/${folderId}`}
-                size="md"
-              >
-                <LogoIcon className="w-4 h-7" />
-                <DriveLogoIcon className="w-4 h-4" />
-                フォルダへ
-              </NavLinkButton>
-            </div>
-          ) : (
-            <GoogleSigninButton disabled={isNavigating} />
-          )}
-        </>
+
+        <GoogleSigninButton disabled={isNavigating} />
       </section>
     </>
   )
@@ -276,5 +252,64 @@ export default function AuthSigninPage() {
     </>
   )
 }
+
+
+export default function AuthSigninPage() {
+  // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
+  const { user, folderId } = useLoaderData<typeof loader>()
+
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== "idle"
+
+  return (
+    <>
+      <section
+        className={clsx(
+          `mx-auto flex h-full w-screen max-w-7xl flex-col items-center justify-center gap-8 text-sfblue-300`,
+          { "opacity-40": isNavigating },
+        )}
+      >
+        <div className="flex items-center">
+          <LogoIcon className="w-16 sm:w-24" />
+          <DriveLogoIcon className="w-24 h-24" />
+        </div>
+
+        <div className="max-w-xl p-4 rounded-lg shadow-lg bg-base-100">
+          <span
+            className={clsx(
+              `font-bold underline decoration-sfred-200 decoration-4 underline-offset-4`,
+            )}
+          >
+            Google アカウント
+          </span>
+          でサインインしてください。
+        </div>
+        <>
+          {user && folderId ? (
+            <div className="flex flex-col gap-4 mt-8">
+              <h3 className="text-xl ">Hello, </h3>
+              <h2 className="text-2xl font-bold text-sfblue-400">
+                {user.email}
+              </h2>
+              <NavLinkButton
+                className="mt-4"
+                to={`/student/${folderId}`}
+                size="md"
+              >
+                <LogoIcon className="w-4 h-7" />
+                <DriveLogoIcon className="w-4 h-4" />
+                フォルダへ
+              </NavLinkButton>
+            </div>
+          ) : (
+            <GoogleSigninButton disabled={isNavigating} />
+          )}
+        </>
+      </section>
+    </>
+  )
+}
+
+
 
 */

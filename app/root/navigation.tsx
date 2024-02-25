@@ -51,7 +51,7 @@ export default function Navigation() {
         className={clsx(
           `navbar bg-base-100 bg-opacity-70 transition-colors ease-in-out`,
           {
-            "animate-pulse bg-opacity-5 bg-gradient-to-r from-sfgreentransparent-400 via-slate-200 via-60%  to-sfredtransparent-400 to-90% duration-500":
+            "pulse-slow bg-opacity-5 bg-gradient-to-r from-sfgreentransparent-400 via-slate-200 via-60%  to-sfredtransparent-400 to-90% duration-500":
               loading,
           },
         )}
@@ -99,7 +99,7 @@ export default function Navigation() {
         </div>
 
         {role && (
-          <div className="ml-2 dropdown dropdown-end">
+          <div className="ml-2 mr-4 dropdown dropdown-end">
             <div
               tabIndex={0}
               role="button"
