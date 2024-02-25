@@ -84,14 +84,17 @@ export default function Navigation() {
                 </NavLink>
               </li>
             )}
-            {role && folderId && studentFilePath !== location.pathname && (
-              <li>
-                <NavLink to={studentFilePath}>
-                  <UserIcon className="w-5 h-5 sm:hidden" />
-                  <span className="hidden sm:block">ファイル一覧</span>
-                </NavLink>
-              </li>
-            )}
+            {role &&
+              folderId &&
+              studentFilePath !== location.pathname &&
+              !location.pathname.startsWith(studentFilePath) && (
+                <li>
+                  <NavLink to={studentFilePath}>
+                    <UserIcon className="w-5 h-5 sm:hidden" />
+                    <span className="hidden sm:block">ファイル一覧</span>
+                  </NavLink>
+                </li>
+              )}
           </ul>
         </div>
 

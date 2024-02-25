@@ -2,17 +2,21 @@ import { useRouteLoaderData } from "@remix-run/react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
 import { getFolderId } from "~/lib/utils"
-import type { loader as rootLoader } from "~/root"
+import type { loader } from "~/root"
 
 export default function Index() {
-  const data = useRouteLoaderData<typeof rootLoader>("root")
+  const data = useRouteLoaderData<typeof loader>("root")
 
   if (!data) {
     throw Error("no data")
   }
-  const user = data.user
 
-  const folderId = getFolderId(user?.student?.folderLink || "")
+  let folderId: string | null = null
+
+  if (data.folderLink) {
+    folderId = getFolderId(data.folderLink)
+  }
+
   return (
     <>
       <section className="flex flex-col items-center justify-center w-screen h-full gap-8 mx-auto max-w-7xl">
@@ -27,8 +31,8 @@ export default function Index() {
         </div>
 
         <LoginButton
-          email={user ? user.email : undefined}
-          folderId={user?.student ? folderId : undefined}
+          email={data.email ? data.email : undefined}
+          folderId={folderId ? folderId : undefined}
         />
       </section>
     </>
