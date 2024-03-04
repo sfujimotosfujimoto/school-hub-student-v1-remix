@@ -1,11 +1,34 @@
-import { useRouteLoaderData } from "@remix-run/react"
+import type { LoaderFunctionArgs } from "@remix-run/node"
+import { json, redirect, useRouteLoaderData } from "@remix-run/react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
+import { getSession } from "~/lib/services/session.server"
 import { getFolderId } from "~/lib/utils"
-import type { loader } from "~/root"
+import type { loader as rootLoader } from "~/root"
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const userSession = await getSession(request)
+
+  if (userSession && userSession.userId) {
+    return redirect(`/auth/signin`)
+  }
+
+  return json(
+    {
+      userId: null,
+      accessToken: null,
+    },
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": "private, max-age=3600",
+      },
+    },
+  )
+}
 
 export default function Index() {
-  const data = useRouteLoaderData<typeof loader>("root")
+  const data = useRouteLoaderData<typeof rootLoader>("root")
 
   if (!data) {
     throw Error("no data")

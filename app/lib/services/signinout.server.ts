@@ -12,7 +12,7 @@ import { getClientFromCode } from "../google/google.server"
 import { logger } from "../logger"
 import { prisma } from "./db.server"
 import { errorResponses } from "../error-responses"
-import { REFRESH_EXPIRY } from "~/config"
+import { DEV_EXPIRY, DEV_REFERSH_EXPIRY, REFRESH_EXPIRY } from "~/config"
 const EXPIRY_DATE = new Date("2024-03-30").getTime()
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -52,23 +52,23 @@ export async function signin({
   if (!result.success) {
     console.error(result.error.errors)
     throw errorResponses.unauthorized()
-    // throw redirectToSignin(request)
   }
 
   let { access_token, expiry_date, scope, token_type, refresh_token } =
     result.data
 
   // TODO: !!DEBUG!!: setting expiryDateDummy to 10 seconds
-  // const expiry_date_dummy = new Date().getTime() + 1000 * 15
-  // expiry_date = expiry_date_dummy
+  if (process.env.NODE_ENV === "development") {
+    expiry_date = Date.now() + DEV_EXPIRY
+  }
 
-  // let refreshTokenExpiryDummy = Date.now() + 1000 * 30 // 30 seconds
-  // let refreshTokenExpiry = refreshTokenExpiryDummy
   let refreshTokenExpiry = new Date(Date.now() + REFRESH_EXPIRY) // 14 days
+  if (process.env.NODE_ENV === "development") {
+    refreshTokenExpiry = new Date(Date.now() + DEV_REFERSH_EXPIRY)
+  }
 
   if (!access_token) {
     throw errorResponses.unauthorized()
-    // throw redirectToSignin(request, { authstate: "no-access-token" })
   }
 
   logger.debug(`💥 start: getPersonFromPeople`)
@@ -101,7 +101,6 @@ export async function signin({
     !checkValidAdminEmail(person.email)
   ) {
     throw errorResponses.account()
-    // throw redirectToSignin(request, { authstate: `not-parent-account` })
   }
 
   logger.debug(`💥 start: upsert prisma`)

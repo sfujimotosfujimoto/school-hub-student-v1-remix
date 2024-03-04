@@ -49,7 +49,7 @@ export const selectUser = {
 
 export async function getUserById(
   userId: number,
-): Promise<{ user: User | null }> {
+): Promise<{ user: User | null; refreshUser: User | null }> {
   logger.debug(`👑 getUserById: userId: ${userId}`)
 
   try {
@@ -66,23 +66,39 @@ export async function getUserById(
     })
 
     if (user) {
-      return { user }
+      return { user, refreshUser: null }
     }
 
-    return { user: null }
+    const refreshUser: User | null = await prisma.user.findUnique({
+      where: {
+        id: userId,
+        credential: {
+          refreshTokenExpiry: { gt: new Date() },
+        },
+      },
+      select: {
+        ...selectUser,
+      },
+    })
+
+    if (refreshUser) {
+      return { user: null, refreshUser }
+    }
+
+    return { user: null, refreshUser: null }
   } catch (error) {
     if (error instanceof GaxiosError) {
       console.error(`👑 getUserById: GaxiosError: ${error.message}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return { user: null }
+      return { user: null, refreshUser: null }
     } else if (error instanceof Error) {
       console.error(`👑 getUserById: Error: ${error.message}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return { user: null }
+      return { user: null, refreshUser: null }
     } else {
       console.error(`👑 getUserById: unknown error: ${error}`)
       // throw new Error(`ユーザー情報の取得に失敗しました。`)
-      return { user: null }
+      return { user: null, refreshUser: null }
     }
   }
 }
@@ -109,6 +125,34 @@ export async function getUsers(): Promise<User[] | null> {
   }
 
   return returnUsers(users)
+}
+
+export async function updateUserCredential(
+  userId: number,
+  accessToken: string,
+  expiryDate: number,
+) {
+  if (accessToken && expiryDate) {
+    const user = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        credential: {
+          update: {
+            accessToken,
+            expiry: new Date(expiryDate),
+          },
+        },
+      },
+      select: {
+        ...selectUser,
+      },
+    })
+    return user
+  } else {
+    return null
+  }
 }
 
 //-------------------------------------------

@@ -1,9 +1,10 @@
-import { json, redirect } from "@remix-run/node"
+import { redirect } from "@remix-run/node"
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node"
 import { Form, useNavigation } from "@remix-run/react"
-import { initializeClient } from "~/lib/google/google.server"
+import { initializeClient, refreshToken } from "~/lib/google/google.server"
 import { logger } from "~/lib/logger"
 import {
+  createUserSession,
   getUserFromSession, // getUserFromSession,
   // updateSession,
 } from "~/lib/services/session.server"
@@ -12,9 +13,10 @@ import { Button } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon } from "~/components/icons"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import clsx from "clsx"
-import { getFolderId } from "~/lib/utils"
+import { getFolderId, toLocaleString } from "~/lib/utils"
 import { getStudentByEmail } from "~/lib/google/sheets.server"
 import { SCOPES } from "~/config"
+import { updateUserCredential } from "~/lib/services/user.server"
 
 export const config = {
   maxDuration: 60,
@@ -25,26 +27,105 @@ export const config = {
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
-  const { user } = await getUserFromSession(request)
+  const { user, refreshUser } = await getUserFromSession(request)
 
   let folderId
 
   if (user) {
+    logger.debug(`💥 start: getStudentByEmail`)
+    const start1 = performance.now()
     const student = await getStudentByEmail(user.email)
+
     folderId = getFolderId(student?.folderLink || "")
+    const end1 = performance.now()
+    logger.debug(
+      `🔥   end: getStudentByEmail time: ${(end1 - start1).toFixed(2)} ms`,
+    )
     return redirect(`/student/${folderId}`)
   }
 
-  // get redirect from search params
-  const redirectUrl = new URL(request.url).searchParams.get("redirect")
-  if (redirectUrl) {
-    logger.debug(
-      `👑 auth.signin: found redirectURL, redirecting to ${redirectUrl}`,
-    )
-    throw redirect(redirectUrl)
+  console.log("✅ auth.signin: user", user)
+  // if no refresh user found, return null
+  const refreshTokenString = refreshUser?.credential?.refreshToken
+  const refreshTokenExpiry = refreshUser?.credential?.refreshTokenExpiry
+
+  console.log("✅ auth.signin: refreshTokenString", refreshTokenString)
+  console.log(
+    "✅ auth.signin: refreshTokenExpiry",
+    toLocaleString(refreshTokenExpiry || ""),
+  )
+  if (!refreshTokenString || !refreshTokenExpiry) {
+    logger.debug("🐝 auth.signin: no refresh token found in DB user")
+    return null
   }
 
-  return json(null)
+  logger.debug(`✅ auth.signin: refreshTokenString: ${refreshTokenString}`)
+
+  try {
+    logger.debug(`💥 start: refreshToken`)
+    const start2 = performance.now()
+
+    // get new access token using refresh token
+    const token = await refreshToken(refreshTokenString, refreshTokenExpiry)
+
+    if (!token) {
+      return null
+    }
+
+    const end2 = performance.now()
+    logger.debug(
+      `🔥   end: refreshToken time: ${(end2 - start2).toFixed(2)} ms`,
+    )
+
+    // update user credential with new token in DB
+    const newAccessToken = token.credentials.access_token
+    const newExpiryDate = token.credentials.expiry_date
+
+    if (!newAccessToken || !newExpiryDate) {
+      return null
+    }
+
+    logger.debug(`💥 start: updateUserCredential`)
+    const start3 = performance.now()
+
+    logger.debug(`✅ auth.signin: new accessToken: ${newAccessToken}`)
+    const updatedUser = await updateUserCredential(
+      refreshUser.id,
+      newAccessToken,
+      newExpiryDate,
+    )
+
+    const end3 = performance.now()
+    logger.debug(
+      `🔥   end: updateUserCredential time: ${(end3 - start3).toFixed(2)} ms`,
+    )
+
+    if (!updatedUser) {
+      return null
+    }
+
+    logger.debug(
+      `✅ auth.signin: updatedUser: ${toLocaleString(updatedUser?.credential?.expiry || "")}`,
+    )
+
+    // get redirect from search params
+    const redirectUrl = new URL(request.url).searchParams.get("redirect")
+    if (redirectUrl) {
+      return createUserSession(refreshUser.id, newAccessToken, redirectUrl)
+    }
+
+    if (folderId) {
+      return createUserSession(
+        refreshUser.id,
+        newAccessToken,
+        `/student/${folderId}`,
+      )
+    }
+
+    return createUserSession(refreshUser.id, newAccessToken, `/`)
+  } catch (error) {
+    return null
+  }
 }
 
 /**
@@ -60,8 +141,8 @@ export async function action({ request }: ActionFunctionArgs) {
   // This means that the user will not bet a refresh token and will have to sign in again
   // get authorization URL from created client
   const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "online",
-    // access_type: "offline",
+    // access_type: "online",
+    access_type: "offline",
     scope: SCOPES,
     include_granted_scopes: false,
     // include_granted_scopes: true,
@@ -73,7 +154,6 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AuthSigninPage() {
-  // console.log("✅ auth.signin/route.tsx ~ 	😀 ")
   // const { user, folderId } = useLoaderData<typeof loader>()
 
   const navigation = useNavigation()

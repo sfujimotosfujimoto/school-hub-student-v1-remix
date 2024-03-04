@@ -1,5 +1,4 @@
 import { type Auth, google } from "googleapis"
-// import { logger } from "../logger"
 
 export async function getClientFromCode(code: string): Promise<{
   client: Auth.OAuth2Client
@@ -73,4 +72,21 @@ export async function getServiceAccountClient() {
   })
 
   return client
+}
+
+/**
+ * Refresh token
+ * used in
+ * `auth.signin/route.tsx`
+ */
+export async function refreshToken(refreshToken: string, expiry: Date) {
+  if (expiry.getTime() < new Date().getTime()) {
+    return null
+  }
+  const oauth2Client = initializeClient()
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken,
+  })
+  const token = await oauth2Client.refreshAccessToken()
+  return token
 }

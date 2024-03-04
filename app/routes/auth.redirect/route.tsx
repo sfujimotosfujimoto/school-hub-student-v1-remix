@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   logger.debug(`💥 start: signin()`)
   let start1 = performance.now()
-  const { folderId, userId } = await signin({
+  const { folderId, userId, accessToken } = await signin({
     request,
     code,
   })
@@ -29,10 +29,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🔥   end: signin() \t\ttime: ${(end1 - start1).toFixed(2)} ms`)
 
   if (folderId === null && userId) {
-    return createUserSession(userId, `/admin`)
+    return createUserSession(userId, accessToken, `/admin`)
   }
 
-  return createUserSession(userId, `/student/${folderId}`)
+  return createUserSession(userId, accessToken, `/student/${folderId}`)
 }
 
 export default function Redirect() {
