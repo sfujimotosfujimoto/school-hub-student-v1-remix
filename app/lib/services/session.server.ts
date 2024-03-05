@@ -81,11 +81,15 @@ export async function getSession(request: Request): Promise<{
   const picture = session.get("picture")
   const expiry = session.get("expiry") || 0
   const folderId = session.get("folderId")
-
-  logger.debug(
-    `👑 getSession: (${toLocaleString(new Date(expiry || 0))}) ${request.url}, ${request.method}`,
+  logger.info(
+    `👑 getSession: ${email} (${toLocaleString(new Date(expiry || 0))})`,
   )
 
+  logger.debug(
+    `👑 getSession: folderId: (${folderId}), accessToken: (${accessToken}), ${request.url}, ${request.method}`,
+  )
+
+  // checks if session is expired
   if (!userId || !accessToken || expiry < Date.now())
     return {
       userId: null,

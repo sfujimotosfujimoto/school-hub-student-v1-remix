@@ -28,43 +28,24 @@ export const config = {
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
 
+  // gets non expired session
   const { accessToken, folderId } = await getSession(request)
+  // if session found and not expired, redirect to folderId
   if (accessToken && folderId) {
     return redirect(`/student/${folderId}`)
   }
 
   logger.debug(`✅ auth.signin: no session found`)
 
+  // get user from session
   const { refreshUser } = await getUserFromSession(request)
-  // if (user && user.student?.folderLink) {
-  //   const folderId = getFolderId(user.student.folderLink)
-  //   return redirect(`/student/${folderId}`)
-  // }
 
   logger.debug(`✅ auth.signin: refreshUser: ${refreshUser?.email}`)
-  // if (user) {
-  //   logger.debug(`💥 start: getStudentByEmail`)
-  //   const start1 = performance.now()
-  //   const student = await getStudentByEmail(user.email)
 
-  //   folderId = getFolderId(student?.folderLink || "")
-  //   const end1 = performance.now()
-  //   logger.debug(
-  //     `🔥   end: getStudentByEmail time: ${(end1 - start1).toFixed(2)} ms`,
-  //   )
-  //   return redirect(`/student/${folderId}`)
-  // }
-
-  // console.log("✅ auth.signin: user", user)
-  // if no refresh user found, return null
   const refreshTokenString = refreshUser?.credential?.refreshToken
   const refreshTokenExpiry = refreshUser?.credential?.refreshTokenExpiry
 
-  // console.log("✅ auth.signin: refreshTokenString", refreshTokenString)
-  // console.log(
-  //   "✅ auth.signin: refreshTokenExpiry",
-  //   toLocaleString(refreshTokenExpiry || ""),
-  // )
+  // if no refresh user found, return null
   if (!refreshTokenString || !refreshTokenExpiry) {
     logger.debug("🐝 auth.signin: no refresh token found in DB user")
     return null
