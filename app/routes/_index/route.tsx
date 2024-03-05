@@ -14,7 +14,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return { role: null, picture: null, email: null, folderId: null }
   }
 
-  console.log(`🍿 ${email}`)
   return json(
     {
       role,

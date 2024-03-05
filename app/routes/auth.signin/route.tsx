@@ -56,11 +56,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const refreshTokenString = refreshUser?.credential?.refreshToken
   const refreshTokenExpiry = refreshUser?.credential?.refreshTokenExpiry
 
-  console.log("✅ auth.signin: refreshTokenString", refreshTokenString)
-  console.log(
-    "✅ auth.signin: refreshTokenExpiry",
-    toLocaleString(refreshTokenExpiry || ""),
-  )
+  // console.log("✅ auth.signin: refreshTokenString", refreshTokenString)
+  // console.log(
+  //   "✅ auth.signin: refreshTokenExpiry",
+  //   toLocaleString(refreshTokenExpiry || ""),
+  // )
   if (!refreshTokenString || !refreshTokenExpiry) {
     logger.debug("🐝 auth.signin: no refresh token found in DB user")
     return null
