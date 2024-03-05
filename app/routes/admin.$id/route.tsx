@@ -4,7 +4,7 @@ import { Outlet } from "@remix-run/react"
 import { logger } from "~/lib/logger"
 
 import { requireAdminRole } from "~/lib/require-roles.server"
-import { getUserFromSession } from "~/lib/services/session.server"
+import { getSession } from "~/lib/services/session.server"
 import * as userS from "~/lib/services/user.server"
 
 import BackButton from "~/components/back-button"
@@ -52,10 +52,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id ${request.url}`)
-  const { user } = await getUserFromSession(request)
-  if (!user || !user.credential) throw redirectToSignin(request)
-
-  await requireAdminRole(request, user)
+  const { accessToken, role } = await getSession(request)
+  if (!accessToken || !role) throw redirectToSignin(request)
+  await requireAdminRole(request, role)
   const { id } = params
 
   const targetUser = await userS.getUserById(Number(id))

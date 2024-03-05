@@ -3,7 +3,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node"
 
 import { UserSchema } from "~/types/schemas"
 
-import { getUserFromSession } from "~/lib/services/session.server"
+import { getSession } from "~/lib/services/session.server"
 import * as userS from "~/lib/services/user.server"
 import { logger } from "~/lib/logger"
 import { requireAdminRole } from "~/lib/require-roles.server"
@@ -13,9 +13,10 @@ import { redirectToSignin } from "~/lib/responses"
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin.$id._index ${request.url}`)
-  const { user } = await getUserFromSession(request)
-  if (!user || !user.credential) throw redirectToSignin(request)
-  await requireAdminRole(request, user)
+  const { accessToken, role } = await getSession(request)
+  if (!accessToken || !role) throw redirectToSignin(request)
+  await requireAdminRole(request, role)
+
   const { id } = params
 
   const targetUser = await userS.getUserById(Number(id))

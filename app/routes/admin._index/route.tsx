@@ -7,7 +7,7 @@ import { logger } from "~/lib/logger"
 
 import { requireAdminRole } from "~/lib/require-roles.server"
 import { getUsers } from "~/lib/services/user.server"
-import { getUserFromSession } from "~/lib/services/session.server"
+import { getSession } from "~/lib/services/session.server"
 
 import Tables from "./tables"
 import { redirectToSignin } from "~/lib/responses"
@@ -17,11 +17,12 @@ import { redirectToSignin } from "~/lib/responses"
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: admin._index ${request.url}`)
-  const { user } = await getUserFromSession(request)
-  if (!user || !user.credential) {
+  const { accessToken, role } = await getSession(request)
+  // const { user } = await getUserFromSession(request)
+  if (!accessToken || !role) {
     throw redirectToSignin(request)
   }
-  await requireAdminRole(request, user)
+  await requireAdminRole(request, role)
 
   const users = await getUsers()
   return { users }

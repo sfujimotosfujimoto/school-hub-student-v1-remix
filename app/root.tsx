@@ -16,13 +16,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
   useRouteError,
 } from "@remix-run/react"
 
 import Navigation from "./root/navigation"
 import Footer from "./root/footer"
 import ErrorDocument from "./root/error-document"
-import { getUserFromSession } from "./lib/services/session.server"
+import { getSession } from "./lib/services/session.server"
 import { logger } from "./lib/logger"
 import { PageTransitionProgressBar } from "./components/progress-bar"
 import { CACHE_MAX_AGE_SECONDS } from "./config"
@@ -32,22 +33,20 @@ import { CACHE_MAX_AGE_SECONDS } from "./config"
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: root ${request.url}`)
-  // try {
   const headers = new Headers()
   headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
-  const { user } = await getUserFromSession(request)
+  const { email, role, picture, folderId } = await getSession(request)
 
-  if (!user?.email) {
-    return { role: null, picture: null, email: null, folderLink: null }
-  }
+  // if (!email) {
+  //   return json({ role: null, picture: null, email: null, folderId: null })
+  // }
 
-  console.log(`🍿 ${user.last}${user.first} - ${user.email}`)
   return json(
     {
-      role: user.role,
-      picture: user.picture,
-      email: user.email,
-      folderLink: user.student?.folderLink,
+      role,
+      picture,
+      email,
+      folderId,
     },
     { headers },
   )
@@ -140,6 +139,7 @@ export const links: LinksFunction = () => {
  * Component
  */
 function Document({ children }: { children: React.ReactNode }) {
+  const { role, picture, folderId } = useLoaderData<typeof loader>()
   return (
     <html lang="en" data-theme="mytheme">
       <head>
@@ -155,7 +155,7 @@ function Document({ children }: { children: React.ReactNode }) {
         >
           <PageTransitionProgressBar />
 
-          <Navigation />
+          <Navigation role={role} picture={picture} folderId={folderId} />
           <main className="h-full">{children}</main>
           <Footer />
         </div>

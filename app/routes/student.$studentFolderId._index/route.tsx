@@ -12,7 +12,7 @@ import ErrorBoundaryDocument from "~/components/error-boundary-document"
 import { CACHE_MAX_AGE_SECONDS } from "~/config"
 import { logger } from "~/lib/logger"
 import { redirectToSignin } from "~/lib/responses"
-import { getUserFromSession } from "~/lib/services/session.server"
+import { getSession } from "~/lib/services/session.server"
 import { convertDriveFiles, convertStudent } from "~/lib/utils-loader"
 import type { DriveFile } from "~/types"
 import AllPill from "./all-pill"
@@ -40,12 +40,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { studentFolderId } = params
   if (!studentFolderId) throw Error("id route parameter must be defined")
 
-  const { user } = await getUserFromSession(request)
-  if (!user || !user.credential)
+  const { accessToken, email } = await getSession(request)
+  // const { user } = await getUserFromSession(request)
+  if (!accessToken || !email)
     throw redirectToSignin(request, { urlParams: "user=none" })
-  const accessToken = user.credential.accessToken
+  // const accessToken = user.credential.accessToken
 
-  const student = await getStudentByEmail(user.email)
+  const student = await getStudentByEmail(email)
   // const student = user.student as Student
   if (!student || !student.folderLink)
     throw redirectToSignin(request, { urlParams: "student=none" })
