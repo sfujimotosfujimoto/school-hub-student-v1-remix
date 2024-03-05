@@ -276,6 +276,7 @@ export async function signin({
       accessToken: access_token,
       role: userPrisma.role,
       picture: userPrisma.picture,
+      expiry: expiry_date,
     }
   }
 
@@ -292,6 +293,7 @@ export async function signin({
     accessToken: access_token,
     role: userPrisma.role,
     picture: userPrisma.picture,
+    expiry: expiry_date,
   }
 }
 

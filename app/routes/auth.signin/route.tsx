@@ -29,7 +29,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: auth.signin ${request.url}`)
 
   const { accessToken, folderId } = await getSession(request)
-
   if (accessToken && folderId) {
     return redirect(`/student/${folderId}`)
   }
@@ -37,7 +36,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`✅ auth.signin: no session found`)
 
   const { refreshUser } = await getUserFromSession(request)
+  // if (user && user.student?.folderLink) {
+  //   const folderId = getFolderId(user.student.folderLink)
+  //   return redirect(`/student/${folderId}`)
+  // }
 
+  logger.debug(`✅ auth.signin: refreshUser: ${refreshUser?.email}`)
   // if (user) {
   //   logger.debug(`💥 start: getStudentByEmail`)
   //   const start1 = performance.now()
@@ -127,6 +131,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
         newAccessToken,
         refreshUser.role,
         refreshUser.picture,
+        refreshUser.credential?.expiry
+          ? refreshUser.credential?.expiry.getTime()
+          : 0,
         folderId,
         redirectUrl,
       )
@@ -139,6 +146,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
         newAccessToken,
         refreshUser.role,
         refreshUser.picture,
+        refreshUser.credential?.expiry
+          ? refreshUser.credential?.expiry.getTime()
+          : 0,
         folderId,
         `/student/${folderId}`,
       )

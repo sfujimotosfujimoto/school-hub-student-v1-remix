@@ -22,10 +22,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   logger.debug(`💥 start: signin()`)
   let start1 = performance.now()
-  const { folderId, userId, email, accessToken, role, picture } = await signin({
-    request,
-    code,
-  })
+  const { folderId, userId, email, accessToken, role, picture, expiry } =
+    await signin({
+      request,
+      code,
+    })
   let end1 = performance.now()
   logger.debug(`🔥   end: signin() \t\ttime: ${(end1 - start1).toFixed(2)} ms`)
 
@@ -36,6 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       accessToken,
       role,
       picture,
+      expiry,
       null,
       `/admin`,
     )
@@ -50,6 +52,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     accessToken,
     role,
     picture,
+    expiry,
     folderId,
     `/student/${folderId}`,
   )

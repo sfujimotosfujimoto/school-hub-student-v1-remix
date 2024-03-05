@@ -2,6 +2,7 @@ import type { User } from "~/types"
 import { GaxiosError } from "gaxios"
 import { prisma } from "./db.server"
 import { logger } from "../logger"
+import { toLocaleString } from "../utils"
 
 export const selectUser = {
   id: true,
@@ -50,8 +51,6 @@ export const selectUser = {
 export async function getUserById(
   userId: number,
 ): Promise<{ user: User | null; refreshUser: User | null }> {
-  logger.debug(`👑 getUserById: userId: ${userId}`)
-
   try {
     const user: User | null = await prisma.user.findUnique({
       where: {
@@ -64,9 +63,12 @@ export async function getUserById(
         ...selectUser,
       },
     })
+    logger.debug(
+      `👑 getUserById: userId: ${userId}, expiry: ${toLocaleString(user?.credential?.expiry || 0)}`,
+    )
 
     if (user) {
-      return { user, refreshUser: null }
+      return { user, refreshUser: user }
     }
 
     const refreshUser: User | null = await prisma.user.findUnique({

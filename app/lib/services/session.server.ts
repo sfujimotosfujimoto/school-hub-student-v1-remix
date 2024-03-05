@@ -3,6 +3,7 @@ import type { User } from "~/types"
 import { logger } from "../logger"
 import { getUserById } from "./user.server"
 import { SESSION_MAX_AGE } from "~/config"
+import { toLocaleString } from "../utils"
 // import { toLocaleString } from "../utils"
 const SESSION_SECRET = process.env.SESSION_SECRET
 if (!SESSION_SECRET) throw Error("session secret is not set")
@@ -28,6 +29,7 @@ export async function createUserSession(
   accessToken: string,
   role: string,
   picture: string,
+  expiry: number,
   folderId: string | null,
   redirectPath: string,
 ) {
@@ -37,6 +39,7 @@ export async function createUserSession(
   session.set("accessToken", accessToken)
   session.set("role", role)
   session.set("picture", picture)
+  session.set("expiry", expiry)
   if (folderId) session.set("folderId", folderId)
   return redirect(redirectPath, {
     headers: {
@@ -66,10 +69,9 @@ export async function getSession(request: Request): Promise<{
   accessToken: string | null
   role: string | null
   picture: string | null
+  expiry: number | null
   folderId: string | null
 }> {
-  logger.debug(`👑 getSession: request ${request.url}, ${request.method}`)
-
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
   const userId = session.get("userId")
@@ -77,15 +79,21 @@ export async function getSession(request: Request): Promise<{
   const accessToken = session.get("accessToken")
   const role = session.get("role")
   const picture = session.get("picture")
+  const expiry = session.get("expiry") || 0
   const folderId = session.get("folderId")
 
-  if (!userId || !accessToken)
+  logger.debug(
+    `👑 getSession: (${toLocaleString(new Date(expiry || 0))}) ${request.url}, ${request.method}`,
+  )
+
+  if (!userId || !accessToken || expiry < Date.now())
     return {
       userId: null,
       email: null,
       accessToken: null,
       role: null,
       picture: null,
+      expiry: null,
       folderId: null,
     }
 
@@ -95,6 +103,7 @@ export async function getSession(request: Request): Promise<{
     accessToken: accessToken,
     role,
     picture,
+    expiry,
     folderId,
   }
 }
@@ -109,9 +118,23 @@ export async function getUserFromSession(
     `👑 getUserFromSession: request ${request.url}, ${request.method}`,
   )
 
-  const { userId } = await getSession(request)
+  const session = await sessionStorage.getSession(request.headers.get("Cookie"))
+
+  const userId = session.get("userId")
+
+  if (!userId) {
+    return { user: null, refreshUser: null }
+  }
 
   const { user, refreshUser } = await getUserById(Number(userId))
 
   return { user, refreshUser }
+}
+
+export async function checkSession(request: Request) {
+  const { expiry } = await getSession(request)
+  if ((expiry || 0) < Date.now()) {
+    return false
+  }
+  return true
 }

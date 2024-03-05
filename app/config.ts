@@ -1,7 +1,7 @@
 export const REFRESH_EXPIRY = 1000 * 60 * 60 * 24 * 14 // 14 days
 export const CACHE_MAX_AGE_SECONDS = 60 * 10 // 10 minutes
 export const DEV_EXPIRY = 1000 * 15 // 15 seconds
-export const DEV_REFERSH_EXPIRY = 1000 * 60 * 60 // 1 hour
+export const DEV_REFERSH_EXPIRY = 1000 * 60 * 60 * 1 // 1 hours
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 14 // 14 days
 
 export const SCOPES = [
