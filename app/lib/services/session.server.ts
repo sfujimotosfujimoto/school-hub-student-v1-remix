@@ -132,6 +132,11 @@ export async function getUserFromSession(
 
   const { user, refreshUser } = await getUserById(Number(userId))
 
+  if (user || refreshUser)
+    console.log(
+      `✨ ${user?.last || refreshUser?.last}, ${user?.first || refreshUser?.first}`,
+    )
+
   return { user, refreshUser }
 }
 

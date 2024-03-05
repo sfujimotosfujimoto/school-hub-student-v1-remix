@@ -23,25 +23,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
     { headers },
   )
-
-  // const userSession = await getSession(request)
-
-  // if (userSession && userSession.userId) {
-  //   return redirect(`/auth/signin`)
-  // }
-
-  // return json(
-  //   {
-  //     userId: null,
-  //     accessToken: null,
-  //   },
-  //   {
-  //     status: 200,
-  //     headers: {
-  //       "Cache-Control": "private, max-age=3600",
-  //     },
-  //   },
-  // )
 }
 
 export default function Index() {
