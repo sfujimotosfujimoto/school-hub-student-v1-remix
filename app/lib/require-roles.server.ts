@@ -1,17 +1,16 @@
-import type { User } from "~/types"
 import { logger } from "./logger"
 import { redirectToSignin } from "./responses"
 
-export async function requireUserRole(request: Request, user: User) {
+export async function requireUserRole(request: Request, role: string) {
   logger.debug("👑 requireUserRole start")
 
-  if (user && !["ADMIN", "USER"].includes(user.role)) {
+  if (!["ADMIN", "USER"].includes(role)) {
     redirectToSignin(request)
   }
 }
 
-export async function requireAdminRole(request: Request, user: User) {
-  if (user && !["SUPER", "ADMIN"].includes(user.role)) {
+export async function requireAdminRole(request: Request, role: string) {
+  if (!["SUPER", "ADMIN"].includes(role)) {
     redirectToSignin(request)
   }
 }

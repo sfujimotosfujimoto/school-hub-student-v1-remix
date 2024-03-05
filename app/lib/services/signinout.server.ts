@@ -271,8 +271,11 @@ export async function signin({
   if (["ADMIN", "SUPER"].includes(userPrisma.role)) {
     return {
       userId: userPrisma.id,
+      email: person.email,
       folderId: null,
       accessToken: access_token,
+      role: userPrisma.role,
+      picture: userPrisma.picture,
     }
   }
 
@@ -284,8 +287,11 @@ export async function signin({
 
   return {
     userId: userPrisma.id,
+    email: person.email,
     folderId,
     accessToken: access_token,
+    role: userPrisma.role,
+    picture: userPrisma.picture,
   }
 }
 

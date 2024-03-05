@@ -24,12 +24,20 @@ export const sessionStorage = createCookieSessionStorage({
 // used in [`signin.server.ts`]
 export async function createUserSession(
   userId: number,
+  email: string,
   accessToken: string,
+  role: string,
+  picture: string,
+  folderId: string | null,
   redirectPath: string,
 ) {
   const session = await sessionStorage.getSession()
   session.set("userId", userId)
+  session.set("email", email)
   session.set("accessToken", accessToken)
+  session.set("role", role)
+  session.set("picture", picture)
+  if (folderId) session.set("folderId", folderId)
   return redirect(redirectPath, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session),
@@ -54,18 +62,41 @@ export async function destroyUserSession(request: Request) {
  */
 export async function getSession(request: Request): Promise<{
   userId: number | null
+  email: string | null
   accessToken: string | null
+  role: string | null
+  picture: string | null
+  folderId: string | null
 }> {
   logger.debug(`👑 getSession: request ${request.url}, ${request.method}`)
 
   const session = await sessionStorage.getSession(request.headers.get("Cookie"))
 
   const userId = session.get("userId")
+  const email = session.get("email")
   const accessToken = session.get("accessToken")
+  const role = session.get("role")
+  const picture = session.get("picture")
+  const folderId = session.get("folderId")
 
-  if (!userId || !accessToken) return { userId: null, accessToken: null }
+  if (!userId || !accessToken)
+    return {
+      userId: null,
+      email: null,
+      accessToken: null,
+      role: null,
+      picture: null,
+      folderId: null,
+    }
 
-  return { userId: userId, accessToken: accessToken }
+  return {
+    userId: userId,
+    email,
+    accessToken: accessToken,
+    role,
+    picture,
+    folderId,
+  }
 }
 
 /**

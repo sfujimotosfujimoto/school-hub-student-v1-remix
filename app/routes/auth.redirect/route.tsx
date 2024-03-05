@@ -1,5 +1,6 @@
 import { type LoaderFunctionArgs } from "@remix-run/node"
 import ErrorBoundaryDocument from "~/components/error-boundary-document"
+import { errorResponses } from "~/lib/error-responses"
 import { logger } from "~/lib/logger"
 import { redirectToSignin } from "~/lib/responses"
 import { createUserSession } from "~/lib/services/session.server"
@@ -21,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   logger.debug(`💥 start: signin()`)
   let start1 = performance.now()
-  const { folderId, userId, accessToken } = await signin({
+  const { folderId, userId, email, accessToken, role, picture } = await signin({
     request,
     code,
   })
@@ -29,10 +30,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🔥   end: signin() \t\ttime: ${(end1 - start1).toFixed(2)} ms`)
 
   if (folderId === null && userId) {
-    return createUserSession(userId, accessToken, `/admin`)
+    return createUserSession(
+      userId,
+      email,
+      accessToken,
+      role,
+      picture,
+      null,
+      `/admin`,
+    )
   }
 
-  return createUserSession(userId, accessToken, `/student/${folderId}`)
+  if (folderId === null) {
+    return errorResponses.forbidden()
+  }
+  return createUserSession(
+    userId,
+    email,
+    accessToken,
+    role,
+    picture,
+    folderId,
+    `/student/${folderId}`,
+  )
 }
 
 export default function Redirect() {
