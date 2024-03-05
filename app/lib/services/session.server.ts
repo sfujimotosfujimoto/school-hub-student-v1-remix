@@ -134,7 +134,7 @@ export async function getUserFromSession(
 
   if (user || refreshUser)
     console.log(
-      `✨ ${user?.last || refreshUser?.last}, ${user?.first || refreshUser?.first}`,
+      `✨ ${user?.last || refreshUser?.last} ${user?.first || refreshUser?.first}, ${user?.email || refreshUser?.email}`,
     )
 
   return { user, refreshUser }
