@@ -45,7 +45,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Index() {
-  // const data = useRouteLoaderData<typeof rootLoader>("root")
   const { folderId, email } = useLoaderData<typeof loader>()
 
   return (
