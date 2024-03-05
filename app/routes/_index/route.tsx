@@ -1,44 +1,53 @@
 import type { LoaderFunctionArgs } from "@remix-run/node"
-import { json, redirect, useRouteLoaderData } from "@remix-run/react"
+import { json, useLoaderData } from "@remix-run/react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
+import { CACHE_MAX_AGE_SECONDS } from "~/config"
 import { getSession } from "~/lib/services/session.server"
-import { getFolderId } from "~/lib/utils"
-import type { loader as rootLoader } from "~/root"
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const userSession = await getSession(request)
+  const headers = new Headers()
+  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
+  const { email, role, picture, folderId } = await getSession(request)
 
-  if (userSession && userSession.userId) {
-    return redirect(`/auth/signin`)
+  if (!email) {
+    return { role: null, picture: null, email: null, folderId: null }
   }
 
+  console.log(`🍿 ${email}`)
   return json(
     {
-      userId: null,
-      accessToken: null,
+      role,
+      picture,
+      email,
+      folderId,
     },
-    {
-      status: 200,
-      headers: {
-        "Cache-Control": "private, max-age=3600",
-      },
-    },
+    { headers },
   )
+
+  // const userSession = await getSession(request)
+
+  // if (userSession && userSession.userId) {
+  //   return redirect(`/auth/signin`)
+  // }
+
+  // return json(
+  //   {
+  //     userId: null,
+  //     accessToken: null,
+  //   },
+  //   {
+  //     status: 200,
+  //     headers: {
+  //       "Cache-Control": "private, max-age=3600",
+  //     },
+  //   },
+  // )
 }
 
 export default function Index() {
-  const data = useRouteLoaderData<typeof rootLoader>("root")
-
-  if (!data) {
-    throw Error("no data")
-  }
-
-  let folderId: string | null = null
-
-  if (data.folderLink) {
-    folderId = getFolderId(data.folderLink)
-  }
+  // const data = useRouteLoaderData<typeof rootLoader>("root")
+  const { folderId, email } = useLoaderData<typeof loader>()
 
   return (
     <>
@@ -54,7 +63,7 @@ export default function Index() {
         </div>
 
         <LoginButton
-          email={data.email ? data.email : undefined}
+          email={email ? email : undefined}
           folderId={folderId ? folderId : undefined}
         />
       </section>
@@ -126,109 +135,3 @@ function Explanation() {
     </p>
   )
 }
-
-// function SkeletonUIForLoginButton() {
-//   return (
-//     <div className="relative flex items-center justify-center w-full gap-8 h-44">
-//       <button className="btn btn-md disabled">
-//         <LogoIcon className="w-4 h-7" />
-//         <span
-//           id="signin"
-//           className="ml-2 sm:ml-4 sm:inline bg-opacity-60 text-slate-300"
-//         >
-//           SCHOOL HUB サインイン
-//         </span>
-//       </button>
-//     </div>
-//   )
-// }
-
-/*
-
-
-
-export default function Index() {
-  const data = useRouteLoaderData<typeof rootLoader>("root")
-
-  if (!data) {
-    throw Error("no data")
-  }
-
-  return (
-    <>
-      <section className="flex flex-col items-center justify-center w-screen h-full gap-8 mx-auto max-w-7xl">
-        <div className="flex items-center">
-          <LogoIcon className="w-16 sm:w-24" />
-          <LogoTextIcon className="w-40 sm:w-48" />
-        </div>
-
-        <div className="max-w-xl p-4 rounded-lg bg-slate-50">
-          <WhatIsSchoolHub />
-          <Explanation />
-        </div>
-
-        <Suspense fallback={<SkeletonUIForLoginButton />}>
-          <Await resolve={data.userPromise} errorElement={<h1>Error....</h1>}>
-            {({ user }) => {
-              const folderId = getFolderId(user?.student?.folderLink || "")
-              return (
-                <LoginButton
-                  email={user ? user.email : undefined}
-                  folderId={user?.student ? folderId : undefined}
-                />
-              )
-            }}
-          </Await>
-        </Suspense>
-      </section>
-    </>
-  )
-}
-
-
-  return (
-    <>
-      <div className="relative flex items-center justify-center w-full gap-8 ">
-        <Button>HELLO</Button>
-        {!data?.role ? (
-          <Form reloadDocument method="post" action="/auth/signin">
-            <Button type="submit" variant="info" size="md">
-              <Logo className="w-4 h-7" />
-              <span className="ml-2 sm:ml-4 sm:inline">
-                SCHOOL HUB サインイン
-              </span>
-            </Button>
-          </Form>
-        ) : (
-          <Form method="post" action="/auth/signout">
-            <Button type="submit" variant="secondary">
-              <Logo className={`h-7 w-4 ${loading && "animate-spin"}`} />
-              <span className="ml-1 sm:ml-2 sm:inline">
-                SCHOOL HUB サインアウト
-              </span>
-            </Button>
-          </Form>
-        )}
-
-        <div className="toast toast-end">
-          {authstate === "expired" && (
-            <Toast text="アクセス期限が切れました。" />
-          )}
-          {authstate === "unauthorized" && (
-            <Toast text="アクセス権限がありません。" />
-          )}
-          {authstate === "no-login" && (
-            <Toast text="ログインをしてください。" />
-          )}
-          {authstate === "not-parent-account" && (
-            <Toast text="保護者・生徒Googleアカウントでログインをしてください。" />
-          )}
-          {authstate === "no-folder" && (
-            <Toast text="Googleフォルダがないか、名簿のGoogleSheetが共有されていません。" />
-          )}
-        </div>
-      </div>
-    </>
-  )
-
-*/

@@ -1,13 +1,5 @@
-import {
-  Form,
-  NavLink,
-  useLoaderData,
-  useLocation,
-  useNavigation,
-} from "@remix-run/react"
+import { Form, NavLink, useLocation, useNavigation } from "@remix-run/react"
 
-import type { loader } from "~/root"
-import { z } from "zod"
 import clsx from "clsx"
 import {
   AvatarIcon,
@@ -17,31 +9,20 @@ import {
   LogoTextIcon,
   UserIcon,
 } from "~/components/icons"
-import { getFolderId } from "~/lib/utils"
 
-const userSchema = z.object({
-  role: z.string().optional(),
-  picture: z.string().optional(),
-  folderLink: z.string().optional(),
-})
-
-export default function Navigation() {
-  const loaderData = useLoaderData<typeof loader>()
+export default function Navigation({
+  role,
+  picture,
+  folderId,
+}: {
+  role: string | null
+  picture: string | null
+  folderId: string | null
+}) {
   let navigation = useNavigation()
   const location = useLocation()
 
   let loading = navigation.state !== "idle"
-  const result = userSchema.safeParse(loaderData)
-
-  let role: string | undefined = undefined
-  let picture: string | undefined = undefined
-  let folderId: string | null = null
-
-  if (result.success) {
-    role = result.data.role
-    picture = result.data.picture
-    folderId = getFolderId(result.data.folderLink || "")
-  }
 
   const studentFilePath = `/student/${folderId}`
 
