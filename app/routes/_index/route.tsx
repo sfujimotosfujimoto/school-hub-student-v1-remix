@@ -1,11 +1,16 @@
 import type { LoaderFunctionArgs } from "@remix-run/node"
-import { json, useLoaderData } from "@remix-run/react"
+import { json, redirect, useLoaderData } from "@remix-run/react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
 import { getSession } from "~/lib/services/session.server"
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { email, role, picture, folderId } = await getSession(request)
+  const { email, role, picture, folderId, accessToken } =
+    await getSession(request)
+
+  if (!email || !accessToken) {
+    return redirect("/auth/signin")
+  }
 
   if (!email) {
     return { role: null, picture: null, email: null, folderId: null }

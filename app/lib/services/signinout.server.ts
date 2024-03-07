@@ -84,13 +84,13 @@ export async function signin({
   }
 
   logger.info(
-    `🍓 signin: new expiry_date ${person.last} ${person.first} - ${new Date(
+    `🍓 ${person.last} ${person.first}, signin: new expiry_date - ${new Date(
       expiry_date || 0,
     ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
   )
 
   logger.info(
-    `🍓 signin: new refreshTokenExpiry ${person.last} ${person.first} - ${new Date(
+    `🍓 ${person.last} ${person.first}, signin: new refreshTokenExpiry - ${new Date(
       refreshTokenExpiry || 0,
     ).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`,
   )
