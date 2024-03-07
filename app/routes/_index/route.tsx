@@ -2,27 +2,21 @@ import type { LoaderFunctionArgs } from "@remix-run/node"
 import { json, useLoaderData } from "@remix-run/react"
 import { NavLinkButton } from "~/components/buttons/button"
 import { DriveLogoIcon, LogoIcon, LogoTextIcon } from "~/components/icons"
-import { CACHE_MAX_AGE_SECONDS } from "~/config"
 import { getSession } from "~/lib/services/session.server"
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const headers = new Headers()
-  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
   const { email, role, picture, folderId } = await getSession(request)
 
   if (!email) {
     return { role: null, picture: null, email: null, folderId: null }
   }
 
-  return json(
-    {
-      role,
-      picture,
-      email,
-      folderId,
-    },
-    { headers },
-  )
+  return json({
+    role,
+    picture,
+    email,
+    folderId,
+  })
 }
 
 export default function Index() {

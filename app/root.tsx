@@ -26,30 +26,21 @@ import ErrorDocument from "./root/error-document"
 import { getSession } from "./lib/services/session.server"
 import { logger } from "./lib/logger"
 import { PageTransitionProgressBar } from "./components/progress-bar"
-import { CACHE_MAX_AGE_SECONDS } from "./config"
 
 /**
  * LOADER function
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   logger.debug(`🍿 loader: root ${request.url}`)
-  const headers = new Headers()
-  headers.set("Cache-Control", `private, max-age=${CACHE_MAX_AGE_SECONDS}`) // 10 minutes
+
   const { email, role, picture, folderId } = await getSession(request)
 
-  // if (!email) {
-  //   return json({ role: null, picture: null, email: null, folderId: null })
-  // }
-
-  return json(
-    {
-      role,
-      picture,
-      email,
-      folderId,
-    },
-    { headers },
-  )
+  return json({
+    role,
+    picture,
+    email,
+    folderId,
+  })
 }
 
 /**
